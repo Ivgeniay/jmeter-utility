@@ -124,14 +124,12 @@ def parse_jtl_csv(csv_path: str, log: Log) -> JMeterResult:
             method = ''
             path = ''
             
-            # Основной запрос — label содержит метод и path
             if ' ' in label and not label.startswith('http'):
                 parts = label.split(' ', 1)
                 if parts[0] in ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'HEAD', 'OPTIONS']:
                     method = parts[0]
                     path = parts[1]
             
-            # Embedded/redirect — label это URL, берём path из URL колонки
             if not method:
                 method = 'GET'
                 parsed_url = urlparse(url)
@@ -162,65 +160,9 @@ def parse_jtl_csv(csv_path: str, log: Log) -> JMeterResult:
     log.log(f'Total: {len(result.all_requests)} requests in {len(result.transactions)} transactions')
     return result
 
-# def parse_jtl_csv(csv_path: str, log: Log) -> JMeterResult:
-#     result = JMeterResult()
-#     current_transaction_requests = []
-    
-#     with open(csv_path, 'r', encoding='utf-8') as f:
-#         reader = csv.DictReader(f)
-        
-#         for row in reader:
-#             url = row.get('URL', '')
-#             label = row.get('label', '')
-            
-#             if url == 'null' or url == '':
-#                 transaction = TransactionGroup(
-#                     name=label,
-#                     requests=current_transaction_requests.copy()
-#                 )
-#                 result.transactions.append(transaction)
-#                 current_transaction_requests = []
-#                 log.log(f'Transaction completed: {label} ({len(transaction.requests)} requests)')
-#                 continue
-            
-#             parsed_url = urlparse(url)
-#             path = parsed_url.path
-            
-#             method = ''
-#             if ' ' in label:
-#                 parts = label.split(' ', 1)
-#                 if parts[0] in ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'HEAD', 'OPTIONS']:
-#                     method = parts[0]
-            
-#             if not method:
-#                 method = 'GET'
-            
-#             query_string = []
-#             if parsed_url.query:
-#                 for param in parsed_url.query.split('&'):
-#                     if '=' in param:
-#                         name, value = param.split('=', 1)
-#                         query_string.append(Record(name=name, value=value))
-#                     else:
-#                         query_string.append(Record(name=param, value=''))
-            
-#             request = Request(
-#                 method=method,
-#                 url=path,
-#                 http_version='',
-#                 query_string=query_string,
-#                 headers_size=int(row.get('bytes', 0)),
-#                 body_size=int(row.get('sentBytes', 0))
-#             )
-            
-#             result.all_requests.append(request)
-#             current_transaction_requests.append(request)
-    
-#     log.log(f'Total: {len(result.all_requests)} requests in {len(result.transactions)} transactions')
-#     return result
 
 
-def run_and_collect(jmeter_path: str, jmx_path: str, log: Log | None = None) -> list[Request]:
+def run_and_collect(jmeter_path: str, jmx_path: str, log: Log | None = None) -> JMeterResult:
     if log is None:
         log = NullLog()
     

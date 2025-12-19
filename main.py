@@ -137,7 +137,7 @@ def compare_traffic(
         jmeter_requests = parse_jmeter(jmeter_path, scope)
         
         if difficult == 'simple':
-            comparer = SimpleComparer(log)
+            comparer = SimpleComparer(logger)
         else:
             logger.log(f'There is no {difficult}. Chech --help')
             exit(1)
@@ -195,6 +195,10 @@ def run_and_compare(log: Log, jmeter_path: str, jmx_path: str, har_path: str, di
         log.log(f'Error: {ex}')
         return 1
 
+
+
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description='Utilities for Automatic Http Request Processing in JMeter'
@@ -215,36 +219,36 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     consLog = ConsoleLog()
-    log: CompositeLog = CompositeLog(consLog)
+    logger: CompositeLog = CompositeLog(consLog)
 
     if (args.prefix):
         if not args.input:
-            log.log('Error: --input is required for comparison')
+            logger.log('Error: --input is required for comparison')
             exit(1)
-        remove_suffix(log, args.input, args.verbose, args.output, args.scope)
+        remove_suffix(logger, args.input, args.verbose, args.output, args.scope)
 
     if (args.method):
         if not args.input:
-            log.log('Error: --input is required for comparison')
+            logger.log('Error: --input is required for comparison')
             exit(1)
-        add_methods(log, args.input, args.verbose, args.output, args.scope)
+        add_methods(logger, args.input, args.verbose, args.output, args.scope)
         exit(0)
 
     if (args.compare):
         if not args.input:
-            log.log('Error: --input is required for comparison')
+            logger.log('Error: --input is required for comparison')
             exit(1)
-        result = compare_traffic(log, args.input, args.compare, args.scope, args.difficult, args.verbose)
+        result = compare_traffic(logger, args.input, args.compare, args.scope, args.difficult, args.verbose)
         exit(result)
 
     if args.run_compare:
         if not args.input:
-            log.log('Error: --input is required for run-compare')
+            logger.log('Error: --input is required for run-compare')
             exit(1)
         if not args.jmeter_path:
-            log.log('Error: --jmeter-path is required for run-compare')
+            logger.log('Error: --jmeter-path is required for run-compare')
             exit(1)
-        result = run_and_compare(log, args.jmeter_path, args.input, args.run_compare, args.difficult, args.verbose)
+        result = run_and_compare(logger, args.jmeter_path, args.input, args.run_compare, args.difficult, args.verbose)
         exit(result)
     
 
