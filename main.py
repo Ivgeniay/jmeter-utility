@@ -4,6 +4,7 @@ import re
 
 from jmeter_runner import run_and_collect
 from console import CompositeLog, ConsoleLog, Log, SLog
+from jmx_builder.parsers.elements.http_sampler_proxy_parser import HTTPSamplerProxyParser
 from scope import extract_scope_by_element_name
 from har_parser import parse_har
 from jmeter_parser import parse_jmeter
@@ -206,6 +207,9 @@ xml = '''<?xml version="1.0" encoding="UTF-8"?>
 <jmeterTestPlan version="1.2" properties="5.0" jmeter="5.6.3">
   <hashTree>
     <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="My Test Plan">
+      <stringProp name="TestPlan.comments"></stringProp>
+      <boolProp name="TestPlan.functional_mode">false</boolProp>
+      <boolProp name="TestPlan.serialize_threadgroups">false</boolProp>
       <boolProp name="TestPlan.tearDown_on_shutdown">true</boolProp>
       <elementProp name="TestPlan.user_defined_variables" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables">
         <collectionProp name="Arguments.arguments">
@@ -216,11 +220,14 @@ xml = '''<?xml version="1.0" encoding="UTF-8"?>
           </elementProp>
         </collectionProp>
       </elementProp>
+      <stringProp name="TestPlan.user_define_classpath"></stringProp>
     </TestPlan>
     <hashTree>
       <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Thread Group">
         <intProp name="ThreadGroup.num_threads">1</intProp>
         <intProp name="ThreadGroup.ramp_time">1</intProp>
+        <longProp name="ThreadGroup.duration">0</longProp>
+        <longProp name="ThreadGroup.delay">0</longProp>
         <boolProp name="ThreadGroup.same_user_on_next_iteration">true</boolProp>
         <stringProp name="ThreadGroup.on_sample_error">stopthread</stringProp>
         <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller">
@@ -232,7 +239,52 @@ xml = '''<?xml version="1.0" encoding="UTF-8"?>
         <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="Transaction Controller">
           <boolProp name="TransactionController.includeTimers">false</boolProp>
         </TransactionController>
-        <hashTree/>
+        <hashTree>
+          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="HTTP Request">
+            <stringProp name="TestPlan.comments">comment</stringProp>
+            <boolProp name="HTTPSampler.image_parser">true</boolProp>
+            <intProp name="HTTPSampler.concurrentPool">6</intProp>
+            <boolProp name="HTTPSampler.md5">true</boolProp>
+            <stringProp name="HTTPSampler.ipSource">192.168.1.1</stringProp>
+            <stringProp name="HTTPSampler.proxyScheme">scheme</stringProp>
+            <stringProp name="HTTPSampler.proxyHost">127.0.0.1</stringProp>
+            <intProp name="HTTPSampler.proxyPort">8080</intProp>
+            <stringProp name="HTTPSampler.proxyUser">proxyusername</stringProp>
+            <stringProp name="HTTPSampler.proxyPass">proxypass</stringProp>
+            <stringProp name="HTTPSampler.domain">127.0.0.1</stringProp>
+            <stringProp name="HTTPSampler.port">80</stringProp>
+            <stringProp name="HTTPSampler.protocol">http</stringProp>
+            <stringProp name="HTTPSampler.contentEncoding">utf-8</stringProp>
+            <stringProp name="HTTPSampler.path">/index.html</stringProp>
+            <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+            <stringProp name="HTTPSampler.method">GET</stringProp>
+            <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+            <boolProp name="HTTPSampler.DO_MULTIPART_POST">true</boolProp>
+            <boolProp name="HTTPSampler.BROWSER_COMPATIBLE_MULTIPART">true</boolProp>
+            <boolProp name="HTTPSampler.postBodyRaw">false</boolProp>
+            <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables">
+              <collectionProp name="Arguments.arguments">
+                <elementProp name="username" elementType="HTTPArgument">
+                  <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                  <stringProp name="Argument.value">admin</stringProp>
+                  <stringProp name="Argument.metadata">=</stringProp>
+                  <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                  <stringProp name="Argument.name">username</stringProp>
+                </elementProp>
+                <elementProp name="password" elementType="HTTPArgument">
+                  <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                  <stringProp name="Argument.value">adminpass</stringProp>
+                  <stringProp name="Argument.metadata">=</stringProp>
+                  <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                  <stringProp name="Argument.name">password</stringProp>
+                </elementProp>
+              </collectionProp>
+            </elementProp>
+            <intProp name="HTTPSampler.ipSourceType">3</intProp>
+            <stringProp name="HTTPSampler.implementation">Java</stringProp>
+          </HTTPSamplerProxy>
+          <hashTree/>
+        </hashTree>
       </hashTree>
     </hashTree>
   </hashTree>
@@ -242,8 +294,11 @@ parser1: TreeParser = TreeParser()
 parser1.register_parser("TestPlan", TestPlanParser)
 parser1.register_parser("ThreadGroup", ThreadGroupParser)
 parser1.register_parser("TransactionController", TransactionControllerParser)
+parser1.register_parser("HTTPSamplerProxy", HTTPSamplerProxyParser)
 
 test_plan = parser1.parse(xml)
+hhtpReq =test_plan.children[0].children[0].children[0].children[0]
+hhtpReq.print_info()
 res = test_plan.to_xml()
 SLog.log(res)
 

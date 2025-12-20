@@ -119,7 +119,6 @@ class TreeElementParser(ABC):
         
         return None
     
-    
     @staticmethod
     def is_prop_exists(xml_content: str, prop_name: str) -> bool:
         """Проверяет существование пропа по имени"""
