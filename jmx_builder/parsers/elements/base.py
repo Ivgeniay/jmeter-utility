@@ -1,6 +1,6 @@
-import re
-from abc import ABC, abstractmethod
 from jmx_builder.models.tree import TreeElement
+from abc import ABC, abstractmethod
+import re
 
 
 class TreeElementParser(ABC):

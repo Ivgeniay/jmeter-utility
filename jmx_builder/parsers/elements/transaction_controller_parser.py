@@ -1,4 +1,4 @@
-from jmx_builder.parsers.elements.tree_element_parser import TreeElementParser
+from jmx_builder.parsers.elements.base import TreeElementParser
 from jmx_builder.models.tree import TransactionController
 from jmx_builder.parsers.const import (
     ATTR_TESTNAME,

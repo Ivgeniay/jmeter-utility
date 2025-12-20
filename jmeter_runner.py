@@ -5,7 +5,7 @@ import uuid
 import csv
 from urllib.parse import urlparse
 from models import JMeterResult, Request, Record, TransactionGroup
-from console import Log, NullLog
+from console import Log, NullLog, SLog
 
 
 SIMPLE_DATA_WRITER_TEMPLATE = '''<ResultCollector guiclass="SimpleDataWriter" testclass="ResultCollector" testname="__temp_data_writer__" enabled="true">
@@ -48,18 +48,18 @@ SIMPLE_DATA_WRITER_TEMPLATE = '''<ResultCollector guiclass="SimpleDataWriter" te
 '''
 
 
-def get_temp_dir(log: Log) -> str:
+def get_temp_dir() -> str:
     try:
         temp_dir = tempfile.gettempdir()
         test_file = os.path.join(temp_dir, f'test_{uuid.uuid4().hex}')
         with open(test_file, 'w') as f:
             f.write('test')
         os.remove(test_file)
-        log.log(f'Using system temp directory: {temp_dir}')
+        SLog.log(f'Using system temp directory: {temp_dir}')
         return temp_dir
     except Exception as e:
         fallback = os.getcwd()
-        log.log(f'System temp not available ({e}), using: {fallback}')
+        SLog.log(f'System temp not available ({e}), using: {fallback}')
         return fallback
 
 
@@ -100,7 +100,7 @@ def run_jmeter(jmeter_path: str, jmx_path: str) -> tuple[int, str, str]:
     return result.returncode, result.stdout, result.stderr
 
 
-def parse_jtl_csv(csv_path: str, log: Log) -> JMeterResult:
+def parse_jtl_csv(csv_path: str) -> JMeterResult:
     result = JMeterResult()
     current_transaction_requests = []
     
@@ -118,7 +118,7 @@ def parse_jtl_csv(csv_path: str, log: Log) -> JMeterResult:
                 )
                 result.transactions.append(transaction)
                 current_transaction_requests = []
-                log.log(f'Transaction completed: {label} ({len(transaction.requests)} requests)')
+                SLog.log(f'Transaction completed: {label} ({len(transaction.requests)} requests)')
                 continue
             
             method = ''
@@ -157,16 +157,14 @@ def parse_jtl_csv(csv_path: str, log: Log) -> JMeterResult:
             result.all_requests.append(request)
             current_transaction_requests.append(request)
     
-    log.log(f'Total: {len(result.all_requests)} requests in {len(result.transactions)} transactions')
+    SLog.log(f'Total: {len(result.all_requests)} requests in {len(result.transactions)} transactions')
     return result
 
 
 
-def run_and_collect(jmeter_path: str, jmx_path: str, log: Log | None = None) -> JMeterResult:
-    if log is None:
-        log = NullLog()
+def run_and_collect(jmeter_path: str, jmx_path: str) -> JMeterResult:
     
-    temp_dir = get_temp_dir(log)
+    temp_dir = get_temp_dir()
     unique_id = uuid.uuid4().hex
     
     temp_jmx_path = os.path.join(temp_dir, f'temp_{unique_id}.jmx')
@@ -181,16 +179,16 @@ def run_and_collect(jmeter_path: str, jmx_path: str, log: Log | None = None) -> 
         with open(temp_jmx_path, 'w', encoding='utf-8') as f:
             f.write(modified_content)
         
-        log.log(f'Temp JMX created: {temp_jmx_path}')
-        log.log(f'Temp CSV target: {temp_csv_path}')
-        log.log(f'Running JMeter: {jmeter_path} -n -t {temp_jmx_path}')
+        SLog.log(f'Temp JMX created: {temp_jmx_path}')
+        SLog.log(f'Temp CSV target: {temp_csv_path}')
+        SLog.log(f'Running JMeter: {jmeter_path} -n -t {temp_jmx_path}')
         
         returncode, stdout, stderr = run_jmeter(jmeter_path, temp_jmx_path)
         
         if stdout:
-            log.log(f'JMeter stdout:\n{stdout}')
+            SLog.log(f'JMeter stdout:\n{stdout}')
         if stderr:
-            log.log(f'JMeter stderr:\n{stderr}')
+            SLog.log(f'JMeter stderr:\n{stderr}')
         
         if returncode != 0:
             raise RuntimeError(f'JMeter failed with code {returncode}: {stderr}')
@@ -198,15 +196,15 @@ def run_and_collect(jmeter_path: str, jmx_path: str, log: Log | None = None) -> 
         if not os.path.exists(temp_csv_path):
             raise RuntimeError(f'JMeter did not create results file: {temp_csv_path}')
         
-        requests = parse_jtl_csv(temp_csv_path, log)
+        requests = parse_jtl_csv(temp_csv_path)
         
         return requests
     
     finally:
         if os.path.exists(temp_jmx_path):
             os.remove(temp_jmx_path)
-            log.log(f'Removed temp JMX: {temp_jmx_path}')
+            SLog.log(f'Removed temp JMX: {temp_jmx_path}')
         
         if os.path.exists(temp_csv_path):
             os.remove(temp_csv_path)
-            log.log(f'Removed temp CSV: {temp_csv_path}')
+            SLog.log(f'Removed temp CSV: {temp_csv_path}')

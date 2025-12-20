@@ -92,6 +92,7 @@ class TreeElement(JMXElement, IHierarchable):
         
         return f'{element_xml}\n{hashtree_xml}'
 
+
 class JMeterTestPlan(JMXElement, IHierarchable):
     def __init__(
         self,
@@ -143,6 +144,7 @@ class JMeterTestPlan(JMXElement, IHierarchable):
             hashtree_content = '\n  <hashTree/>\n'
         
         return f'<?xml version="1.0" encoding="UTF-8"?>\n<{self.tag_name} {attr_str}>{hashtree_content}</{self.tag_name}>'
+
 
 class TestPlan(TreeElement):
     def __init__(

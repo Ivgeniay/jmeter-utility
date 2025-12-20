@@ -1,6 +1,6 @@
+from jmx_builder.models.tree import JMeterTestPlan, TreeElement
 from abc import ABC, abstractmethod
 import re
-from jmx_builder.models.tree import TreeElement
 
 class TreeElementParser(ABC):
     @staticmethod
@@ -14,22 +14,27 @@ class TreeParser:
     
     def register_parser(self, tag_name: str, parser_class: type) -> None:
         self._parsers[tag_name] = parser_class
-    
-    def parse(self, xml: str) -> TreeElement | list[TreeElement]:
+
+    def parse(self, xml: str) -> JMeterTestPlan | list[TreeElement]:
         content = xml.strip()
         
-        jmeter_match = re.search(r'<jmeterTestPlan[^>]*>(.*)</jmeterTestPlan>', content, re.DOTALL)
+        jmeter_match = re.search(r'<jmeterTestPlan\s+version="(.*?)"\s+properties="(.*?)"\s+jmeter="(.*?)">(.*)</jmeterTestPlan>', content, re.DOTALL)
         if jmeter_match:
-            content = jmeter_match.group(1).strip()
+            vers = jmeter_match.group(1)
+            property = jmeter_match.group(2)
+            jmet = jmeter_match.group(3)
+            content = jmeter_match.group(4).strip()
+            jmeterTestPlan: JMeterTestPlan = JMeterTestPlan(vers, property, jmet)
         
         hashtree_content = self.extract_hashtree_content(content)
         if hashtree_content is not None:
             content = hashtree_content
         
         elements = self.parse_hashtree(content)
-        
-        if len(elements) == 1:
-            return elements[0]
+
+        if jmeterTestPlan:
+            jmeterTestPlan.add_child(elements[0])
+            return jmeterTestPlan
         
         return elements
     

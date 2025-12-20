@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from models import JMeterResult, Request
-from console import Log, NullLog
+from console import Log, NullLog, SLog
 
 
 @dataclass
@@ -21,61 +21,51 @@ class UnmatchedRequest:
 
 @dataclass
 class CompareResult:
-    log: Log | None = None
     matched: list[MatchedPair] = field(default_factory=list)
     only_in_har: list[UnmatchedRequest] = field(default_factory=list)
     only_in_jmeter: list[UnmatchedRequest] = field(default_factory=list)
-
-    def __post_init__(self):
-        if self.log is None:
-            self.log = NullLog()
     
     def print_summary(self):
-        self.log.log(f'Matched: {len(self.matched)}')
-        self.log.log(f'Only in HAR: {len(self.only_in_har)}')
-        self.log.log(f'Only in JMeter: {len(self.only_in_jmeter)}')
+        SLog.log(f'Matched: {len(self.matched)}')
+        SLog.log(f'Only in HAR: {len(self.only_in_har)}')
+        SLog.log(f'Only in JMeter: {len(self.only_in_jmeter)}')
     
     def print_details(self):
         if self.only_in_har:
-            self.log.log('\n--- Only in HAR (missing in JMeter) ---')
+            SLog.log('\n--- Only in HAR (missing in JMeter) ---')
             for item in self.only_in_har:
-                self.log.log(f'  [{item.index}] {item.request.method} {item.request.url}')
+                SLog.log(f'  [{item.index}] {item.request.method} {item.request.url}')
         
         if self.only_in_jmeter:
-            self.log.log('\n--- Only in JMeter (not in HAR) ---')
+            SLog.log('\n--- Only in JMeter (not in HAR) ---')
             for item in self.only_in_jmeter:
-                self.log.log(f'  [{item.index}] {item.request.method} {item.request.url}')
+                SLog.log(f'  [{item.index}] {item.request.method} {item.request.url}')
 
 
 @dataclass
 class TransactionCompareResult:
-    log: Log | None = None
     transaction_results: dict[str, CompareResult] = field(default_factory=dict)
     total_matched: int = 0
     total_only_in_har: int = 0
     total_only_in_jmeter: int = 0
-
-    def __post_init__(self):
-        if self.log is None:
-            self.log = NullLog()
     
     def print_summary(self):
-        self.log.log(f'\n=== Overall Summary ===')
-        self.log.log(f'Total matched: {self.total_matched}')
-        self.log.log(f'Total only in HAR: {self.total_only_in_har}')
-        self.log.log(f'Total only in JMeter: {self.total_only_in_jmeter}')
-        self.log.log(f'Transactions analyzed: {len(self.transaction_results)}')
+        SLog.log(f'\n=== Overall Summary ===')
+        SLog.log(f'Total matched: {self.total_matched}')
+        SLog.log(f'Total only in HAR: {self.total_only_in_har}')
+        SLog.log(f'Total only in JMeter: {self.total_only_in_jmeter}')
+        SLog.log(f'Transactions analyzed: {len(self.transaction_results)}')
     
     def print_details(self):
         for tx_name, result in self.transaction_results.items():
-            self.log.log(f'\n=== Transaction: {tx_name} ===')
+            SLog.log(f'\n=== Transaction: {tx_name} ===')
             result.print_summary()
             result.print_details()
 
 
 class BaseComparer(ABC):
-    def __init__(self, log: Log | None):
-        self.log = log
+    def __init__(self):
+        pass
 
     @abstractmethod
     def compare(self, har_requests: list[Request], jmeter_requests: list[Request]) -> CompareResult:
@@ -87,12 +77,11 @@ class BaseComparer(ABC):
 
 
 class SimpleComparer(BaseComparer):
-    def __init__(self, log: Log | None):
-        super().__init__(log)
+    def __init__(self):
+        super().__init__()
 
     def compare(self, har_requests: list[Request], jmeter_requests: list[Request]) -> CompareResult:
         result = CompareResult()
-        result.log = self.log
         
         jmeter_used = [False] * len(jmeter_requests)
         
@@ -139,15 +128,14 @@ class SimpleComparer(BaseComparer):
     
 
 class TransactionComparer:
-    def __init__(self, base_comparer: BaseComparer, log: Log | None = None):
+    def __init__(self, base_comparer: BaseComparer):
         self.base_comparer = base_comparer
-        self.log = log if log else NullLog()
     
     def compare(self, har_requests: list[Request], jmeter_result: JMeterResult) -> TransactionCompareResult:
-        result = TransactionCompareResult(log=self.log)
+        result = TransactionCompareResult(log=SLog)
         
         if not jmeter_result.transactions:
-            self.log.log('No transactions found, falling back to simple comparison')
+            SLog.log('No transactions found, falling back to simple comparison')
             simple_result = self.base_comparer.compare(har_requests, jmeter_result.all_requests)
             result.transaction_results['__all__'] = simple_result
             result.total_matched = len(simple_result.matched)
@@ -159,12 +147,12 @@ class TransactionComparer:
         
         for transaction in jmeter_result.transactions:
             if not transaction.requests:
-                self.log.log(f'Skipping empty transaction: {transaction.name}')
+                SLog.log(f'Skipping empty transaction: {transaction.name}')
                 continue
             
             first_request = transaction.requests[0]
             first_key = self.base_comparer.get_key(first_request)
-            self.log.log(f'Looking for transaction "{transaction.name}" start: {first_key}')
+            SLog.log(f'Looking for transaction "{transaction.name}" start: {first_key}')
             
             tx_start_in_har = None
             for i in range(har_index, len(har_requests)):
@@ -173,7 +161,7 @@ class TransactionComparer:
                     break
             
             if tx_start_in_har is None:
-                self.log.log(f'Warning: Could not find start of transaction "{transaction.name}" in HAR')
+                SLog.log(f'Warning: Could not find start of transaction "{transaction.name}" in HAR')
                 continue
             
             har_index = tx_start_in_har
@@ -208,10 +196,10 @@ class TransactionComparer:
             
             har_slice = har_requests[tx_start_in_har:tx_end_in_har]
             
-            self.log.log(f'Comparing transaction "{transaction.name}": HAR[{tx_start_in_har}:{tx_end_in_har}] ({len(har_slice)} requests) vs JMeter ({len(transaction.requests)} requests)')
+            SLog.log(f'Comparing transaction "{transaction.name}": HAR[{tx_start_in_har}:{tx_end_in_har}] ({len(har_slice)} requests) vs JMeter ({len(transaction.requests)} requests)')
             
             tx_result = self.base_comparer.compare(har_slice, transaction.requests)
-            tx_result.log = self.log
+            tx_result.log = SLog
             
             for item in tx_result.only_in_har:
                 item.transaction_name = transaction.name
