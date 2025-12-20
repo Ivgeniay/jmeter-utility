@@ -3,7 +3,7 @@ import sys;
 import re
 
 from jmeter_runner import run_and_collect
-from console import CompositeLog, ConsoleLog, Log
+from console import CompositeLog, ConsoleLog, Log, SLog
 from scope import extract_scope_by_element_name
 from har_parser import parse_har
 from jmeter_parser import parse_jmeter
@@ -196,6 +196,12 @@ def run_and_compare(log: Log, jmeter_path: str, jmx_path: str, har_path: str, di
         return 1
 
 
+consLog = ConsoleLog()
+logger: CompositeLog = CompositeLog(consLog)
+SLog.register_logger(logger)
+
+
+
 
 
 
@@ -218,8 +224,6 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    consLog = ConsoleLog()
-    logger: CompositeLog = CompositeLog(consLog)
 
     if (args.prefix):
         if not args.input:

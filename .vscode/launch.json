@@ -1,0 +1,42 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug main.py",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/main.py",
+            "console": "integratedTerminal",
+            // "args": [
+            //     "-i", "/opt/apache-jmeter-5.6.3/bin/Task6_RuchkinEvgenii_V3T.jmx",
+            //     "-c", "/opt/Fiddler/fiddler_classic_setup/Capturies/1_browser_1_step_har/S1_4.har",
+            //     "-v",
+            //     "-s", "Records"
+            // ]
+            // "args": [
+            //     "-i", "/opt/apache-jmeter-5.6.3/bin/Task6_RuchkinEvgenii_V3T2.jmx",
+            //     "-r", "/opt/Fiddler/fiddler_classic_setup/Capturies/1_browser_1_step_har/All1.har",
+            //     "-g", "/opt/apache-jmeter-5.6.3/bin/jmeter",
+            //     "-v"
+            // ]
+            // "args": [
+            //     "-i", "/opt/apache-jmeter-5.6.3/bin/Task6_RuchkinEvgenii_V3T2.jmx",
+            //     "-s", "Recordt",
+            //     "-m", 
+            //     "-v", 
+            //     "-p",
+            //     "-o",
+            //     "/opt/apache-jmeter-5.6.3/bin/Task6_RuchkinEvgenii_V3T2.jmx"
+            // ]
+            // "args": [
+            //     "-i", "/opt/apache-jmeter-5.6.3/bin/Task6_RuchkinEvgenii_V3T2.jmx",
+            //     "-s", "Recordt",
+            //     "-v", 
+            //     "-p"
+            // ]
+            "args": [
+                
+            ]
+        }
+    ]
+}

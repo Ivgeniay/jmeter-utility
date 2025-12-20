@@ -45,3 +45,16 @@ def create_logger() -> Log:
         return FileLog('app.log')
     
     return NullLog()
+
+
+class SLog():
+    _loggers: list[Log] = []
+
+    @classmethod
+    def register_logger(cls, logger: Log):
+        cls._loggers.append(logger)
+
+    @classmethod
+    def log(cls, *args, **kwargs):
+        for logger in cls._loggers:
+            logger.log(*args, **kwargs)
