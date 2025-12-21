@@ -156,3 +156,110 @@ HTTPFILEARG_PARAMNAME = "File.paramname"
 HTTPFILEARG_MIMETYPE = "File.mimetype"
 # HTTPFileArgs
 HTTPFILEARGS_FILES = "HTTPFileArgs.files"
+
+
+# CookieManager
+# UI: Clear cookies each iteration
+COOKIEMANAGER_CLEAR_EACH_ITERATION = "CookieManager.clearEachIteration"
+# UI: Use Thread Group configuration
+COOKIEMANAGER_CONTROLLED_BY_THREADGROUP = "CookieManager.controlledByThreadGroup"
+# UI: Cookies collection
+COOKIEMANAGER_COOKIES = "CookieManager.cookies"
+# UI: Cookie Policy (не в твоём примере, но бывает)
+COOKIEMANAGER_POLICY = "CookieManager.policy"
+
+# Cookie (внутри CookieManager.cookies)
+# UI: Cookie Name (в атрибуте name и testname элемента)
+COOKIE_VALUE = "Cookie.value"
+# UI: Cookie Domain
+COOKIE_DOMAIN = "Cookie.domain"
+# UI: Cookie Path
+COOKIE_PATH = "Cookie.path"
+# UI: Secure
+COOKIE_SECURE = "Cookie.secure"
+# UI: Expires
+COOKIE_EXPIRES = "Cookie.expires"
+# UI: Path Specified
+COOKIE_PATH_SPECIFIED = "Cookie.path_specified"
+# UI: Domain Specified
+COOKIE_DOMAIN_SPECIFIED = "Cookie.domain_specified"
+
+
+
+# CacheManager
+# UI: Clear cache each iteration
+CACHEMANAGER_CLEAR_EACH_ITERATION = "clearEachIteration"
+# UI: Use Cache-Control/Expires header when processing GET requests
+CACHEMANAGER_USE_EXPIRES = "useExpires"
+# UI: Use Thread Group configuration
+CACHEMANAGER_CONTROLLED_BY_THREAD = "CacheManager.controlledByThread"
+# UI: Max Number of elements in cache
+CACHEMANAGER_MAX_SIZE = "maxSize"
+
+
+# HeaderManager
+# UI: Headers collection
+HEADERMANAGER_HEADERS = "HeaderManager.headers"
+
+# Header (внутри HeaderManager.headers)
+# UI: Header Name
+HEADER_NAME = "Header.name"
+# UI: Header Value
+HEADER_VALUE = "Header.value"
+
+
+# TestAction
+# UI: Action to take
+TESTACTION_ACTION = "ActionProcessor.action"
+# UI: Target
+TESTACTION_TARGET = "ActionProcessor.target"
+# UI: Duration (ms)
+TESTACTION_DURATION = "ActionProcessor.duration"
+
+# UniformRandomTimer
+# UI: Constant Delay Offset (ms)
+UNIFORMRANDOMTIMER_DELAY = "ConstantTimer.delay"
+# UI: Random Delay Maximum (ms)
+UNIFORMRANDOMTIMER_RANGE = "RandomTimer.range"
+
+# ConstantTimer
+# UI: Thread Delay (ms)
+CONSTANTTIMER_DELAY = "ConstantTimer.delay"
+
+# PreciseThroughputTimer
+# UI: Target throughput (samples per time period)
+PRECISETHROUGHPUTTIMER_THROUGHPUT = "throughput"
+# UI: Throughput period (seconds)
+PRECISETHROUGHPUTTIMER_THROUGHPUT_PERIOD = "throughputPeriod"
+# UI: Test duration (seconds)
+PRECISETHROUGHPUTTIMER_DURATION = "duration"
+# UI: Number of threads in the batch
+PRECISETHROUGHPUTTIMER_BATCH_SIZE = "batchSize"
+# UI: Delay between threads in the batch (ms)
+PRECISETHROUGHPUTTIMER_BATCH_THREAD_DELAY = "batchThreadDelay"
+# UI: Allowed throughput surplus
+PRECISETHROUGHPUTTIMER_ALLOWED_THROUGHPUT_SURPLUS = "allowedThroughputSurplus"
+# UI: Exact limit for iterations
+PRECISETHROUGHPUTTIMER_EXACT_LIMIT = "exactLimit"
+# UI: Random seed
+PRECISETHROUGHPUTTIMER_RANDOM_SEED = "randomSeed"
+
+
+# ConstantThroughputTimer
+# UI: Target throughput (samples per minute)
+CONSTANTTHROUGHPUTTIMER_THROUGHPUT = "throughput"
+# UI: Calculate Throughput based on
+CONSTANTTHROUGHPUTTIMER_CALC_MODE = "calcMode"
+
+
+# JSR223 (общие для Sampler, PreProcessor, PostProcessor)
+# UI: Script language
+JSR223_SCRIPT_LANGUAGE = "scriptLanguage"
+# UI: Script file path
+JSR223_FILENAME = "filename"
+# UI: Parameters
+JSR223_PARAMETERS = "parameters"
+# UI: Script text
+JSR223_SCRIPT = "script"
+# UI: Cache compiled script
+JSR223_CACHE_KEY = "cacheKey"

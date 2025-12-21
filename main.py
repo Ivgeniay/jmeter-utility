@@ -4,7 +4,17 @@ import re
 
 from jmeter_runner import run_and_collect
 from console import CompositeLog, ConsoleLog, Log, SLog
+from jmx_builder.parsers.elements.arguments_parser import ArgumentsParser
+from jmx_builder.parsers.elements.cache_manager_parser import CacheManagerParser
+from jmx_builder.parsers.elements.constant_throughput_timer_parser import ConstantThroughputTimerParser
+from jmx_builder.parsers.elements.constant_timer_parser import ConstantTimerParser
+from jmx_builder.parsers.elements.cookie_manager_parser import CookieManagerParser
+from jmx_builder.parsers.elements.header_manager_parser import HeaderManagerParser
 from jmx_builder.parsers.elements.http_sampler_proxy_parser import HTTPSamplerProxyParser
+from jmx_builder.parsers.elements.jsr223_parser import JSR223PostProcessorParser, JSR223PreProcessorParser, JSR223SamplerParser
+from jmx_builder.parsers.elements.precise_throughput_timer_parser import PreciseThroughputTimerParser
+from jmx_builder.parsers.elements.test_action_parser import TestActionParser
+from jmx_builder.parsers.elements.uniform_random_timer_parser import UniformRandomTimerParser
 from scope import extract_scope_by_element_name
 from har_parser import parse_har
 from jmeter_parser import parse_jmeter
@@ -207,9 +217,6 @@ xml = '''<?xml version="1.0" encoding="UTF-8"?>
 <jmeterTestPlan version="1.2" properties="5.0" jmeter="5.6.3">
   <hashTree>
     <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="My Test Plan">
-      <stringProp name="TestPlan.comments"></stringProp>
-      <boolProp name="TestPlan.functional_mode">false</boolProp>
-      <boolProp name="TestPlan.serialize_threadgroups">false</boolProp>
       <boolProp name="TestPlan.tearDown_on_shutdown">true</boolProp>
       <elementProp name="TestPlan.user_defined_variables" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables">
         <collectionProp name="Arguments.arguments">
@@ -220,9 +227,71 @@ xml = '''<?xml version="1.0" encoding="UTF-8"?>
           </elementProp>
         </collectionProp>
       </elementProp>
-      <stringProp name="TestPlan.user_define_classpath"></stringProp>
     </TestPlan>
     <hashTree>
+      <CookieManager guiclass="CookiePanel" testclass="CookieManager" testname="HTTP Cookie Manager">
+        <collectionProp name="CookieManager.cookies">
+          <elementProp name="cookie1" elementType="Cookie" testname="cookie1">
+            <stringProp name="Cookie.value">123</stringProp>
+            <stringProp name="Cookie.domain">domain</stringProp>
+            <stringProp name="Cookie.path">/index.html</stringProp>
+            <boolProp name="Cookie.secure">true</boolProp>
+            <longProp name="Cookie.expires">0</longProp>
+            <boolProp name="Cookie.path_specified">true</boolProp>
+            <boolProp name="Cookie.domain_specified">true</boolProp>
+          </elementProp>
+          <elementProp name="cookie2" elementType="Cookie" testname="cookie2">
+            <stringProp name="Cookie.value">321</stringProp>
+            <stringProp name="Cookie.domain">domain</stringProp>
+            <stringProp name="Cookie.path">/path</stringProp>
+            <boolProp name="Cookie.secure">false</boolProp>
+            <longProp name="Cookie.expires">0</longProp>
+            <boolProp name="Cookie.path_specified">true</boolProp>
+            <boolProp name="Cookie.domain_specified">true</boolProp>
+          </elementProp>
+        </collectionProp>
+        <boolProp name="CookieManager.clearEachIteration">true</boolProp>
+        <boolProp name="CookieManager.controlledByThreadGroup">true</boolProp>
+        <stringProp name="CookieManager.policy">best-match</stringProp>
+      </CookieManager>
+      <hashTree/>
+      <CacheManager guiclass="CacheManagerGui" testclass="CacheManager" testname="HTTP Cache Manager" enabled="true">
+        <boolProp name="clearEachIteration">false</boolProp>
+        <boolProp name="useExpires">false</boolProp>
+        <boolProp name="CacheManager.controlledByThread">true</boolProp>
+        <intProp name="maxSize">5005</intProp>
+      </CacheManager>
+      <hashTree/>
+      <Arguments guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+        <collectionProp name="Arguments.arguments">
+          <elementProp name="var1" elementType="Argument">
+            <stringProp name="Argument.name">var1</stringProp>
+            <stringProp name="Argument.value">value1</stringProp>
+            <stringProp name="Argument.desc">descr1</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="var2" elementType="Argument">
+            <stringProp name="Argument.name">var2</stringProp>
+            <stringProp name="Argument.value">value2</stringProp>
+            <stringProp name="Argument.desc">desdcr2</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+        </collectionProp>
+      </Arguments>
+      <hashTree/>
+      <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP Header Manager" enabled="true">
+        <collectionProp name="HeaderManager.headers">
+          <elementProp name="" elementType="Header">
+            <stringProp name="Header.name">header</stringProp>
+            <stringProp name="Header.value">shoulers</stringProp>
+          </elementProp>
+          <elementProp name="" elementType="Header">
+            <stringProp name="Header.name">header2</stringProp>
+            <stringProp name="Header.value">shoulders</stringProp>
+          </elementProp>
+        </collectionProp>
+      </HeaderManager>
+      <hashTree/>
       <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Thread Group">
         <intProp name="ThreadGroup.num_threads">1</intProp>
         <intProp name="ThreadGroup.ramp_time">1</intProp>
@@ -243,7 +312,6 @@ xml = '''<?xml version="1.0" encoding="UTF-8"?>
           <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="HTTP Request">
             <stringProp name="TestPlan.comments">comment</stringProp>
             <boolProp name="HTTPSampler.image_parser">true</boolProp>
-            <intProp name="HTTPSampler.concurrentPool">6</intProp>
             <boolProp name="HTTPSampler.md5">true</boolProp>
             <stringProp name="HTTPSampler.ipSource">192.168.1.1</stringProp>
             <stringProp name="HTTPSampler.proxyScheme">scheme</stringProp>
@@ -284,23 +352,91 @@ xml = '''<?xml version="1.0" encoding="UTF-8"?>
             <stringProp name="HTTPSampler.implementation">Java</stringProp>
           </HTTPSamplerProxy>
           <hashTree/>
+          <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="JSR223 Sampler">
+            <stringProp name="cacheKey">true</stringProp>
+            <stringProp name="filename">path/to/file</stringProp>
+            <stringProp name="parameters">parameter</stringProp>
+            <stringProp name="script">SAMPLER
+vars.get(&quot;current_time&quot;)
+
+hello world</stringProp>
+            <stringProp name="scriptLanguage">groovy</stringProp>
+          </JSR223Sampler>
+          <hashTree/>
+          <JSR223PreProcessor guiclass="TestBeanGUI" testclass="JSR223PreProcessor" testname="JSR223 PreProcessor">
+            <stringProp name="cacheKey">true</stringProp>
+            <stringProp name="filename">path/to/file</stringProp>
+            <stringProp name="parameters">Params</stringProp>
+            <stringProp name="script">PREPROC
+vars.get(&quot;current_time&quot;)
+
+hello world</stringProp>
+            <stringProp name="scriptLanguage">groovy</stringProp>
+          </JSR223PreProcessor>
+          <hashTree/>
+          <JSR223PostProcessor guiclass="TestBeanGUI" testclass="JSR223PostProcessor" testname="JSR223 PostProcessor">
+            <stringProp name="cacheKey">true</stringProp>
+            <stringProp name="filename">path/to/file</stringProp>
+            <stringProp name="parameters">Params</stringProp>
+            <stringProp name="script">POST PROC
+vars.get(&quot;current_time&quot;)
+
+hello world</stringProp>
+            <stringProp name="scriptLanguage">groovy</stringProp>
+          </JSR223PostProcessor>
+          <hashTree/>
+          <TestAction guiclass="TestActionGui" testclass="TestAction" testname="Think Time">
+            <intProp name="ActionProcessor.action">1</intProp>
+            <intProp name="ActionProcessor.target">0</intProp>
+            <stringProp name="ActionProcessor.duration">0</stringProp>
+          </TestAction>
+          <hashTree>
+            <UniformRandomTimer guiclass="UniformRandomTimerGui" testclass="UniformRandomTimer" testname="Pause">
+              <stringProp name="ConstantTimer.delay">1000</stringProp>
+              <stringProp name="RandomTimer.range">100</stringProp>
+            </UniformRandomTimer>
+            <hashTree/>
+          </hashTree>
         </hashTree>
       </hashTree>
     </hashTree>
   </hashTree>
-</jmeterTestPlan>'''
+</jmeterTestPlan>
+'''
 
 parser1: TreeParser = TreeParser()
 parser1.register_parser("TestPlan", TestPlanParser)
 parser1.register_parser("ThreadGroup", ThreadGroupParser)
 parser1.register_parser("TransactionController", TransactionControllerParser)
 parser1.register_parser("HTTPSamplerProxy", HTTPSamplerProxyParser)
+parser1.register_parser("CookieManager", CookieManagerParser)
+parser1.register_parser("CacheManager", CacheManagerParser)
+parser1.register_parser("Arguments", ArgumentsParser)
+parser1.register_parser("HeaderManager", HeaderManagerParser)
+parser1.register_parser("TestAction", TestActionParser)
+parser1.register_parser("UniformRandomTimer", UniformRandomTimerParser)
+parser1.register_parser("ConstantTimer", ConstantTimerParser)
+parser1.register_parser("PreciseThroughputTimer", PreciseThroughputTimerParser)
+parser1.register_parser("ConstantThroughputTimer", ConstantThroughputTimerParser)
+parser1.register_parser("JSR223Sampler", JSR223SamplerParser)
+parser1.register_parser("JSR223PreProcessor", JSR223PreProcessorParser)
+parser1.register_parser("JSR223PostProcessor", JSR223PostProcessorParser)
 
 test_plan = parser1.parse(xml)
-hhtpReq =test_plan.children[0].children[0].children[0].children[0]
-hhtpReq.print_info()
+
+jsrSampler = test_plan.children[0].children[4].children[0].children[1]
+jsrPre = test_plan.children[0].children[4].children[0].children[2]
+jsrPost = test_plan.children[0].children[4].children[0].children[3]
+
+jsrSampler.print_info()
+jsrPre.print_info()
+jsrPost.print_info()
+
+
 res = test_plan.to_xml()
+SLog.log("=============================================")
 SLog.log(res)
+SLog.log("=============================================")
 
 
 

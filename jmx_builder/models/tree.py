@@ -2,10 +2,11 @@ from abc import abstractmethod
 from console import SLog
 from jmx_builder.parsers.const import *
 from jmx_builder.models.base import IHierarchable, JMXElement
-from jmx_builder.models.props import BoolProp, ElementProp, HTTPArgumentsProp, HTTPFileArgsProp, IntProp, LongProp, PropElement, StringProp, UserDefinedVariablesProp
+from jmx_builder.models.props import *
 from enum import Enum
 
 
+################## GENERAL ######################
 
 class TreeElement(JMXElement, IHierarchable):
     def __init__(
@@ -223,6 +224,8 @@ class TestPlan(TreeElement):
         SLog.log(f"  children: {len(self.children)}")
 
 
+################## THREADS ######################
+
 class OnSampleError(Enum):
     CONTINUE = "continue"
     START_NEXT_LOOP = "startnextloop"
@@ -356,6 +359,8 @@ class ThreadGroup(TreeElement):
         SLog.log(f"  children: {len(self.children)}")
 
 
+################## LOGIC CONTROLLERS ######################
+
 class TransactionController(TreeElement):
     def __init__(
         self,
@@ -404,6 +409,9 @@ class TransactionController(TreeElement):
         SLog.log(f"  include_timers: {self.include_timers.value}")
         SLog.log(f"  children: {len(self.children)}")
 
+
+################## SAMPLERS ######################
+
 class HttpMethod(Enum):
     GET = "GET"
     POST = "POST"
@@ -443,6 +451,325 @@ class RedirectType(Enum):
     AUTO_REDIRECTS = "auto"
 
 
+class CookieManagerPolicy(Enum):
+    STANDARD = "standard"
+    STANDARD_STRICT = "standard-strict"
+    IGNORE_COOKIES = "ignoreCookies"
+    NETSCAPE = "netscape"
+    DEFAULT = "default"
+    RFC2109 = "rfc2109"
+    RFC2965 = "rfc2965"
+    BEST_MATCH = "best-match"
+    COMPATIBILITY = "compatibility"
+
+
+class CookieManager(TreeElement):
+    def __init__(
+        self,
+        testname: str = "HTTP Cookie Manager",
+        enabled: bool = True
+    ):
+        self.clear_each_iteration: BoolProp = BoolProp(COOKIEMANAGER_CLEAR_EACH_ITERATION, False)
+        self.controlled_by_threadgroup: BoolProp = BoolProp(COOKIEMANAGER_CONTROLLED_BY_THREADGROUP, False)
+        self.policy: StringProp = StringProp(COOKIEMANAGER_POLICY, "standard")
+        self._cookies: CookiesProp = CookiesProp(COOKIEMANAGER_COOKIES)
+        
+        super().__init__(
+            testname=testname,
+            enabled=enabled,
+            properties=[
+                self._cookies,
+                self.clear_each_iteration,
+                self.controlled_by_threadgroup,
+                self.policy
+            ]
+        )
+
+    
+    @property
+    def tag_name(self) -> str:
+        return "CookieManager"
+    
+    @property
+    def guiclass(self) -> str:
+        return "CookiePanel"
+    
+    @property
+    def testclass(self) -> str:
+        return "CookieManager"
+    
+    @staticmethod
+    def create_default(testname: str = "HTTP Cookie Manager") -> "CookieManager":
+        return CookieManager(testname=testname)
+
+    def add_cookie(
+        self,
+        name: str,
+        value: str,
+        domain: str,
+        path: str = "/",
+        secure: bool = False,
+        expires: int = 0,
+        path_specified: bool = True,
+        domain_specified: bool = True
+    ) -> None:
+        self._cookies.add_cookie(
+            name, value, domain, path, secure, expires, path_specified, domain_specified
+        )
+    
+    def set_cookie_manager_policy(self, policy: str) -> None:
+        if not self.policy:
+            self.policy: StringProp = StringProp(COOKIEMANAGER_POLICY, policy)
+            self.properties.append(self.policy)
+        else:
+            self.policy.value = policy
+
+    def set_cookie_manager_policy_typed(self, policy: CookieManagerPolicy) -> None:
+        if not self.policy:
+            self.policy: StringProp = StringProp(COOKIEMANAGER_POLICY, policy.value)
+            self.properties.append(self.policy)
+        else:
+            self.policy.value = policy.value
+
+    def remove_cookie(self, name: str) -> None:
+        self._cookies.remove_cookie(name)
+    
+    def get_cookie(self, name: str) -> ElementProp | None:
+        return self._cookies.get_cookie(name)
+    
+    def clear_cookies(self) -> None:
+        self._cookies.clear()
+    
+    def set_clear_each_iteration(self, enable: bool) -> None:
+        self.clear_each_iteration.value = enable
+    
+    def set_controlled_by_threadgroup(self, enable: bool) -> None:
+        self.controlled_by_threadgroup.value = enable
+
+    
+    def print_info(self) -> None:
+        SLog.log(f"=== CookieManager: {self.testname} ===")
+        SLog.log(f"  enabled: {self.enabled}")
+        SLog.log(f"  comment: {self.comment.value}")
+        SLog.log(f"  clear_each_iteration: {self.clear_each_iteration.value}")
+        SLog.log(f"  controlled_by_threadgroup: {self.controlled_by_threadgroup.value}")
+        if self.policy:
+            SLog.log(f"  policy: {self.policy.value}")
+        SLog.log(f"  cookies: {len(self._cookies.items)}")
+        for cookie in self._cookies.items:
+            value_prop = next((p for p in cookie.properties if p.name == COOKIE_VALUE), None)
+            domain_prop = next((p for p in cookie.properties if p.name == COOKIE_DOMAIN), None)
+            path_prop = next((p for p in cookie.properties if p.name == COOKIE_PATH), None)
+            if value_prop and domain_prop:
+                path_str = path_prop.value if path_prop else "/"
+                SLog.log(f"    {cookie.name} = {value_prop.value} (domain: {domain_prop.value}, path: {path_str})")
+        SLog.log(f"  children: {len(self.children)}")
+
+
+class CacheManager(TreeElement):
+    def __init__(
+        self,
+        testname: str = "HTTP Cache Manager",
+        enabled: bool = True
+    ):
+        self.clear_each_iteration: BoolProp = BoolProp(CACHEMANAGER_CLEAR_EACH_ITERATION, False)
+        self.use_expires: BoolProp = BoolProp(CACHEMANAGER_USE_EXPIRES, False)
+        self.controlled_by_thread: BoolProp = BoolProp(CACHEMANAGER_CONTROLLED_BY_THREAD, False)
+        self.max_size: IntProp = IntProp(CACHEMANAGER_MAX_SIZE, 5000)
+        
+        super().__init__(
+            testname=testname,
+            enabled=enabled,
+            properties=[
+                self.clear_each_iteration,
+                self.use_expires,
+                self.controlled_by_thread,
+                self.max_size
+            ]
+        )
+    
+    @property
+    def tag_name(self) -> str:
+        return "CacheManager"
+    
+    @property
+    def guiclass(self) -> str:
+        return "CacheManagerGui"
+    
+    @property
+    def testclass(self) -> str:
+        return "CacheManager"
+    
+    @staticmethod
+    def create_default(testname: str = "HTTP Cache Manager") -> "CacheManager":
+        return CacheManager(testname=testname)
+    
+    def set_clear_each_iteration(self, enable: bool) -> None:
+        self.clear_each_iteration.value = enable
+    
+    def set_use_expires(self, enable: bool) -> None:
+        self.use_expires.value = enable
+    
+    def set_controlled_by_thread(self, enable: bool) -> None:
+        self.controlled_by_thread.value = enable
+    
+    def set_max_size(self, size: int) -> None:
+        self.max_size.value = size
+    
+    def print_info(self) -> None:
+        SLog.log(f"=== CacheManager: {self.testname} ===")
+        SLog.log(f"  enabled: {self.enabled}")
+        SLog.log(f"  comment: {self.comment.value}")
+        SLog.log(f"  clear_each_iteration: {self.clear_each_iteration.value}")
+        SLog.log(f"  use_expires: {self.use_expires.value}")
+        SLog.log(f"  controlled_by_thread: {self.controlled_by_thread.value}")
+        SLog.log(f"  max_size: {self.max_size.value}")
+        SLog.log(f"  children: {len(self.children)}")
+
+
+class Arguments(TreeElement):
+    def __init__(
+        self,
+        testname: str = "User Defined Variables",
+        enabled: bool = True
+    ):
+        self._variables: UserDefinedVariablesWithDescProp = UserDefinedVariablesWithDescProp()
+        
+        super().__init__(
+            testname=testname,
+            enabled=enabled,
+            properties=[
+                self._variables
+            ]
+        )
+    
+    @property
+    def tag_name(self) -> str:
+        return "Arguments"
+    
+    @property
+    def guiclass(self) -> str:
+        return "ArgumentsPanel"
+    
+    @property
+    def testclass(self) -> str:
+        return "Arguments"
+    
+    @staticmethod
+    def create_default(testname: str = "User Defined Variables") -> "Arguments":
+        return Arguments(testname=testname)
+    
+    def add_variable(self, name: str, value: str, description: str = "") -> None:
+        self._variables.add_variable(name, value, description)
+    
+    def remove_variable(self, name: str) -> None:
+        self._variables.remove_variable(name)
+    
+    def get_variable(self, name: str) -> ElementProp | None:
+        return self._variables.get_variable(name)
+    
+    def change_variable(
+        self,
+        name: str,
+        new_name: str | None = None,
+        new_value: str | None = None,
+        new_description: str | None = None
+    ) -> bool:
+        return self._variables.change_variable(name, new_name, new_value, new_description)
+    
+    def clear_variables(self) -> None:
+        self._variables.items = []
+    
+    def print_info(self) -> None:
+        SLog.log(f"=== Arguments: {self.testname} ===")
+        SLog.log(f"  enabled: {self.enabled}")
+        SLog.log(f"  comment: {self.comment.value}")
+        SLog.log(f"  variables: {len(self._variables.items)}")
+        for var in self._variables.items:
+            name_prop = next((p for p in var.properties if p.name == ARGUMENT_NAME), None)
+            value_prop = next((p for p in var.properties if p.name == ARGUMENT_VALUE), None)
+            desc_prop = next((p for p in var.properties if p.name == ARGUMENT_DESC), None)
+            if name_prop and value_prop:
+                desc_str = f" ({desc_prop.value})" if desc_prop and desc_prop.value else ""
+                SLog.log(f"    {name_prop.value} = {value_prop.value}{desc_str}")
+        SLog.log(f"  children: {len(self.children)}")
+
+
+class HeaderManager(TreeElement):
+    def __init__(
+        self,
+        testname: str = "HTTP Header Manager",
+        enabled: bool = True
+    ):
+        self._headers: HeadersProp = HeadersProp(HEADERMANAGER_HEADERS)
+        
+        super().__init__(
+            testname=testname,
+            enabled=enabled,
+            properties=[
+                self._headers
+            ]
+        )
+    
+    @property
+    def tag_name(self) -> str:
+        return "HeaderManager"
+    
+    @property
+    def guiclass(self) -> str:
+        return "HeaderPanel"
+    
+    @property
+    def testclass(self) -> str:
+        return "HeaderManager"
+    
+    @staticmethod
+    def create_default(testname: str = "HTTP Header Manager") -> "HeaderManager":
+        return HeaderManager(testname=testname)
+    
+    def add_header(self, name: str, value: str) -> None:
+        self._headers.add_header(name, value)
+    
+    def remove_header(self, name: str) -> None:
+        self._headers.remove_header(name)
+    
+    def get_header(self, name: str) -> ElementProp | None:
+        return self._headers.get_header(name)
+    
+    def change_header(
+        self,
+        name: str,
+        new_name: str | None = None,
+        new_value: str | None = None
+    ) -> bool:
+        return self._headers.change_header(name, new_name, new_value)
+    
+    def clear_headers(self) -> None:
+        self._headers.clear()
+    
+    def print_info(self) -> None:
+        SLog.log(f"=== HeaderManager: {self.testname} ===")
+        SLog.log(f"  enabled: {self.enabled}")
+        SLog.log(f"  comment: {self.comment.value}")
+        SLog.log(f"  headers: {len(self._headers.items)}")
+        for header in self._headers.items:
+            name_prop = next((p for p in header.properties if p.name == HEADER_NAME), None)
+            value_prop = next((p for p in header.properties if p.name == HEADER_VALUE), None)
+            if name_prop and value_prop:
+                SLog.log(f"    {name_prop.value}: {value_prop.value}")
+        SLog.log(f"  children: {len(self.children)}")
+
+
+################## SAMPLERS ######################
+class TestActionType(Enum):
+    STOP = 0
+    PAUSE = 1
+    STOP_NOW = 2
+    START_NEXT_THREAD_LOOP = 3
+    GO_TO_NEXT_LOOP_ITERATION = 4
+    BREAK_CURRENT_LOOP = 5
+
+# Http Request
 class HTTPSamplerProxy(TreeElement):
     def __init__(
         self,
@@ -777,3 +1104,468 @@ class HTTPSamplerProxy(TreeElement):
             if path_prop:
                 SLog.log(f"    {path_prop.value}")
         SLog.log(f"  children: {len(self.children)}")
+
+class JSR223Element(TreeElement):
+    def __init__(
+        self,
+        testname: str,
+        enabled: bool = True
+    ):
+        self.script_language: StringProp = StringProp(JSR223_SCRIPT_LANGUAGE, "groovy")
+        self.filename: StringProp = StringProp(JSR223_FILENAME, "")
+        self.parameters: StringProp = StringProp(JSR223_PARAMETERS, "")
+        self.script: StringProp = StringProp(JSR223_SCRIPT, "")
+        self.cache_key: StringProp = StringProp(JSR223_CACHE_KEY, "true")
+        
+        super().__init__(
+            testname=testname,
+            enabled=enabled,
+            properties=[
+                self.cache_key,
+                self.filename,
+                self.parameters,
+                self.script,
+                self.script_language
+            ]
+        )
+    
+    @property
+    def guiclass(self) -> str:
+        return "TestBeanGUI"
+    
+    def set_script_language(self, language: str) -> None:
+        self.script_language.value = language
+    
+    def set_filename(self, path: str) -> None:
+        self.filename.value = path
+    
+    def set_parameters(self, params: str) -> None:
+        self.parameters.value = params
+    
+    def set_script(self, script: str) -> None:
+        self.script.value = script
+    
+    def set_cache_key(self, cache: bool) -> None:
+        self.cache_key.value = "true" if cache else "false"
+    
+    def print_info(self) -> None:
+        SLog.log(f"=== {self.tag_name}: {self.testname} ===")
+        SLog.log(f"  enabled: {self.enabled}")
+        SLog.log(f"  comment: {self.comment.value}")
+        SLog.log(f"  script_language: {self.script_language.value}")
+        SLog.log(f"  filename: {self.filename.value}")
+        SLog.log(f"  parameters: {self.parameters.value}")
+        SLog.log(f"  cache_key: {self.cache_key.value}")
+        script_preview = self.script.value[:50] + "..." if len(self.script.value) > 50 else self.script.value
+        SLog.log(f"  script: {script_preview}")
+        SLog.log(f"  children: {len(self.children)}")
+
+
+class JSR223Sampler(JSR223Element):
+    def __init__(
+        self,
+        testname: str = "JSR223 Sampler",
+        enabled: bool = True
+    ):
+        super().__init__(testname=testname, enabled=enabled)
+    
+    @property
+    def tag_name(self) -> str:
+        return "JSR223Sampler"
+    
+    @property
+    def testclass(self) -> str:
+        return "JSR223Sampler"
+    
+    @staticmethod
+    def create_default(testname: str = "JSR223 Sampler") -> "JSR223Sampler":
+        return JSR223Sampler(testname=testname)
+
+# Flow Control Action
+class TestActionTarget(Enum):
+    CURRENT_THREAD = 0
+    ALL_THREADS = 2
+
+
+class TestAction(TreeElement):
+    def __init__(
+        self,
+        testname: str = "Think Time",
+        enabled: bool = True
+    ):
+        self.action: IntProp = IntProp(TESTACTION_ACTION, TestActionType.PAUSE.value)
+        self.target: IntProp = IntProp(TESTACTION_TARGET, TestActionTarget.CURRENT_THREAD.value)
+        self.duration: StringProp = StringProp(TESTACTION_DURATION, "0")
+        
+        super().__init__(
+            testname=testname,
+            enabled=enabled,
+            properties=[
+                self.action,
+                self.target,
+                self.duration
+            ]
+        )
+    
+    @property
+    def tag_name(self) -> str:
+        return "TestAction"
+    
+    @property
+    def guiclass(self) -> str:
+        return "TestActionGui"
+    
+    @property
+    def testclass(self) -> str:
+        return "TestAction"
+    
+    @staticmethod
+    def create_default(testname: str = "Think Time") -> "TestAction":
+        return TestAction(testname=testname)
+    
+    def set_action(self, action: TestActionType) -> None:
+        self.action.value = action.value
+    
+    def set_action_raw(self, action: int) -> None:
+        self.action.value = action
+    
+    def set_target(self, target: TestActionTarget) -> None:
+        self.target.value = target.value
+    
+    def set_target_raw(self, target: int) -> None:
+        self.target.value = target
+    
+    def set_duration(self, duration_ms: int) -> None:
+        self.duration.value = str(duration_ms)
+    
+    def set_duration_raw(self, duration: str) -> None:
+        self.duration.value = duration
+    
+    def print_info(self) -> None:
+        SLog.log(f"=== TestAction: {self.testname} ===")
+        SLog.log(f"  enabled: {self.enabled}")
+        SLog.log(f"  comment: {self.comment.value}")
+        
+        action_name = "unknown"
+        for a in TestActionType:
+            if a.value == self.action.value:
+                action_name = a.name
+                break
+        SLog.log(f"  action: {self.action.value} ({action_name})")
+        
+        target_name = "unknown"
+        for t in TestActionTarget:
+            if t.value == self.target.value:
+                target_name = t.name
+                break
+        SLog.log(f"  target: {self.target.value} ({target_name})")
+        
+        SLog.log(f"  duration: {self.duration.value}")
+        SLog.log(f"  children: {len(self.children)}")
+
+
+################## TIMERS ######################
+
+class UniformRandomTimer(TreeElement):
+    def __init__(
+        self,
+        testname: str = "Uniform Random Timer",
+        enabled: bool = True
+    ):
+        self.delay: StringProp = StringProp(UNIFORMRANDOMTIMER_DELAY, "0")
+        self.range: StringProp = StringProp(UNIFORMRANDOMTIMER_RANGE, "100")
+        
+        super().__init__(
+            testname=testname,
+            enabled=enabled,
+            properties=[
+                self.delay,
+                self.range
+            ]
+        )
+    
+    @property
+    def tag_name(self) -> str:
+        return "UniformRandomTimer"
+    
+    @property
+    def guiclass(self) -> str:
+        return "UniformRandomTimerGui"
+    
+    @property
+    def testclass(self) -> str:
+        return "UniformRandomTimer"
+    
+    @staticmethod
+    def create_default(testname: str = "Uniform Random Timer") -> "UniformRandomTimer":
+        return UniformRandomTimer(testname=testname)
+    
+    def set_delay(self, delay_ms: int) -> None:
+        self.delay.value = str(delay_ms)
+    
+    def set_delay_raw(self, delay: str) -> None:
+        self.delay.value = delay
+    
+    def set_range(self, range_ms: int) -> None:
+        self.range.value = str(range_ms)
+    
+    def set_range_raw(self, range_val: str) -> None:
+        self.range.value = range_val
+    
+    def print_info(self) -> None:
+        SLog.log(f"=== UniformRandomTimer: {self.testname} ===")
+        SLog.log(f"  enabled: {self.enabled}")
+        SLog.log(f"  comment: {self.comment.value}")
+        SLog.log(f"  delay: {self.delay.value}")
+        SLog.log(f"  range: {self.range.value}")
+        SLog.log(f"  children: {len(self.children)}")
+
+
+class ConstantTimer(TreeElement):
+    def __init__(
+        self,
+        testname: str = "Constant Timer",
+        enabled: bool = True
+    ):
+        self.delay: StringProp = StringProp(CONSTANTTIMER_DELAY, "300")
+        
+        super().__init__(
+            testname=testname,
+            enabled=enabled,
+            properties=[
+                self.delay
+            ]
+        )
+    
+    @property
+    def tag_name(self) -> str:
+        return "ConstantTimer"
+    
+    @property
+    def guiclass(self) -> str:
+        return "ConstantTimerGui"
+    
+    @property
+    def testclass(self) -> str:
+        return "ConstantTimer"
+    
+    @staticmethod
+    def create_default(testname: str = "Constant Timer") -> "ConstantTimer":
+        return ConstantTimer(testname=testname)
+    
+    def set_delay(self, delay_ms: int) -> None:
+        self.delay.value = str(delay_ms)
+    
+    def set_delay_raw(self, delay: str) -> None:
+        self.delay.value = delay
+    
+    def print_info(self) -> None:
+        SLog.log(f"=== ConstantTimer: {self.testname} ===")
+        SLog.log(f"  enabled: {self.enabled}")
+        SLog.log(f"  comment: {self.comment.value}")
+        SLog.log(f"  delay: {self.delay.value}")
+        SLog.log(f"  children: {len(self.children)}")
+
+
+class PreciseThroughputTimer(TreeElement):
+    def __init__(
+        self,
+        testname: str = "Precise Throughput Timer",
+        enabled: bool = True
+    ):
+        self.throughput: DoubleProp = DoubleProp(PRECISETHROUGHPUTTIMER_THROUGHPUT, 100.0)
+        self.throughput_period: IntProp = IntProp(PRECISETHROUGHPUTTIMER_THROUGHPUT_PERIOD, 3600)
+        self.duration: LongProp = LongProp(PRECISETHROUGHPUTTIMER_DURATION, 3600)
+        self.batch_size: IntProp = IntProp(PRECISETHROUGHPUTTIMER_BATCH_SIZE, 1)
+        self.batch_thread_delay: IntProp = IntProp(PRECISETHROUGHPUTTIMER_BATCH_THREAD_DELAY, 0)
+        self.allowed_throughput_surplus: DoubleProp = DoubleProp(PRECISETHROUGHPUTTIMER_ALLOWED_THROUGHPUT_SURPLUS, 1.0)
+        self.exact_limit: IntProp = IntProp(PRECISETHROUGHPUTTIMER_EXACT_LIMIT, 10000)
+        self.random_seed: LongProp = LongProp(PRECISETHROUGHPUTTIMER_RANDOM_SEED, 0)
+        
+        super().__init__(
+            testname=testname,
+            enabled=enabled,
+            properties=[
+                self.allowed_throughput_surplus,
+                self.batch_size,
+                self.batch_thread_delay,
+                self.duration,
+                self.exact_limit,
+                self.random_seed,
+                self.throughput,
+                self.throughput_period
+            ]
+        )
+    
+    @property
+    def tag_name(self) -> str:
+        return "PreciseThroughputTimer"
+    
+    @property
+    def guiclass(self) -> str:
+        return "TestBeanGUI"
+    
+    @property
+    def testclass(self) -> str:
+        return "PreciseThroughputTimer"
+    
+    @staticmethod
+    def create_default(testname: str = "Precise Throughput Timer") -> "PreciseThroughputTimer":
+        return PreciseThroughputTimer(testname=testname)
+    
+    def set_throughput(self, value: float) -> None:
+        self.throughput.value = value
+    
+    def set_throughput_period(self, seconds: int) -> None:
+        self.throughput_period.value = seconds
+    
+    def set_duration(self, seconds: int) -> None:
+        self.duration.value = seconds
+    
+    def set_batch_size(self, size: int) -> None:
+        self.batch_size.value = size
+    
+    def set_batch_thread_delay(self, delay_ms: int) -> None:
+        self.batch_thread_delay.value = delay_ms
+    
+    def set_allowed_throughput_surplus(self, value: float) -> None:
+        self.allowed_throughput_surplus.value = value
+    
+    def set_exact_limit(self, limit: int) -> None:
+        self.exact_limit.value = limit
+    
+    def set_random_seed(self, seed: int) -> None:
+        self.random_seed.value = seed
+    
+    def print_info(self) -> None:
+        SLog.log(f"=== PreciseThroughputTimer: {self.testname} ===")
+        SLog.log(f"  enabled: {self.enabled}")
+        SLog.log(f"  comment: {self.comment.value}")
+        SLog.log(f"  throughput: {self.throughput.value}")
+        SLog.log(f"  throughput_period: {self.throughput_period.value}")
+        SLog.log(f"  duration: {self.duration.value}")
+        SLog.log(f"  batch_size: {self.batch_size.value}")
+        SLog.log(f"  batch_thread_delay: {self.batch_thread_delay.value}")
+        SLog.log(f"  allowed_throughput_surplus: {self.allowed_throughput_surplus.value}")
+        SLog.log(f"  exact_limit: {self.exact_limit.value}")
+        SLog.log(f"  random_seed: {self.random_seed.value}")
+        SLog.log(f"  children: {len(self.children)}")
+
+
+class ThroughputCalcMode(Enum):
+    THIS_THREAD_ONLY = 0
+    ALL_ACTIVE_THREADS = 1
+    ALL_ACTIVE_THREADS_IN_CURRENT_GROUP = 2
+    ALL_ACTIVE_THREADS_SHARED = 3
+    ALL_ACTIVE_THREADS_IN_CURRENT_GROUP_SHARED = 4
+
+
+class ConstantThroughputTimer(TreeElement):
+    def __init__(
+        self,
+        testname: str = "Constant Throughput Timer",
+        enabled: bool = True
+    ):
+        self.throughput: DoubleProp = DoubleProp(CONSTANTTHROUGHPUTTIMER_THROUGHPUT, 0.0)
+        self.calc_mode: IntProp = IntProp(CONSTANTTHROUGHPUTTIMER_CALC_MODE, ThroughputCalcMode.THIS_THREAD_ONLY.value)
+        
+        super().__init__(
+            testname=testname,
+            enabled=enabled,
+            properties=[
+                self.calc_mode,
+                self.throughput
+            ]
+        )
+    
+    @property
+    def tag_name(self) -> str:
+        return "ConstantThroughputTimer"
+    
+    @property
+    def guiclass(self) -> str:
+        return "TestBeanGUI"
+    
+    @property
+    def testclass(self) -> str:
+        return "ConstantThroughputTimer"
+    
+    @staticmethod
+    def create_default(testname: str = "Constant Throughput Timer") -> "ConstantThroughputTimer":
+        return ConstantThroughputTimer(testname=testname)
+    
+    def set_throughput(self, value: float) -> None:
+        self.throughput.value = value
+    
+    def set_calc_mode(self, mode: ThroughputCalcMode) -> None:
+        self.calc_mode.value = mode.value
+    
+    def set_calc_mode_raw(self, mode: int) -> None:
+        self.calc_mode.value = mode
+    
+    def print_info(self) -> None:
+        SLog.log(f"=== ConstantThroughputTimer: {self.testname} ===")
+        SLog.log(f"  enabled: {self.enabled}")
+        SLog.log(f"  comment: {self.comment.value}")
+        SLog.log(f"  throughput: {self.throughput.value}")
+        
+        mode_name = "unknown"
+        for m in ThroughputCalcMode:
+            if m.value == self.calc_mode.value:
+                mode_name = m.name
+                break
+        SLog.log(f"  calc_mode: {self.calc_mode.value} ({mode_name})")
+        SLog.log(f"  children: {len(self.children)}")
+
+
+################## Pre Processors ######################
+
+class JSR223PreProcessor(JSR223Element):
+    def __init__(
+        self,
+        testname: str = "JSR223 PreProcessor",
+        enabled: bool = True
+    ):
+        super().__init__(testname=testname, enabled=enabled)
+    
+    @property
+    def tag_name(self) -> str:
+        return "JSR223PreProcessor"
+    
+    @property
+    def testclass(self) -> str:
+        return "JSR223PreProcessor"
+    
+    @staticmethod
+    def create_default(testname: str = "JSR223 PreProcessor") -> "JSR223PreProcessor":
+        return JSR223PreProcessor(testname=testname)
+
+
+################## Post Processors ######################
+
+class JSR223PostProcessor(JSR223Element):
+    def __init__(
+        self,
+        testname: str = "JSR223 PostProcessor",
+        enabled: bool = True
+    ):
+        super().__init__(testname=testname, enabled=enabled)
+    
+    @property
+    def tag_name(self) -> str:
+        return "JSR223PostProcessor"
+    
+    @property
+    def testclass(self) -> str:
+        return "JSR223PostProcessor"
+    
+    @staticmethod
+    def create_default(testname: str = "JSR223 PostProcessor") -> "JSR223PostProcessor":
+        return JSR223PostProcessor(testname=testname)
+
+
+
+
+
+
+

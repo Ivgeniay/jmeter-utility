@@ -1,6 +1,6 @@
 from abc import abstractmethod
 from jmx_builder.models.base import JMXElement
-from jmx_builder.parsers.const import ARGUMENT, ARGUMENT_DESC, ARGUMENT_METADATA, ARGUMENT_NAME, ARGUMENT_VALUE, ARGUMENTS_ARGUMENTS, ATTR_ELEMENT_TYPE, ATTR_GUICLASS, ATTR_TESTCLASS, ATTR_TESTNAME, BOOL_PROP, COLLECTION_PROP, ELEMENT_PROP, HTTP_ARGUMENT, HTTPARGUMENT_ALWAYS_ENCODE, HTTPARGUMENT_USE_EQUALS, HTTPFILEARG_MIMETYPE, HTTPFILEARG_PARAMNAME, HTTPFILEARG_PATH, HTTPFILEARGS_FILES, INT_PROP, LONG_PROP, STRING_PROP
+from jmx_builder.parsers.const import *
 
 
 class PropElement(JMXElement):
@@ -323,4 +323,166 @@ class HTTPFileArgsProp(CollectionProp):
     
     def clear(self) -> None:
         self.items = []
+
+
+class CookiesProp(CollectionProp):
+    def __init__(self, name: str = "CookieManager.cookies"):
+        super().__init__(name)
+    
+    def add_cookie(
+        self,
+        name: str,
+        value: str,
+        domain: str,
+        path: str = "/",
+        secure: bool = False,
+        expires: int = 0,
+        path_specified: bool = True,
+        domain_specified: bool = True
+    ) -> None:
+        cookie = ElementProp(
+            name=name,
+            element_type="Cookie",
+            testname=name,
+            properties=[
+                StringProp(COOKIE_VALUE, value),
+                StringProp(COOKIE_DOMAIN, domain),
+                StringProp(COOKIE_PATH, path),
+                BoolProp(COOKIE_SECURE, secure),
+                LongProp(COOKIE_EXPIRES, expires),
+                BoolProp(COOKIE_PATH_SPECIFIED, path_specified),
+                BoolProp(COOKIE_DOMAIN_SPECIFIED, domain_specified)
+            ]
+        )
+        self.items.append(cookie)
+    
+    def remove_cookie(self, name: str) -> None:
+        self.items = [item for item in self.items if item.name != name]
+    
+    def get_cookie(self, name: str) -> ElementProp | None:
+        for item in self.items:
+            if item.name == name:
+                return item
+        return None
+    
+    def change_cookie(
+        self,
+        name: str,
+        new_name: str | None = None,
+        new_value: str | None = None,
+        new_domain: str | None = None,
+        new_path: str | None = None,
+        new_secure: bool | None = None,
+        new_expires: int | None = None,
+        new_path_specified: bool | None = None,
+        new_domain_specified: bool | None = None
+    ) -> bool:
+        cookie = self.get_cookie(name)
+        if cookie is None:
+            return False
+        
+        if new_name is not None:
+            cookie.name = new_name
+            cookie.testname = new_name
+        
+        for prop in cookie.properties:
+            if isinstance(prop, StringProp):
+                if prop.name == COOKIE_VALUE and new_value is not None:
+                    prop.value = new_value
+                elif prop.name == COOKIE_DOMAIN and new_domain is not None:
+                    prop.value = new_domain
+                elif prop.name == COOKIE_PATH and new_path is not None:
+                    prop.value = new_path
+            elif isinstance(prop, BoolProp):
+                if prop.name == COOKIE_SECURE and new_secure is not None:
+                    prop.value = new_secure
+                elif prop.name == COOKIE_PATH_SPECIFIED and new_path_specified is not None:
+                    prop.value = new_path_specified
+                elif prop.name == COOKIE_DOMAIN_SPECIFIED and new_domain_specified is not None:
+                    prop.value = new_domain_specified
+            elif isinstance(prop, LongProp):
+                if prop.name == COOKIE_EXPIRES and new_expires is not None:
+                    prop.value = new_expires
+        
+        return True
+    
+    def clear(self) -> None:
+        self.items = []
+
+
+class HeadersProp(CollectionProp):
+    def __init__(self, name: str = "HeaderManager.headers"):
+        super().__init__(name)
+    
+    def add_header(self, name: str, value: str) -> None:
+        header = ElementProp(
+            name="",
+            element_type="Header",
+            properties=[
+                StringProp(HEADER_NAME, name),
+                StringProp(HEADER_VALUE, value)
+            ]
+        )
+        self.items.append(header)
+    
+    def remove_header(self, name: str) -> None:
+        self.items = [
+            item for item in self.items
+            if not any(
+                isinstance(p, StringProp) and p.name == HEADER_NAME and p.value == name
+                for p in item.properties
+            )
+        ]
+    
+    def get_header(self, name: str) -> ElementProp | None:
+        for item in self.items:
+            for prop in item.properties:
+                if isinstance(prop, StringProp) and prop.name == HEADER_NAME and prop.value == name:
+                    return item
+        return None
+    
+    def change_header(
+        self,
+        name: str,
+        new_name: str | None = None,
+        new_value: str | None = None
+    ) -> bool:
+        header = self.get_header(name)
+        if header is None:
+            return False
+        
+        for prop in header.properties:
+            if isinstance(prop, StringProp):
+                if prop.name == HEADER_NAME and new_name is not None:
+                    prop.value = new_name
+                elif prop.name == HEADER_VALUE and new_value is not None:
+                    prop.value = new_value
+        
+        return True
+    
+    def clear(self) -> None:
+        self.items = []
+
+
+class DoubleProp(JMXElement):
+    def __init__(self, name: str, value: float = 0.0, saved_value: float = 0.0):
+        self.name = name
+        self.value = value
+        self.saved_value = saved_value
+    
+    @property
+    def tag_name(self) -> str:
+        return "doubleProp"
+    
+    def to_xml(self) -> str:
+        parts = [
+            f"<name>{self.name}</name>",
+            f"<value>{self.value}</value>",
+            f"<savedValue>{self.saved_value}</savedValue>"
+        ]
+        inner = "\n".join([self._indent(p) for p in parts])
+        return f"<{self.tag_name}>\n{inner}\n</{self.tag_name}>"
+
+
+
 
