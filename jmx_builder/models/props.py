@@ -504,3 +504,129 @@ class FloatProperty(JMXElement):
         return f"<{self.tag_name}>\n{inner}\n</{self.tag_name}>"
 
 
+class SampleSaveConfiguration(JMXElement):
+    def __init__(self):
+        self.time: bool = True
+        self.latency: bool = True
+        self.timestamp: bool = True
+        self.success: bool = True
+        self.label: bool = True
+        self.code: bool = True
+        self.message: bool = True
+        self.thread_name: bool = True
+        self.data_type: bool = True
+        self.encoding: bool = False
+        self.assertions: bool = True
+        self.subresults: bool = True
+        self.response_data: bool = False
+        self.sampler_data: bool = False
+        self.xml: bool = False
+        self.field_names: bool = True
+        self.response_headers: bool = False
+        self.request_headers: bool = False
+        self.response_data_on_error: bool = False
+        self.save_assertion_results_failure_message: bool = True
+        self.assertions_results_to_save: int = 0
+        self.bytes: bool = True
+        self.sent_bytes: bool = True
+        self.url: bool = True
+        self.file_name: bool = False
+        self.hostname: bool = False
+        self.thread_counts: bool = True
+        self.sample_count: bool = False
+        self.idle_time: bool = True
+        self.connect_time: bool = True
+    
+    @property
+    def tag_name(self) -> str:
+        return "objProp"
+    
+    def _bool_to_str(self, value: bool) -> str:
+        return "true" if value else "false"
+    
+    def to_xml(self) -> str:
+        config_parts = [
+            f"<time>{self._bool_to_str(self.time)}</time>",
+            f"<latency>{self._bool_to_str(self.latency)}</latency>",
+            f"<timestamp>{self._bool_to_str(self.timestamp)}</timestamp>",
+            f"<success>{self._bool_to_str(self.success)}</success>",
+            f"<label>{self._bool_to_str(self.label)}</label>",
+            f"<code>{self._bool_to_str(self.code)}</code>",
+            f"<message>{self._bool_to_str(self.message)}</message>",
+            f"<threadName>{self._bool_to_str(self.thread_name)}</threadName>",
+            f"<dataType>{self._bool_to_str(self.data_type)}</dataType>",
+            f"<encoding>{self._bool_to_str(self.encoding)}</encoding>",
+            f"<assertions>{self._bool_to_str(self.assertions)}</assertions>",
+            f"<subresults>{self._bool_to_str(self.subresults)}</subresults>",
+            f"<responseData>{self._bool_to_str(self.response_data)}</responseData>",
+            f"<samplerData>{self._bool_to_str(self.sampler_data)}</samplerData>",
+            f"<xml>{self._bool_to_str(self.xml)}</xml>",
+            f"<fieldNames>{self._bool_to_str(self.field_names)}</fieldNames>",
+            f"<responseHeaders>{self._bool_to_str(self.response_headers)}</responseHeaders>",
+            f"<requestHeaders>{self._bool_to_str(self.request_headers)}</requestHeaders>",
+            f"<responseDataOnError>{self._bool_to_str(self.response_data_on_error)}</responseDataOnError>",
+            f"<saveAssertionResultsFailureMessage>{self._bool_to_str(self.save_assertion_results_failure_message)}</saveAssertionResultsFailureMessage>",
+            f"<assertionsResultsToSave>{self.assertions_results_to_save}</assertionsResultsToSave>",
+            f"<bytes>{self._bool_to_str(self.bytes)}</bytes>",
+            f"<sentBytes>{self._bool_to_str(self.sent_bytes)}</sentBytes>",
+            f"<url>{self._bool_to_str(self.url)}</url>",
+            f"<fileName>{self._bool_to_str(self.file_name)}</fileName>",
+            f"<hostname>{self._bool_to_str(self.hostname)}</hostname>",
+            f"<threadCounts>{self._bool_to_str(self.thread_counts)}</threadCounts>",
+            f"<sampleCount>{self._bool_to_str(self.sample_count)}</sampleCount>",
+            f"<idleTime>{self._bool_to_str(self.idle_time)}</idleTime>",
+            f"<connectTime>{self._bool_to_str(self.connect_time)}</connectTime>",
+        ]
+        
+        config_inner = "\n".join([self._indent(self._indent(p)) for p in config_parts])
+        value_content = f'<value class="SampleSaveConfiguration">\n{config_inner}\n  </value>'
+        
+        parts = [
+            "<name>saveConfig</name>",
+            value_content
+        ]
+        inner = "\n".join([self._indent(p) for p in parts])
+        return f"<{self.tag_name}>\n{inner}\n</{self.tag_name}>"
+
+
+class BackendListenerArgumentsProp(CollectionProp):
+    def __init__(self, name: str = "Arguments.arguments"):
+        super().__init__(name)
+    
+    def add_argument(self, name: str, value: str) -> None:
+        argument = ElementProp(
+            name=name,
+            element_type="Argument",
+            properties=[
+                StringProp("Argument.name", name),
+                StringProp("Argument.value", value),
+                StringProp("Argument.metadata", "=")
+            ]
+        )
+        self.items.append(argument)
+    
+    def remove_argument(self, name: str) -> None:
+        self.items = [item for item in self.items if item.name != name]
+    
+    def get_argument(self, name: str) -> ElementProp | None:
+        for item in self.items:
+            if item.name == name:
+                return item
+        return None
+    
+    def set_argument(self, name: str, value: str) -> bool:
+        argument = self.get_argument(name)
+        if argument is None:
+            return False
+        
+        for prop in argument.properties:
+            if isinstance(prop, StringProp) and prop.name == "Argument.value":
+                prop.value = value
+                return True
+        return False
+    
+    def clear(self) -> None:
+        self.items = []
+
+
+

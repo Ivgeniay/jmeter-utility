@@ -111,11 +111,8 @@ class TreeParser:
             parser_class = self._all_parsers.get((tag_name, None))
             
             if not parser_class:
-                pattern = r'<.*guiclass="([^"]*)"'
-                gui_match = re.match(pattern, hashtree_content[pos:])
-                guiclass: str | None = None
-                if gui_match:
-                    guiclass = tag_match.group(1)
+                gui_match = re.search(r'guiclass="([^"]*)"', element_xml)
+                guiclass = gui_match.group(1) if gui_match else None
                 parser_class = self._all_parsers.get((tag_name, guiclass))
             
             if not parser_class:

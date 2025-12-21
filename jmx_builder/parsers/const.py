@@ -356,3 +356,141 @@ REGEXEXTRACTOR_MATCH_NUMBER = "RegexExtractor.match_number"
 SAMPLE_SCOPE = "Sample.scope"
 # UI: JMeter Variable Name (when scope=variable)
 SCOPE_VARIABLE = "Scope.variable"
+
+
+# JSONPostProcessor
+# UI: Names of created variables
+JSONPOSTPROCESSOR_REFERENCE_NAMES = "JSONPostProcessor.referenceNames"
+# UI: JSON Path expressions
+JSONPOSTPROCESSOR_JSON_PATH_EXPRS = "JSONPostProcessor.jsonPathExprs"
+# UI: Match No.
+JSONPOSTPROCESSOR_MATCH_NUMBERS = "JSONPostProcessor.match_numbers"
+# UI: Default Values
+JSONPOSTPROCESSOR_DEFAULT_VALUES = "JSONPostProcessor.defaultValues"
+# UI: Compute concatenation var
+JSONPOSTPROCESSOR_COMPUTE_CONCAT = "JSONPostProcessor.compute_concat"
+
+
+# HtmlExtractor
+# UI: Name of created variable
+HTMLEXTRACTOR_REFNAME = "HtmlExtractor.refname"
+# UI: CSS Selector expression
+HTMLEXTRACTOR_EXPR = "HtmlExtractor.expr"
+# UI: Attribute
+HTMLEXTRACTOR_ATTRIBUTE = "HtmlExtractor.attribute"
+# UI: Default Value
+HTMLEXTRACTOR_DEFAULT = "HtmlExtractor.default"
+# UI: Use empty default value
+HTMLEXTRACTOR_DEFAULT_EMPTY_VALUE = "HtmlExtractor.default_empty_value"
+# UI: Match No.
+HTMLEXTRACTOR_MATCH_NUMBER = "HtmlExtractor.match_number"
+# UI: CSS Selector implementation
+HTMLEXTRACTOR_EXTRACTOR_IMPL = "HtmlExtractor.extractor_impl"
+
+
+
+# BoundaryExtractor
+# UI: Field to check
+BOUNDARYEXTRACTOR_USE_HEADERS = "BoundaryExtractor.useHeaders"
+# UI: Name of created variable
+BOUNDARYEXTRACTOR_REFNAME = "BoundaryExtractor.refname"
+# UI: Left boundary
+BOUNDARYEXTRACTOR_LBOUNDARY = "BoundaryExtractor.lboundary"
+# UI: Right boundary
+BOUNDARYEXTRACTOR_RBOUNDARY = "BoundaryExtractor.rboundary"
+# UI: Default Value
+BOUNDARYEXTRACTOR_DEFAULT = "BoundaryExtractor.default"
+# UI: Use empty default value
+BOUNDARYEXTRACTOR_DEFAULT_EMPTY_VALUE = "BoundaryExtractor.default_empty_value"
+# UI: Match No.
+BOUNDARYEXTRACTOR_MATCH_NUMBER = "BoundaryExtractor.match_number"
+
+
+# JMESPathExtractor
+# UI: Name of created variable
+JMESEXTRACTOR_REFERENCE_NAME = "JMESExtractor.referenceName"
+# UI: JMESPath expression
+JMESEXTRACTOR_JMES_PATH_EXPR = "JMESExtractor.jmesPathExpr"
+# UI: Match No.
+JMESEXTRACTOR_MATCH_NUMBER = "JMESExtractor.matchNumber"
+# UI: Default Value
+JMESEXTRACTOR_DEFAULT_VALUE = "JMESExtractor.defaultValue"
+
+
+# DebugPostProcessor
+# UI: JMeter properties
+DEBUGPOSTPROCESSOR_DISPLAY_JMETER_PROPERTIES = "displayJMeterProperties"
+# UI: JMeter variables
+DEBUGPOSTPROCESSOR_DISPLAY_JMETER_VARIABLES = "displayJMeterVariables"
+# UI: Sampler properties
+DEBUGPOSTPROCESSOR_DISPLAY_SAMPLER_PROPERTIES = "displaySamplerProperties"
+# UI: System properties
+DEBUGPOSTPROCESSOR_DISPLAY_SYSTEM_PROPERTIES = "displaySystemProperties"
+
+# ResultAction
+# UI: Action to be taken after a Sampler error
+RESULTACTION_ON_ERROR_ACTION = "OnError.action"
+
+
+# XPathExtractor
+# UI: Default Value
+XPATHEXTRACTOR_DEFAULT = "XPathExtractor.default"
+# UI: Name of created variable
+XPATHEXTRACTOR_REFNAME = "XPathExtractor.refname"
+# UI: Match No.
+XPATHEXTRACTOR_MATCH_NUMBER = "XPathExtractor.matchNumber"
+# UI: XPath query
+XPATHEXTRACTOR_XPATH_QUERY = "XPathExtractor.xpathQuery"
+# UI: Use Tidy (tolerant parser)
+XPATHEXTRACTOR_TOLERANT = "XPathExtractor.tolerant"
+# UI: Validate XML
+XPATHEXTRACTOR_VALIDATE = "XPathExtractor.validate"
+# UI: Use Namespaces
+XPATHEXTRACTOR_NAMESPACE = "XPathExtractor.namespace"
+# UI: Report errors
+XPATHEXTRACTOR_REPORT_ERRORS = "XPathExtractor.report_errors"
+# UI: Show warnings
+XPATHEXTRACTOR_SHOW_WARNINGS = "XPathExtractor.show_warnings"
+# UI: Whitespace
+XPATHEXTRACTOR_WHITESPACE = "XPathExtractor.whitespace"
+# UI: Download external DTDs
+XPATHEXTRACTOR_DOWNLOAD_DTDS = "XPathExtractor.download_dtds"
+# UI: Return entire XPath fragment
+XPATHEXTRACTOR_FRAGMENT = "XPathExtractor.fragment"
+
+
+
+# XPath2Extractor
+# UI: Default Value
+XPATH2EXTRACTOR_DEFAULT = "XPathExtractor2.default"
+# UI: Name of created variable
+XPATH2EXTRACTOR_REFNAME = "XPathExtractor2.refname"
+# UI: Match No.
+XPATH2EXTRACTOR_MATCH_NUMBER = "XPathExtractor2.matchNumber"
+# UI: XPath query
+XPATH2EXTRACTOR_XPATH_QUERY = "XPathExtractor2.xpathQuery"
+# UI: Namespaces aliases list
+XPATH2EXTRACTOR_NAMESPACES = "XPathExtractor2.namespaces"
+# UI: Return entire XPath fragment
+XPATH2EXTRACTOR_FRAGMENT = "XPathExtractor2.fragment"
+
+
+
+# ResultCollector
+# UI: Log Errors Only
+RESULTCOLLECTOR_ERROR_LOGGING = "ResultCollector.error_logging"
+# UI: Log Successes Only
+RESULTCOLLECTOR_SUCCESS_ONLY_LOGGING = "ResultCollector.success_only_logging"
+# UI: Filename
+RESULTCOLLECTOR_FILENAME = "filename"
+# UI: Include group name in label
+RESULTCOLLECTOR_USE_GROUP_NAME = "useGroupName"
+
+
+# BackendListener
+# UI: Backend Listener implementation
+BACKENDLISTENER_CLASSNAME = "classname"
+# UI: Async Queue size
+BACKENDLISTENER_QUEUE_SIZE = "QUEUE_SIZE"
+# UI: Arguments
+BACKENDLISTENER_ARGUMENTS = "arguments"

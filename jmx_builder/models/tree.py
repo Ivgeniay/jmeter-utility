@@ -2334,6 +2334,761 @@ class RegexExtractor(TreeElement):
         SLog.log(f"  children: {len(self.children)}")
 
 
+class JSONPostProcessor(TreeElement):
+    def __init__(
+        self,
+        testname: str = "JSON Extractor",
+        enabled: bool = True
+    ):
+        self.reference_names: StringProp = StringProp(JSONPOSTPROCESSOR_REFERENCE_NAMES, "")
+        self.json_path_exprs: StringProp = StringProp(JSONPOSTPROCESSOR_JSON_PATH_EXPRS, "")
+        self.match_numbers: StringProp = StringProp(JSONPOSTPROCESSOR_MATCH_NUMBERS, "")
+        self.default_values: StringProp = StringProp(JSONPOSTPROCESSOR_DEFAULT_VALUES, "")
+        self.compute_concat: BoolProp = BoolProp(JSONPOSTPROCESSOR_COMPUTE_CONCAT, False)
+        self.scope: StringProp = StringProp(SAMPLE_SCOPE, "")
+        self.scope_variable: StringProp = StringProp(SCOPE_VARIABLE, "")
+        
+        super().__init__(
+            testname=testname,
+            enabled=enabled,
+            properties=[
+                self.reference_names,
+                self.json_path_exprs,
+                self.match_numbers,
+                self.scope,
+                self.default_values,
+                self.compute_concat,
+                self.scope_variable
+            ]
+        )
+    
+    @property
+    def tag_name(self) -> str:
+        return "JSONPostProcessor"
+    
+    @property
+    def guiclass(self) -> str:
+        return "JSONPostProcessorGui"
+    
+    @property
+    def testclass(self) -> str:
+        return "JSONPostProcessor"
+    
+    @staticmethod
+    def create_default(testname: str = "JSON Extractor") -> "JSONPostProcessor":
+        return JSONPostProcessor(testname=testname)
+    
+    def set_reference_names(self, names: str) -> None:
+        self.reference_names.value = names
+    
+    def set_json_path_exprs(self, exprs: str) -> None:
+        self.json_path_exprs.value = exprs
+    
+    def set_match_numbers(self, numbers: str) -> None:
+        self.match_numbers.value = numbers
+    
+    def set_default_values(self, defaults: str) -> None:
+        self.default_values.value = defaults
+    
+    def set_compute_concat(self, enable: bool) -> None:
+        self.compute_concat.value = enable
+    
+    def set_scope(self, scope: SampleScope) -> None:
+        self.scope.value = scope.value
+    
+    def set_scope_raw(self, scope: str) -> None:
+        self.scope.value = scope
+    
+    def set_scope_variable(self, variable: str) -> None:
+        self.scope_variable.value = variable
+    
+    def print_info(self) -> None:
+        SLog.log(f"=== JSONPostProcessor: {self.testname} ===")
+        SLog.log(f"  enabled: {self.enabled}")
+        SLog.log(f"  comment: {self.comment.value}")
+        SLog.log(f"  reference_names: {self.reference_names.value}")
+        SLog.log(f"  json_path_exprs: {self.json_path_exprs.value}")
+        SLog.log(f"  match_numbers: {self.match_numbers.value}")
+        SLog.log(f"  default_values: {self.default_values.value}")
+        SLog.log(f"  compute_concat: {self.compute_concat.value}")
+        
+        scope_name = "unknown"
+        for s in SampleScope:
+            if s.value == self.scope.value:
+                scope_name = s.name
+                break
+        SLog.log(f"  scope: {self.scope.value} ({scope_name})")
+        SLog.log(f"  scope_variable: {self.scope_variable.value}")
+        SLog.log(f"  children: {len(self.children)}")
+
+
+class CssSelectorImpl(Enum):
+    JSOUP = "JSOUP"
+    JODD = "JODD"
+
+
+# CSS EXTRACTOR 
+class HtmlExtractor(TreeElement):
+    def __init__(
+        self,
+        testname: str = "CSS Selector Extractor",
+        enabled: bool = True
+    ):
+        self.refname: StringProp = StringProp(HTMLEXTRACTOR_REFNAME, "")
+        self.expr: StringProp = StringProp(HTMLEXTRACTOR_EXPR, "")
+        self.attribute: StringProp = StringProp(HTMLEXTRACTOR_ATTRIBUTE, "")
+        self.default: StringProp = StringProp(HTMLEXTRACTOR_DEFAULT, "")
+        self.default_empty_value: BoolProp = BoolProp(HTMLEXTRACTOR_DEFAULT_EMPTY_VALUE, False)
+        self.match_number: StringProp = StringProp(HTMLEXTRACTOR_MATCH_NUMBER, "")
+        self.extractor_impl: StringProp = StringProp(HTMLEXTRACTOR_EXTRACTOR_IMPL, CssSelectorImpl.JSOUP.value)
+        self.scope: StringProp = StringProp(SAMPLE_SCOPE, "")
+        self.scope_variable: StringProp = StringProp(SCOPE_VARIABLE, "")
+        
+        super().__init__(
+            testname=testname,
+            enabled=enabled,
+            properties=[
+                self.refname,
+                self.expr,
+                self.attribute,
+                self.default,
+                self.default_empty_value,
+                self.match_number,
+                self.extractor_impl,
+                self.scope,
+                self.scope_variable
+            ]
+        )
+    
+    @property
+    def tag_name(self) -> str:
+        return "HtmlExtractor"
+    
+    @property
+    def guiclass(self) -> str:
+        return "HtmlExtractorGui"
+    
+    @property
+    def testclass(self) -> str:
+        return "HtmlExtractor"
+    
+    @staticmethod
+    def create_default(testname: str = "CSS Selector Extractor") -> "HtmlExtractor":
+        return HtmlExtractor(testname=testname)
+    
+    def set_refname(self, name: str) -> None:
+        self.refname.value = name
+    
+    def set_expr(self, expr: str) -> None:
+        self.expr.value = expr
+    
+    def set_attribute(self, attribute: str) -> None:
+        self.attribute.value = attribute
+    
+    def set_default(self, default: str) -> None:
+        self.default.value = default
+    
+    def set_default_empty_value(self, enable: bool) -> None:
+        self.default_empty_value.value = enable
+    
+    def set_match_number(self, number: int) -> None:
+        self.match_number.value = str(number)
+    
+    def set_match_number_raw(self, number: str) -> None:
+        self.match_number.value = number
+    
+    def set_extractor_impl(self, impl: CssSelectorImpl) -> None:
+        self.extractor_impl.value = impl.value
+    
+    def set_extractor_impl_raw(self, impl: str) -> None:
+        self.extractor_impl.value = impl
+    
+    def set_scope(self, scope: SampleScope) -> None:
+        self.scope.value = scope.value
+    
+    def set_scope_raw(self, scope: str) -> None:
+        self.scope.value = scope
+    
+    def set_scope_variable(self, variable: str) -> None:
+        self.scope_variable.value = variable
+    
+    def print_info(self) -> None:
+        SLog.log(f"=== HtmlExtractor: {self.testname} ===")
+        SLog.log(f"  enabled: {self.enabled}")
+        SLog.log(f"  comment: {self.comment.value}")
+        SLog.log(f"  refname: {self.refname.value}")
+        SLog.log(f"  expr: {self.expr.value}")
+        SLog.log(f"  attribute: {self.attribute.value}")
+        SLog.log(f"  default: {self.default.value}")
+        SLog.log(f"  default_empty_value: {self.default_empty_value.value}")
+        SLog.log(f"  match_number: {self.match_number.value}")
+        
+        impl_name = "unknown"
+        for i in CssSelectorImpl:
+            if i.value == self.extractor_impl.value:
+                impl_name = i.name
+                break
+        SLog.log(f"  extractor_impl: {self.extractor_impl.value} ({impl_name})")
+        
+        scope_name = "unknown"
+        for s in SampleScope:
+            if s.value == self.scope.value:
+                scope_name = s.name
+                break
+        SLog.log(f"  scope: {self.scope.value} ({scope_name})")
+        SLog.log(f"  scope_variable: {self.scope_variable.value}")
+        SLog.log(f"  children: {len(self.children)}")
+
+
+class BoundaryExtractor(TreeElement):
+    def __init__(
+        self,
+        testname: str = "Boundary Extractor",
+        enabled: bool = True
+    ):
+        self.use_headers: StringProp = StringProp(BOUNDARYEXTRACTOR_USE_HEADERS, RegexField.BODY.value)
+        self.refname: StringProp = StringProp(BOUNDARYEXTRACTOR_REFNAME, "")
+        self.lboundary: StringProp = StringProp(BOUNDARYEXTRACTOR_LBOUNDARY, "")
+        self.rboundary: StringProp = StringProp(BOUNDARYEXTRACTOR_RBOUNDARY, "")
+        self.default: StringProp = StringProp(BOUNDARYEXTRACTOR_DEFAULT, "")
+        self.default_empty_value: BoolProp = BoolProp(BOUNDARYEXTRACTOR_DEFAULT_EMPTY_VALUE, False)
+        self.match_number: StringProp = StringProp(BOUNDARYEXTRACTOR_MATCH_NUMBER, "1")
+        self.scope: StringProp = StringProp(SAMPLE_SCOPE, "")
+        self.scope_variable: StringProp = StringProp(SCOPE_VARIABLE, "")
+        
+        super().__init__(
+            testname=testname,
+            enabled=enabled,
+            properties=[
+                self.use_headers,
+                self.refname,
+                self.lboundary,
+                self.rboundary,
+                self.default,
+                self.default_empty_value,
+                self.match_number,
+                self.scope,
+                self.scope_variable
+            ]
+        )
+    
+    @property
+    def tag_name(self) -> str:
+        return "BoundaryExtractor"
+    
+    @property
+    def guiclass(self) -> str:
+        return "BoundaryExtractorGui"
+    
+    @property
+    def testclass(self) -> str:
+        return "BoundaryExtractor"
+    
+    @staticmethod
+    def create_default(testname: str = "Boundary Extractor") -> "BoundaryExtractor":
+        return BoundaryExtractor(testname=testname)
+    
+    def set_field(self, field: RegexField) -> None:
+        self.use_headers.value = field.value
+    
+    def set_field_raw(self, field: str) -> None:
+        self.use_headers.value = field
+    
+    def set_refname(self, name: str) -> None:
+        self.refname.value = name
+    
+    def set_lboundary(self, boundary: str) -> None:
+        self.lboundary.value = boundary
+    
+    def set_rboundary(self, boundary: str) -> None:
+        self.rboundary.value = boundary
+    
+    def set_default(self, default: str) -> None:
+        self.default.value = default
+    
+    def set_default_empty_value(self, enable: bool) -> None:
+        self.default_empty_value.value = enable
+    
+    def set_match_number(self, number: int) -> None:
+        self.match_number.value = str(number)
+    
+    def set_match_number_raw(self, number: str) -> None:
+        self.match_number.value = number
+    
+    def set_scope(self, scope: SampleScope) -> None:
+        self.scope.value = scope.value
+    
+    def set_scope_raw(self, scope: str) -> None:
+        self.scope.value = scope
+    
+    def set_scope_variable(self, variable: str) -> None:
+        self.scope_variable.value = variable
+    
+    def print_info(self) -> None:
+        SLog.log(f"=== BoundaryExtractor: {self.testname} ===")
+        SLog.log(f"  enabled: {self.enabled}")
+        SLog.log(f"  comment: {self.comment.value}")
+        
+        field_name = "unknown"
+        for f in RegexField:
+            if f.value == self.use_headers.value:
+                field_name = f.name
+                break
+        SLog.log(f"  field: {self.use_headers.value} ({field_name})")
+        SLog.log(f"  refname: {self.refname.value}")
+        SLog.log(f"  lboundary: {self.lboundary.value}")
+        SLog.log(f"  rboundary: {self.rboundary.value}")
+        SLog.log(f"  default: {self.default.value}")
+        SLog.log(f"  default_empty_value: {self.default_empty_value.value}")
+        SLog.log(f"  match_number: {self.match_number.value}")
+        
+        scope_name = "unknown"
+        for s in SampleScope:
+            if s.value == self.scope.value:
+                scope_name = s.name
+                break
+        SLog.log(f"  scope: {self.scope.value} ({scope_name})")
+        SLog.log(f"  scope_variable: {self.scope_variable.value}")
+        SLog.log(f"  children: {len(self.children)}")
+
+
+class JMESPathExtractor(TreeElement):
+    def __init__(
+        self,
+        testname: str = "JSON JMESPath Extractor",
+        enabled: bool = True
+    ):
+        self.reference_name: StringProp = StringProp(JMESEXTRACTOR_REFERENCE_NAME, "")
+        self.jmes_path_expr: StringProp = StringProp(JMESEXTRACTOR_JMES_PATH_EXPR, "")
+        self.match_number: StringProp = StringProp(JMESEXTRACTOR_MATCH_NUMBER, "")
+        self.default_value: StringProp = StringProp(JMESEXTRACTOR_DEFAULT_VALUE, "")
+        self.scope: StringProp = StringProp(SAMPLE_SCOPE, "")
+        self.scope_variable: StringProp = StringProp(SCOPE_VARIABLE, "")
+        
+        super().__init__(
+            testname=testname,
+            enabled=enabled,
+            properties=[
+                self.reference_name,
+                self.jmes_path_expr,
+                self.match_number,
+                self.scope,
+                self.default_value,
+                self.scope_variable
+            ]
+        )
+    
+    @property
+    def tag_name(self) -> str:
+        return "JMESPathExtractor"
+    
+    @property
+    def guiclass(self) -> str:
+        return "JMESPathExtractorGui"
+    
+    @property
+    def testclass(self) -> str:
+        return "JMESPathExtractor"
+    
+    @staticmethod
+    def create_default(testname: str = "JSON JMESPath Extractor") -> "JMESPathExtractor":
+        return JMESPathExtractor(testname=testname)
+    
+    def set_reference_name(self, name: str) -> None:
+        self.reference_name.value = name
+    
+    def set_jmes_path_expr(self, expr: str) -> None:
+        self.jmes_path_expr.value = expr
+    
+    def set_match_number(self, number: int) -> None:
+        self.match_number.value = str(number)
+    
+    def set_match_number_raw(self, number: str) -> None:
+        self.match_number.value = number
+    
+    def set_default_value(self, default: str) -> None:
+        self.default_value.value = default
+    
+    def set_scope(self, scope: SampleScope) -> None:
+        self.scope.value = scope.value
+    
+    def set_scope_raw(self, scope: str) -> None:
+        self.scope.value = scope
+    
+    def set_scope_variable(self, variable: str) -> None:
+        self.scope_variable.value = variable
+    
+    def print_info(self) -> None:
+        SLog.log(f"=== JMESPathExtractor: {self.testname} ===")
+        SLog.log(f"  enabled: {self.enabled}")
+        SLog.log(f"  comment: {self.comment.value}")
+        SLog.log(f"  reference_name: {self.reference_name.value}")
+        SLog.log(f"  jmes_path_expr: {self.jmes_path_expr.value}")
+        SLog.log(f"  match_number: {self.match_number.value}")
+        SLog.log(f"  default_value: {self.default_value.value}")
+        
+        scope_name = "unknown"
+        for s in SampleScope:
+            if s.value == self.scope.value:
+                scope_name = s.name
+                break
+        SLog.log(f"  scope: {self.scope.value} ({scope_name})")
+        SLog.log(f"  scope_variable: {self.scope_variable.value}")
+        SLog.log(f"  children: {len(self.children)}")
+
+
+class DebugPostProcessor(TreeElement):
+    def __init__(
+        self,
+        testname: str = "Debug PostProcessor",
+        enabled: bool = True
+    ):
+        self.display_jmeter_properties: BoolProp = BoolProp(DEBUGPOSTPROCESSOR_DISPLAY_JMETER_PROPERTIES, False)
+        self.display_jmeter_variables: BoolProp = BoolProp(DEBUGPOSTPROCESSOR_DISPLAY_JMETER_VARIABLES, True)
+        self.display_sampler_properties: BoolProp = BoolProp(DEBUGPOSTPROCESSOR_DISPLAY_SAMPLER_PROPERTIES, True)
+        self.display_system_properties: BoolProp = BoolProp(DEBUGPOSTPROCESSOR_DISPLAY_SYSTEM_PROPERTIES, False)
+        
+        super().__init__(
+            testname=testname,
+            enabled=enabled,
+            properties=[
+                self.display_jmeter_properties,
+                self.display_jmeter_variables,
+                self.display_sampler_properties,
+                self.display_system_properties
+            ]
+        )
+    
+    @property
+    def tag_name(self) -> str:
+        return "DebugPostProcessor"
+    
+    @property
+    def guiclass(self) -> str:
+        return "TestBeanGUI"
+    
+    @property
+    def testclass(self) -> str:
+        return "DebugPostProcessor"
+    
+    @staticmethod
+    def create_default(testname: str = "Debug PostProcessor") -> "DebugPostProcessor":
+        return DebugPostProcessor(testname=testname)
+    
+    def set_display_jmeter_properties(self, enable: bool) -> None:
+        self.display_jmeter_properties.value = enable
+    
+    def set_display_jmeter_variables(self, enable: bool) -> None:
+        self.display_jmeter_variables.value = enable
+    
+    def set_display_sampler_properties(self, enable: bool) -> None:
+        self.display_sampler_properties.value = enable
+    
+    def set_display_system_properties(self, enable: bool) -> None:
+        self.display_system_properties.value = enable
+    
+    def print_info(self) -> None:
+        SLog.log(f"=== DebugPostProcessor: {self.testname} ===")
+        SLog.log(f"  enabled: {self.enabled}")
+        SLog.log(f"  comment: {self.comment.value}")
+        SLog.log(f"  display_jmeter_properties: {self.display_jmeter_properties.value}")
+        SLog.log(f"  display_jmeter_variables: {self.display_jmeter_variables.value}")
+        SLog.log(f"  display_sampler_properties: {self.display_sampler_properties.value}")
+        SLog.log(f"  display_system_properties: {self.display_system_properties.value}")
+        SLog.log(f"  children: {len(self.children)}")
+
+
+class ResultActionOnError(Enum):
+    CONTINUE = 0
+    STOP_THREAD = 1
+    STOP_TEST = 2
+    STOP_TEST_NOW = 3
+    START_NEXT_THREAD_LOOP = 4
+    GO_TO_NEXT_ITERATION = 5
+    BREAK_CURRENT_LOOP = 6
+
+
+class ResultAction(TreeElement):
+    def __init__(
+        self,
+        testname: str = "Result Status Action Handler",
+        enabled: bool = True
+    ):
+        self.on_error_action: IntProp = IntProp(RESULTACTION_ON_ERROR_ACTION, ResultActionOnError.CONTINUE.value)
+        
+        super().__init__(
+            testname=testname,
+            enabled=enabled,
+            properties=[
+                self.on_error_action
+            ]
+        )
+    
+    @property
+    def tag_name(self) -> str:
+        return "ResultAction"
+    
+    @property
+    def guiclass(self) -> str:
+        return "ResultActionGui"
+    
+    @property
+    def testclass(self) -> str:
+        return "ResultAction"
+    
+    @staticmethod
+    def create_default(testname: str = "Result Status Action Handler") -> "ResultAction":
+        return ResultAction(testname=testname)
+    
+    def set_on_error_action(self, action: ResultActionOnError) -> None:
+        self.on_error_action.value = action.value
+    
+    def set_on_error_action_raw(self, action: int) -> None:
+        self.on_error_action.value = action
+    
+    def print_info(self) -> None:
+        SLog.log(f"=== ResultAction: {self.testname} ===")
+        SLog.log(f"  enabled: {self.enabled}")
+        SLog.log(f"  comment: {self.comment.value}")
+        
+        action_name = "unknown"
+        for a in ResultActionOnError:
+            if a.value == self.on_error_action.value:
+                action_name = a.name
+                break
+        SLog.log(f"  on_error_action: {self.on_error_action.value} ({action_name})")
+        SLog.log(f"  children: {len(self.children)}")
+
+
+class XPathExtractor(TreeElement):
+    def __init__(
+        self,
+        testname: str = "XPath Extractor",
+        enabled: bool = True
+    ):
+        self.default: StringProp = StringProp(XPATHEXTRACTOR_DEFAULT, "")
+        self.refname: StringProp = StringProp(XPATHEXTRACTOR_REFNAME, "")
+        self.match_number: StringProp = StringProp(XPATHEXTRACTOR_MATCH_NUMBER, "-1")
+        self.xpath_query: StringProp = StringProp(XPATHEXTRACTOR_XPATH_QUERY, "")
+        self.fragment: BoolProp = BoolProp(XPATHEXTRACTOR_FRAGMENT, True)
+        self.validate: BoolProp = BoolProp(XPATHEXTRACTOR_VALIDATE, False)
+        self.tolerant: BoolProp = BoolProp(XPATHEXTRACTOR_TOLERANT, False)
+        self.namespace: BoolProp = BoolProp(XPATHEXTRACTOR_NAMESPACE, False)
+        self.report_errors: BoolProp = BoolProp(XPATHEXTRACTOR_REPORT_ERRORS, False)
+        self.show_warnings: BoolProp = BoolProp(XPATHEXTRACTOR_SHOW_WARNINGS, False)
+        self.whitespace: BoolProp = BoolProp(XPATHEXTRACTOR_WHITESPACE, False)
+        self.download_dtds: BoolProp = BoolProp(XPATHEXTRACTOR_DOWNLOAD_DTDS, False)
+        self.scope: StringProp = StringProp(SAMPLE_SCOPE, "")
+        self.scope_variable: StringProp = StringProp(SCOPE_VARIABLE, "")
+        
+        super().__init__(
+            testname=testname,
+            enabled=enabled,
+            properties=[
+                self.default,
+                self.refname,
+                self.match_number,
+                self.xpath_query,
+                self.fragment,
+                self.validate,
+                self.tolerant,
+                self.namespace,
+                self.report_errors,
+                self.show_warnings,
+                self.whitespace,
+                self.download_dtds,
+                self.scope,
+                self.scope_variable
+            ]
+        )
+    
+    @property
+    def tag_name(self) -> str:
+        return "XPathExtractor"
+    
+    @property
+    def guiclass(self) -> str:
+        return "XPathExtractorGui"
+    
+    @property
+    def testclass(self) -> str:
+        return "XPathExtractor"
+    
+    @staticmethod
+    def create_default(testname: str = "XPath Extractor") -> "XPathExtractor":
+        return XPathExtractor(testname=testname)
+    
+    def set_default(self, default: str) -> None:
+        self.default.value = default
+    
+    def set_refname(self, name: str) -> None:
+        self.refname.value = name
+    
+    def set_match_number(self, number: int) -> None:
+        self.match_number.value = str(number)
+    
+    def set_match_number_raw(self, number: str) -> None:
+        self.match_number.value = number
+    
+    def set_xpath_query(self, query: str) -> None:
+        self.xpath_query.value = query
+    
+    def set_fragment(self, enable: bool) -> None:
+        self.fragment.value = enable
+    
+    def set_validate(self, enable: bool) -> None:
+        self.validate.value = enable
+    
+    def set_tolerant(self, enable: bool) -> None:
+        self.tolerant.value = enable
+    
+    def set_namespace(self, enable: bool) -> None:
+        self.namespace.value = enable
+    
+    def set_report_errors(self, enable: bool) -> None:
+        self.report_errors.value = enable
+    
+    def set_show_warnings(self, enable: bool) -> None:
+        self.show_warnings.value = enable
+    
+    def set_whitespace(self, enable: bool) -> None:
+        self.whitespace.value = enable
+    
+    def set_download_dtds(self, enable: bool) -> None:
+        self.download_dtds.value = enable
+    
+    def set_scope(self, scope: SampleScope) -> None:
+        self.scope.value = scope.value
+    
+    def set_scope_raw(self, scope: str) -> None:
+        self.scope.value = scope
+    
+    def set_scope_variable(self, variable: str) -> None:
+        self.scope_variable.value = variable
+    
+    def print_info(self) -> None:
+        SLog.log(f"=== XPathExtractor: {self.testname} ===")
+        SLog.log(f"  enabled: {self.enabled}")
+        SLog.log(f"  comment: {self.comment.value}")
+        SLog.log(f"  default: {self.default.value}")
+        SLog.log(f"  refname: {self.refname.value}")
+        SLog.log(f"  match_number: {self.match_number.value}")
+        SLog.log(f"  xpath_query: {self.xpath_query.value}")
+        SLog.log(f"  fragment: {self.fragment.value}")
+        SLog.log(f"  validate: {self.validate.value}")
+        SLog.log(f"  tolerant: {self.tolerant.value}")
+        SLog.log(f"  namespace: {self.namespace.value}")
+        SLog.log(f"  report_errors: {self.report_errors.value}")
+        SLog.log(f"  show_warnings: {self.show_warnings.value}")
+        SLog.log(f"  whitespace: {self.whitespace.value}")
+        SLog.log(f"  download_dtds: {self.download_dtds.value}")
+        
+        scope_name = "unknown"
+        for s in SampleScope:
+            if s.value == self.scope.value:
+                scope_name = s.name
+                break
+        SLog.log(f"  scope: {self.scope.value} ({scope_name})")
+        SLog.log(f"  scope_variable: {self.scope_variable.value}")
+        SLog.log(f"  children: {len(self.children)}")
+
+
+class XPath2Extractor(TreeElement):
+    def __init__(
+        self,
+        testname: str = "XPath2 Extractor",
+        enabled: bool = True
+    ):
+        self.default: StringProp = StringProp(XPATH2EXTRACTOR_DEFAULT, "")
+        self.refname: StringProp = StringProp(XPATH2EXTRACTOR_REFNAME, "")
+        self.match_number: StringProp = StringProp(XPATH2EXTRACTOR_MATCH_NUMBER, "0")
+        self.xpath_query: StringProp = StringProp(XPATH2EXTRACTOR_XPATH_QUERY, "")
+        self.fragment: BoolProp = BoolProp(XPATH2EXTRACTOR_FRAGMENT, True)
+        self.namespaces: StringProp = StringProp(XPATH2EXTRACTOR_NAMESPACES, "")
+        self.scope: StringProp = StringProp(SAMPLE_SCOPE, "")
+        self.scope_variable: StringProp = StringProp(SCOPE_VARIABLE, "")
+        
+        super().__init__(
+            testname=testname,
+            enabled=enabled,
+            properties=[
+                self.default,
+                self.refname,
+                self.match_number,
+                self.xpath_query,
+                self.fragment,
+                self.namespaces,
+                self.scope,
+                self.scope_variable
+            ]
+        )
+    
+    @property
+    def tag_name(self) -> str:
+        return "XPath2Extractor"
+    
+    @property
+    def guiclass(self) -> str:
+        return "XPath2ExtractorGui"
+    
+    @property
+    def testclass(self) -> str:
+        return "XPath2Extractor"
+    
+    @staticmethod
+    def create_default(testname: str = "XPath2 Extractor") -> "XPath2Extractor":
+        return XPath2Extractor(testname=testname)
+    
+    def set_default(self, default: str) -> None:
+        self.default.value = default
+    
+    def set_refname(self, name: str) -> None:
+        self.refname.value = name
+    
+    def set_match_number(self, number: int) -> None:
+        self.match_number.value = str(number)
+    
+    def set_match_number_raw(self, number: str) -> None:
+        self.match_number.value = number
+    
+    def set_xpath_query(self, query: str) -> None:
+        self.xpath_query.value = query
+    
+    def set_fragment(self, enable: bool) -> None:
+        self.fragment.value = enable
+    
+    def set_namespaces(self, namespaces: str) -> None:
+        self.namespaces.value = namespaces
+    
+    def set_scope(self, scope: SampleScope) -> None:
+        self.scope.value = scope.value
+    
+    def set_scope_raw(self, scope: str) -> None:
+        self.scope.value = scope
+    
+    def set_scope_variable(self, variable: str) -> None:
+        self.scope_variable.value = variable
+    
+    def print_info(self) -> None:
+        SLog.log(f"=== XPath2Extractor: {self.testname} ===")
+        SLog.log(f"  enabled: {self.enabled}")
+        SLog.log(f"  comment: {self.comment.value}")
+        SLog.log(f"  default: {self.default.value}")
+        SLog.log(f"  refname: {self.refname.value}")
+        SLog.log(f"  match_number: {self.match_number.value}")
+        SLog.log(f"  xpath_query: {self.xpath_query.value}")
+        SLog.log(f"  fragment: {self.fragment.value}")
+        SLog.log(f"  namespaces: {self.namespaces.value}")
+        
+        scope_name = "unknown"
+        for s in SampleScope:
+            if s.value == self.scope.value:
+                scope_name = s.name
+                break
+        SLog.log(f"  scope: {self.scope.value} ({scope_name})")
+        SLog.log(f"  scope_variable: {self.scope_variable.value}")
+        SLog.log(f"  children: {len(self.children)}")
+
 
 
 ################## TIMERS ######################
@@ -2590,13 +3345,333 @@ class ConstantThroughputTimer(TreeElement):
         SLog.log(f"  children: {len(self.children)}")
 
 
+################## LISTENERS ######################
+
+class ViewResultsTree(TreeElement):
+    def __init__(
+        self,
+        testname: str = "View Results Tree",
+        enabled: bool = True
+    ):
+        self.error_logging: BoolProp = BoolProp(RESULTCOLLECTOR_ERROR_LOGGING, False)
+        self.save_config: SampleSaveConfiguration = SampleSaveConfiguration()
+        self.filename: StringProp = StringProp(RESULTCOLLECTOR_FILENAME, "")
+        self.success_only_logging: BoolProp = BoolProp(RESULTCOLLECTOR_SUCCESS_ONLY_LOGGING, False)
+        
+        super().__init__(
+            testname=testname,
+            enabled=enabled,
+            properties=[
+                self.error_logging,
+                self.save_config,
+                self.filename,
+                self.success_only_logging
+            ]
+        )
+    
+    @property
+    def tag_name(self) -> str:
+        return "ResultCollector"
+    
+    @property
+    def guiclass(self) -> str:
+        return "ViewResultsFullVisualizer"
+    
+    @property
+    def testclass(self) -> str:
+        return "ResultCollector"
+    
+    @staticmethod
+    def create_default(testname: str = "View Results Tree") -> "ViewResultsTree":
+        return ViewResultsTree(testname=testname)
+    
+    def set_error_logging(self, enable: bool) -> None:
+        self.error_logging.value = enable
+    
+    def set_success_only_logging(self, enable: bool) -> None:
+        self.success_only_logging.value = enable
+    
+    def set_filename(self, filename: str) -> None:
+        self.filename.value = filename
+    
+    def print_info(self) -> None:
+        SLog.log(f"=== ViewResultsTree: {self.testname} ===")
+        SLog.log(f"  enabled: {self.enabled}")
+        SLog.log(f"  comment: {self.comment.value}")
+        SLog.log(f"  error_logging: {self.error_logging.value}")
+        SLog.log(f"  success_only_logging: {self.success_only_logging.value}")
+        SLog.log(f"  filename: {self.filename.value}")
+        SLog.log(f"  children: {len(self.children)}")
 
 
+class SummaryReport(TreeElement):
+    def __init__(
+        self,
+        testname: str = "Summary Report",
+        enabled: bool = True
+    ):
+        self.error_logging: BoolProp = BoolProp(RESULTCOLLECTOR_ERROR_LOGGING, False)
+        self.save_config: SampleSaveConfiguration = SampleSaveConfiguration()
+        self.filename: StringProp = StringProp(RESULTCOLLECTOR_FILENAME, "")
+        self.use_group_name: BoolProp = BoolProp(RESULTCOLLECTOR_USE_GROUP_NAME, False)
+        
+        super().__init__(
+            testname=testname,
+            enabled=enabled,
+            properties=[
+                self.error_logging,
+                self.save_config,
+                self.filename,
+                self.use_group_name
+            ]
+        )
+    
+    @property
+    def tag_name(self) -> str:
+        return "ResultCollector"
+    
+    @property
+    def guiclass(self) -> str:
+        return "SummaryReport"
+    
+    @property
+    def testclass(self) -> str:
+        return "ResultCollector"
+    
+    @staticmethod
+    def create_default(testname: str = "Summary Report") -> "SummaryReport":
+        return SummaryReport(testname=testname)
+    
+    def set_error_logging(self, enable: bool) -> None:
+        self.error_logging.value = enable
+    
+    def set_filename(self, filename: str) -> None:
+        self.filename.value = filename
+    
+    def set_use_group_name(self, enable: bool) -> None:
+        self.use_group_name.value = enable
+    
+    def print_info(self) -> None:
+        SLog.log(f"=== SummaryReport: {self.testname} ===")
+        SLog.log(f"  enabled: {self.enabled}")
+        SLog.log(f"  comment: {self.comment.value}")
+        SLog.log(f"  error_logging: {self.error_logging.value}")
+        SLog.log(f"  filename: {self.filename.value}")
+        SLog.log(f"  use_group_name: {self.use_group_name.value}")
+        SLog.log(f"  children: {len(self.children)}")
 
 
+class AggregateReport(TreeElement):
+    def __init__(
+        self,
+        testname: str = "Aggregate Report",
+        enabled: bool = True
+    ):
+        self.error_logging: BoolProp = BoolProp(RESULTCOLLECTOR_ERROR_LOGGING, False)
+        self.save_config: SampleSaveConfiguration = SampleSaveConfiguration()
+        self.filename: StringProp = StringProp(RESULTCOLLECTOR_FILENAME, "")
+        self.use_group_name: BoolProp = BoolProp(RESULTCOLLECTOR_USE_GROUP_NAME, False)
+        
+        super().__init__(
+            testname=testname,
+            enabled=enabled,
+            properties=[
+                self.error_logging,
+                self.save_config,
+                self.filename,
+                self.use_group_name
+            ]
+        )
+    
+    @property
+    def tag_name(self) -> str:
+        return "ResultCollector"
+    
+    @property
+    def guiclass(self) -> str:
+        return "StatVisualizer"
+    
+    @property
+    def testclass(self) -> str:
+        return "ResultCollector"
+    
+    @staticmethod
+    def create_default(testname: str = "Aggregate Report") -> "AggregateReport":
+        return AggregateReport(testname=testname)
+    
+    def set_error_logging(self, enable: bool) -> None:
+        self.error_logging.value = enable
+    
+    def set_filename(self, filename: str) -> None:
+        self.filename.value = filename
+    
+    def set_use_group_name(self, enable: bool) -> None:
+        self.use_group_name.value = enable
+    
+    def print_info(self) -> None:
+        SLog.log(f"=== AggregateReport: {self.testname} ===")
+        SLog.log(f"  enabled: {self.enabled}")
+        SLog.log(f"  comment: {self.comment.value}")
+        SLog.log(f"  error_logging: {self.error_logging.value}")
+        SLog.log(f"  filename: {self.filename.value}")
+        SLog.log(f"  use_group_name: {self.use_group_name.value}")
+        SLog.log(f"  children: {len(self.children)}")
 
 
+class SimpleDataWriter(TreeElement):
+    def __init__(
+        self,
+        testname: str = "Simple Data Writer",
+        enabled: bool = True
+    ):
+        self.error_logging: BoolProp = BoolProp(RESULTCOLLECTOR_ERROR_LOGGING, False)
+        self.save_config: SampleSaveConfiguration = SampleSaveConfiguration()
+        self.filename: StringProp = StringProp(RESULTCOLLECTOR_FILENAME, "")
+        
+        super().__init__(
+            testname=testname,
+            enabled=enabled,
+            properties=[
+                self.error_logging,
+                self.save_config,
+                self.filename
+            ]
+        )
+    
+    @property
+    def tag_name(self) -> str:
+        return "ResultCollector"
+    
+    @property
+    def guiclass(self) -> str:
+        return "SimpleDataWriter"
+    
+    @property
+    def testclass(self) -> str:
+        return "ResultCollector"
+    
+    @staticmethod
+    def create_default(testname: str = "Simple Data Writer") -> "SimpleDataWriter":
+        return SimpleDataWriter(testname=testname)
+    
+    def set_error_logging(self, enable: bool) -> None:
+        self.error_logging.value = enable
+    
+    def set_filename(self, filename: str) -> None:
+        self.filename.value = filename
+    
+    def print_info(self) -> None:
+        SLog.log(f"=== SimpleDataWriter: {self.testname} ===")
+        SLog.log(f"  enabled: {self.enabled}")
+        SLog.log(f"  comment: {self.comment.value}")
+        SLog.log(f"  error_logging: {self.error_logging.value}")
+        SLog.log(f"  filename: {self.filename.value}")
+        SLog.log(f"  children: {len(self.children)}")
 
+
+class BackendListenerClient(Enum):
+    GRAPHITE = "org.apache.jmeter.visualizers.backend.graphite.GraphiteBackendListenerClient"
+    INFLUXDB_RAW = "org.apache.jmeter.visualizers.backend.influxdb.InfluxDBRawBackendListenerClient"
+    INFLUXDB = "org.apache.jmeter.visualizers.backend.influxdb.InfluxdbBackendListenerClient"
+
+
+class BackendListener(TreeElement):
+    def __init__(
+        self,
+        testname: str = "Backend Listener",
+        enabled: bool = True
+    ):
+        self._arguments_collection: BackendListenerArgumentsProp = BackendListenerArgumentsProp()
+        self._arguments: ElementProp = ElementProp(
+            name=BACKENDLISTENER_ARGUMENTS,
+            element_type="Arguments",
+            guiclass="ArgumentsPanel",
+            testclass="Arguments",
+            properties=[self._arguments_collection]
+        )
+        self.classname: StringProp = StringProp(BACKENDLISTENER_CLASSNAME, BackendListenerClient.GRAPHITE.value)
+        self.queue_size: StringProp = StringProp(BACKENDLISTENER_QUEUE_SIZE, "5000")
+        
+        super().__init__(
+            testname=testname,
+            enabled=enabled,
+            properties=[
+                self._arguments,
+                self.classname,
+                self.queue_size
+            ]
+        )
+        
+        self._init_default_graphite_arguments()
+    
+    @property
+    def tag_name(self) -> str:
+        return "BackendListener"
+    
+    @property
+    def guiclass(self) -> str:
+        return "BackendListenerGui"
+    
+    @property
+    def testclass(self) -> str:
+        return "BackendListener"
+    
+    @staticmethod
+    def create_default(testname: str = "Backend Listener") -> "BackendListener":
+        return BackendListener(testname=testname)
+    
+    def _init_default_graphite_arguments(self) -> None:
+        self._arguments_collection.add_argument("graphiteMetricsSender", "org.apache.jmeter.visualizers.backend.graphite.TextGraphiteMetricsSender")
+        self._arguments_collection.add_argument("graphiteHost", "")
+        self._arguments_collection.add_argument("graphitePort", "2003")
+        self._arguments_collection.add_argument("rootMetricsPrefix", "jmeter.")
+        self._arguments_collection.add_argument("summaryOnly", "false")
+        self._arguments_collection.add_argument("samplersList", "")
+        self._arguments_collection.add_argument("percentiles", "99;95;90")
+    
+    def set_classname(self, client: BackendListenerClient) -> None:
+        self.classname.value = client.value
+    
+    def set_classname_raw(self, classname: str) -> None:
+        self.classname.value = classname
+    
+    def set_queue_size(self, size: int) -> None:
+        self.queue_size.value = str(size)
+    
+    def set_queue_size_raw(self, size: str) -> None:
+        self.queue_size.value = size
+    
+    def add_argument(self, name: str, value: str) -> None:
+        self._arguments_collection.add_argument(name, value)
+    
+    def set_argument(self, name: str, value: str) -> bool:
+        return self._arguments_collection.set_argument(name, value)
+    
+    def remove_argument(self, name: str) -> None:
+        self._arguments_collection.remove_argument(name)
+    
+    def clear_arguments(self) -> None:
+        self._arguments_collection.clear()
+    
+    def print_info(self) -> None:
+        SLog.log(f"=== BackendListener: {self.testname} ===")
+        SLog.log(f"  enabled: {self.enabled}")
+        SLog.log(f"  comment: {self.comment.value}")
+        
+        client_name = "unknown"
+        for c in BackendListenerClient:
+            if c.value == self.classname.value:
+                client_name = c.name
+                break
+        SLog.log(f"  classname: {client_name}")
+        SLog.log(f"  queue_size: {self.queue_size.value}")
+        SLog.log(f"  arguments: {len(self._arguments_collection.items)}")
+        for arg in self._arguments_collection.items:
+            name_prop = next((p for p in arg.properties if p.name == "Argument.name"), None)
+            value_prop = next((p for p in arg.properties if p.name == "Argument.value"), None)
+            if name_prop and value_prop:
+                SLog.log(f"    {name_prop.value} = {value_prop.value}")
+        SLog.log(f"  children: {len(self.children)}")
 
 
 

@@ -4,19 +4,27 @@ import re
 
 from jmeter_runner import run_and_collect
 from console import CompositeLog, ConsoleLog, Log, SLog
+from jmx_builder.parsers.elements.aggregate_report_parser import AggregateReportParser
 from jmx_builder.parsers.elements.arguments_parser import ArgumentsParser
+from jmx_builder.parsers.elements.backend_listener_parser import BackendListenerParser
+from jmx_builder.parsers.elements.boundary_extractor_parser import BoundaryExtractorParser
 from jmx_builder.parsers.elements.cache_manager_parser import CacheManagerParser
 from jmx_builder.parsers.elements.constant_throughput_timer_parser import ConstantThroughputTimerParser
 from jmx_builder.parsers.elements.constant_timer_parser import ConstantTimerParser
 from jmx_builder.parsers.elements.cookie_manager_parser import CookieManagerParser
 from jmx_builder.parsers.elements.critical_section_controller_parser import CriticalSectionControllerParser
+from jmx_builder.parsers.elements.debug_post_processor_parser import DebugPostProcessorParser
+from jmx_builder.parsers.elements.debug_sampler_parser import DebugSamplerParser
 from jmx_builder.parsers.elements.foreach_controller_parser import ForeachControllerParser
 from jmx_builder.parsers.elements.generic_controller_parser import GenericControllerParser
 from jmx_builder.parsers.elements.header_manager_parser import HeaderManagerParser
+from jmx_builder.parsers.elements.html_extractor_parser import HtmlExtractorParser
 from jmx_builder.parsers.elements.http_sampler_proxy_parser import HTTPSamplerProxyParser
 from jmx_builder.parsers.elements.if_controller_parser import IfControllerParser
 from jmx_builder.parsers.elements.include_controller_parser import IncludeControllerParser
 from jmx_builder.parsers.elements.interleave_control_parser import InterleaveControlParser
+from jmx_builder.parsers.elements.jmes_path_extractor_parser import JMESPathExtractorParser
+from jmx_builder.parsers.elements.json_post_processor_parser import JSONPostProcessorParser
 from jmx_builder.parsers.elements.jsr223_parser import JSR223PostProcessorParser, JSR223PreProcessorParser, JSR223SamplerParser
 from jmx_builder.parsers.elements.loop_controller_parser import LoopControllerParser
 from jmx_builder.parsers.elements.module_controller_parser import ModuleControllerParser
@@ -26,12 +34,18 @@ from jmx_builder.parsers.elements.random_controller_parser import RandomControll
 from jmx_builder.parsers.elements.random_order_controller_parser import RandomOrderControllerParser
 from jmx_builder.parsers.elements.recording_controller_parser import RecordingControllerParser
 from jmx_builder.parsers.elements.regex_extractor_parser import RegexExtractorParser
+from jmx_builder.parsers.elements.result_action_parser import ResultActionParser
 from jmx_builder.parsers.elements.runtime_parser import RunTimeParser
+from jmx_builder.parsers.elements.simple_data_writer_parser import SimpleDataWriterParser
+from jmx_builder.parsers.elements.summary_report_parser import SummaryReportParser
 from jmx_builder.parsers.elements.switch_controller_parser import SwitchControllerParser
 from jmx_builder.parsers.elements.test_action_parser import TestActionParser
 from jmx_builder.parsers.elements.throughput_controller_parser import ThroughputControllerParser
 from jmx_builder.parsers.elements.uniform_random_timer_parser import UniformRandomTimerParser
+from jmx_builder.parsers.elements.view_results_tree_parser import ViewResultsTreeParser
 from jmx_builder.parsers.elements.while_controller_parser import WhileControllerParser
+from jmx_builder.parsers.elements.xpath2_extractor_parser import XPath2ExtractorParser
+from jmx_builder.parsers.elements.xpath_extractor_parser import XPathExtractorParser
 from scope import extract_scope_by_element_name
 from har_parser import parse_har
 from jmeter_parser import parse_jmeter
@@ -304,25 +318,50 @@ xml = '''<?xml version="1.0" encoding="UTF-8"?>
 
 parser1: TreeParser = TreeParser()
 parser1.register_parser("TestPlan", TestPlanParser)
+
+# Thread
 parser1.register_parser("ThreadGroup", ThreadGroupParser)
+
+# Config Elements
 parser1.register_parser("CookieManager", CookieManagerParser)
 parser1.register_parser("CacheManager", CacheManagerParser)
 parser1.register_parser("Arguments", ArgumentsParser)
 parser1.register_parser("HeaderManager", HeaderManagerParser)
+
+# Timers
 parser1.register_parser("UniformRandomTimer", UniformRandomTimerParser)
 parser1.register_parser("ConstantTimer", ConstantTimerParser)
 parser1.register_parser("PreciseThroughputTimer", PreciseThroughputTimerParser)
 parser1.register_parser("ConstantThroughputTimer", ConstantThroughputTimerParser)
-parser1.register_parser("JSR223PreProcessor", JSR223PreProcessorParser)
-parser1.register_parser("JSR223PostProcessor", JSR223PostProcessorParser)
 
 # Samplers
 parser1.register_parser("TestAction", TestActionParser)
 parser1.register_parser("HTTPSamplerProxy", HTTPSamplerProxyParser)
 parser1.register_parser("JSR223Sampler", JSR223SamplerParser)
+parser1.register_parser("DebugSampler", DebugSamplerParser)
+
+# LISTENERS
+parser1.register_parser("ResultCollector", ViewResultsTreeParser, "ViewResultsFullVisualizer")
+parser1.register_parser("ResultCollector", SummaryReportParser, "SummaryReport")
+parser1.register_parser("ResultCollector", AggregateReportParser, "StatVisualizer")
+parser1.register_parser("ResultCollector", SimpleDataWriterParser, "SimpleDataWriter")
+parser1.register_parser("BackendListener", BackendListenerParser)
+
+
+# PRE PROCESS
+parser1.register_parser("JSR223PreProcessor", JSR223PreProcessorParser)
 
 # POST PROCESS
+parser1.register_parser("JSR223PostProcessor", JSR223PostProcessorParser)
 parser1.register_parser("RegexExtractor", RegexExtractorParser)
+parser1.register_parser("JSONPostProcessor", JSONPostProcessorParser)
+parser1.register_parser("HtmlExtractor", HtmlExtractorParser)
+parser1.register_parser("BoundaryExtractor", BoundaryExtractorParser)
+parser1.register_parser("JMESPathExtractor", JMESPathExtractorParser)
+parser1.register_parser("DebugPostProcessor", DebugPostProcessorParser)
+parser1.register_parser("ResultAction", ResultActionParser)
+parser1.register_parser("XPathExtractor", XPathExtractorParser)
+parser1.register_parser("XPath2Extractor", XPath2ExtractorParser)
 
 # Controls
 parser1.register_parser("IfController", IfControllerParser)
