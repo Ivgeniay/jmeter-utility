@@ -494,3 +494,160 @@ BACKENDLISTENER_CLASSNAME = "classname"
 BACKENDLISTENER_QUEUE_SIZE = "QUEUE_SIZE"
 # UI: Arguments
 BACKENDLISTENER_ARGUMENTS = "arguments"
+
+# CSVDataSet
+CSVDATASET_FILENAME = "filename"
+CSVDATASET_FILE_ENCODING = "fileEncoding"
+CSVDATASET_VARIABLE_NAMES = "variableNames"
+CSVDATASET_IGNORE_FIRST_LINE = "ignoreFirstLine"
+CSVDATASET_DELIMITER = "delimiter"
+CSVDATASET_QUOTED_DATA = "quotedData"
+CSVDATASET_RECYCLE = "recycle"
+CSVDATASET_STOP_THREAD = "stopThread"
+CSVDATASET_SHARE_MODE = "shareMode"
+
+
+
+# BoltConnectionElement
+BOLTCONNECTION_URI = "boltUri"
+BOLTCONNECTION_MAX_POOL_SIZE = "maxConnectionPoolSize"
+BOLTCONNECTION_PASSWORD = "password"
+BOLTCONNECTION_USERNAME = "username"
+
+
+# CounterConfig
+COUNTERCONFIG_START = "CounterConfig.start"
+COUNTERCONFIG_END = "CounterConfig.end"
+COUNTERCONFIG_INCR = "CounterConfig.incr"
+COUNTERCONFIG_NAME = "CounterConfig.name"
+COUNTERCONFIG_FORMAT = "CounterConfig.format"
+COUNTERCONFIG_PER_USER = "CounterConfig.per_user"
+COUNTERCONFIG_RESET_ON_TG_ITERATION = "CounterConfig.reset_on_tg_iteration"
+
+
+# RandomVariableConfig
+RANDOMVARIABLE_MAXIMUM_VALUE = "maximumValue"
+RANDOMVARIABLE_MINIMUM_VALUE = "minimumValue"
+RANDOMVARIABLE_OUTPUT_FORMAT = "outputFormat"
+RANDOMVARIABLE_PER_THREAD = "perThread"
+RANDOMVARIABLE_RANDOM_SEED = "randomSeed"
+RANDOMVARIABLE_VARIABLE_NAME = "variableName"
+
+# LdapExtConfigGui (LDAP Extended Request Defaults)
+LDAPEXT_SERVERNAME = "servername"
+LDAPEXT_PORT = "port"
+LDAPEXT_ROOTDN = "rootdn"
+LDAPEXT_SCOPE = "scope"
+LDAPEXT_COUNTLIMIT = "countlimit"
+LDAPEXT_TIMELIMIT = "timelimit"
+LDAPEXT_ATTRIBUTES = "attributes"
+LDAPEXT_RETURN_OBJECT = "return_object"
+LDAPEXT_DEREF_ALIASES = "deref_aliases"
+LDAPEXT_CONNECTION_TIMEOUT = "connection_timeout"
+LDAPEXT_PARSEFLAG = "parseflag"
+LDAPEXT_SECURE = "secure"
+LDAPEXT_TRUSTALL = "trustall"
+LDAPEXT_USER_DN = "user_dn"
+LDAPEXT_USER_PW = "user_pw"
+LDAPEXT_COMPAREDN = "comparedn"
+LDAPEXT_COMPAREFILT = "comparefilt"
+LDAPEXT_MODDDN = "modddn"
+LDAPEXT_NEWDN = "newdn"
+LDAPEXT_TEST = "test"
+
+
+# FtpConfigGui (FTP Request Defaults)
+FTPSAMPLER_SERVER = "FTPSampler.server"
+FTPSAMPLER_PORT = "FTPSampler.port"
+FTPSAMPLER_FILENAME = "FTPSampler.filename"
+FTPSAMPLER_LOCALFILENAME = "FTPSampler.localfilename"
+FTPSAMPLER_INPUTDATA = "FTPSampler.inputdata"
+FTPSAMPLER_BINARYMODE = "FTPSampler.binarymode"
+FTPSAMPLER_SAVERESPONSE = "FTPSampler.saveresponse"
+FTPSAMPLER_UPLOAD = "FTPSampler.upload"
+
+
+
+# LdapConfigGui (LDAP Request Defaults)
+LDAP_SERVERNAME = "servername"
+LDAP_PORT = "port"
+LDAP_ROOTDN = "rootdn"
+LDAP_USER_DEFINED = "user_defined"
+LDAP_TEST = "test"
+LDAP_BASE_ENTRY_DN = "base_entry_dn"
+LDAP_ARGUMENTS = "arguments"
+
+
+# LoginConfigGui (Login Config Element)
+LOGINCONFIG_USERNAME = "ConfigTestElement.username"
+LOGINCONFIG_PASSWORD = "ConfigTestElement.password"
+
+
+# TCPConfigGui (TCP Sampler Config)
+TCPSAMPLER_SERVER = "TCPSampler.server"
+TCPSAMPLER_PORT = "TCPSampler.port"
+TCPSAMPLER_REUSE_CONNECTION = "TCPSampler.reUseConnection"
+TCPSAMPLER_NODELAY = "TCPSampler.nodelay"
+TCPSAMPLER_TIMEOUT = "TCPSampler.timeout"
+TCPSAMPLER_REQUEST = "TCPSampler.request"
+TCPSAMPLER_CLOSE_CONNECTION = "TCPSampler.closeConnection"
+TCPSAMPLER_CLASSNAME = "TCPSampler.classname"
+TCPSAMPLER_CTIMEOUT = "TCPSampler.ctimeout"
+TCPSAMPLER_SO_LINGER = "TCPSampler.soLinger"
+TCPSAMPLER_EOL_BYTE = "TCPSampler.EolByte"
+
+
+# KeystoreConfig
+KEYSTORECONFIG_CLIENT_CERT_ALIAS_VAR_NAME = "clientCertAliasVarName"
+KEYSTORECONFIG_END_INDEX = "endIndex"
+KEYSTORECONFIG_PRELOAD = "preload"
+KEYSTORECONFIG_START_INDEX = "startIndex"
+
+
+# AuthManager (HTTP Authorization Manager)
+AUTHMANAGER_AUTH_LIST = "AuthManager.auth_list"
+AUTHMANAGER_CONTROLLED_BY_THREADGROUP = "AuthManager.controlledByThreadGroup"
+AUTHMANAGER_CLEAR_EACH_ITERATION = "AuthManager.clearEachIteration"
+
+# Authorization (внутри AuthManager.auth_list)
+AUTHORIZATION_URL = "Authorization.url"
+AUTHORIZATION_USERNAME = "Authorization.username"
+AUTHORIZATION_PASSWORD = "Authorization.password"
+AUTHORIZATION_DOMAIN = "Authorization.domain"
+AUTHORIZATION_REALM = "Authorization.realm"
+AUTHORIZATION_MECHANISM = "Authorization.mechanism"
+
+
+# JDBCDataSource (JDBC Connection Configuration)
+JDBCDATASOURCE_AUTOCOMMIT = "autocommit"
+JDBCDATASOURCE_CHECK_QUERY = "checkQuery"
+JDBCDATASOURCE_CONNECTION_AGE = "connectionAge"
+JDBCDATASOURCE_CONNECTION_PROPERTIES = "connectionProperties"
+JDBCDATASOURCE_DATASOURCE = "dataSource"
+JDBCDATASOURCE_DB_URL = "dbUrl"
+JDBCDATASOURCE_DRIVER = "driver"
+JDBCDATASOURCE_INIT_QUERY = "initQuery"
+JDBCDATASOURCE_KEEP_ALIVE = "keepAlive"
+JDBCDATASOURCE_PASSWORD = "password"
+JDBCDATASOURCE_POOL_MAX = "poolMax"
+JDBCDATASOURCE_PREINIT = "preinit"
+JDBCDATASOURCE_TIMEOUT = "timeout"
+JDBCDATASOURCE_TRANSACTION_ISOLATION = "transactionIsolation"
+JDBCDATASOURCE_TRIM_INTERVAL = "trimInterval"
+JDBCDATASOURCE_USERNAME = "username"
+JDBCDATASOURCE_POOL_PREPARED_STATEMENTS = "poolPreparedStatements"
+
+# JavaConfig (Java Request Defaults)
+JAVACONFIG_ARGUMENTS = "arguments"
+JAVACONFIG_CLASSNAME = "classname"
+
+
+# DNSCacheManager
+DNSCACHEMANAGER_SERVERS = "DNSCacheManager.servers"
+DNSCACHEMANAGER_HOSTS = "DNSCacheManager.hosts"
+DNSCACHEMANAGER_CLEAR_EACH_ITERATION = "DNSCacheManager.clearEachIteration"
+DNSCACHEMANAGER_IS_CUSTOM_RESOLVER = "DNSCacheManager.isCustomResolver"
+
+# StaticHost (внутри DNSCacheManager.hosts)
+STATICHOST_NAME = "StaticHost.Name"
+STATICHOST_ADDRESS = "StaticHost.Address"

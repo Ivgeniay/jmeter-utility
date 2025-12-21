@@ -198,294 +198,53 @@ consLog = ConsoleLog()
 logger: CompositeLog = CompositeLog(consLog)
 SLog.register_logger(logger)
 
-xml = '''<?xml version="1.0" encoding="UTF-8"?>
+xml = """<?xml version="1.0" encoding="UTF-8"?>
 <jmeterTestPlan version="1.2" properties="5.0" jmeter="5.6.3">
   <hashTree>
-    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="Test Plan">
-      <boolProp name="TestPlan.tearDown_on_shutdown">true</boolProp>
-      <elementProp name="TestPlan.user_defined_variables" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables">
+    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="Test Plan" enabled="true">
+      <stringProp name="TestPlan.comments"></stringProp>
+      <boolProp name="TestPlan.functional_mode">false</boolProp>
+      <boolProp name="TestPlan.tearDown_on_shutdown">false</boolProp>
+      <boolProp name="TestPlan.serialize_threadgroups">false</boolProp>
+      <elementProp name="TestPlan.user_defined_variables" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
         <collectionProp name="Arguments.arguments"/>
       </elementProp>
     </TestPlan>
     <hashTree>
-      <DebugSampler guiclass="TestBeanGUI" testclass="DebugSampler" testname="Debug Sampler">
-        <boolProp name="displayJMeterProperties">true</boolProp>
-        <boolProp name="displayJMeterVariables">false</boolProp>
-        <boolProp name="displaySystemProperties">true</boolProp>
-      </DebugSampler>
+      <CounterConfig guiclass="CounterConfigGui" testclass="CounterConfig" testname="Counter" enabled="true">
+        <stringProp name="CounterConfig.start"></stringProp>
+        <stringProp name="CounterConfig.end"></stringProp>
+        <stringProp name="CounterConfig.incr">1</stringProp>
+        <stringProp name="CounterConfig.name"></stringProp>
+        <stringProp name="CounterConfig.format"></stringProp>
+        <boolProp name="CounterConfig.per_user">false</boolProp>
+        <boolProp name="CounterConfig.reset_on_tg_iteration">false</boolProp>
+      </CounterConfig>
       <hashTree/>
-      <JSR223PostProcessor guiclass="TestBeanGUI" testclass="JSR223PostProcessor" testname="JSR223 PostProcessor">
-        <stringProp name="cacheKey">true</stringProp>
-        <stringProp name="filename">path/to/file</stringProp>
-        <stringProp name="parameters">Params</stringProp>
-        <stringProp name="script">vars.get("test")</stringProp>
-        <stringProp name="scriptLanguage">groovy</stringProp>
-      </JSR223PostProcessor>
+      <CounterConfig guiclass="CounterConfigGui" testclass="CounterConfig" testname="User Counter" enabled="true">
+        <stringProp name="CounterConfig.start">10</stringProp>
+        <stringProp name="CounterConfig.end">100</stringProp>
+        <stringProp name="CounterConfig.incr">1</stringProp>
+        <stringProp name="CounterConfig.name">varname</stringProp>
+        <stringProp name="CounterConfig.format">11</stringProp>
+        <boolProp name="CounterConfig.per_user">true</boolProp>
+        <boolProp name="CounterConfig.reset_on_tg_iteration">true</boolProp>
+        <stringProp name="TestPlan.comments">Counter for user iterations</stringProp>
+      </CounterConfig>
       <hashTree/>
-      <RegexExtractor guiclass="RegexExtractorGui" testclass="RegexExtractor" testname="Regular Expression Extractor">
-        <stringProp name="RegexExtractor.useHeaders">false</stringProp>
-        <stringProp name="RegexExtractor.refname">var</stringProp>
-        <stringProp name="RegexExtractor.regex">.*</stringProp>
-        <stringProp name="RegexExtractor.template">$1$</stringProp>
-        <stringProp name="RegexExtractor.default">NO_VALUE</stringProp>
-        <boolProp name="RegexExtractor.default_empty_value">false</boolProp>
-        <stringProp name="RegexExtractor.match_number">0</stringProp>
-        <stringProp name="Sample.scope">all</stringProp>
-      </RegexExtractor>
-      <hashTree/>
-      <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="JSON Extractor">
-        <stringProp name="JSONPostProcessor.referenceNames">jsonVar</stringProp>
-        <stringProp name="JSONPostProcessor.jsonPathExprs">$.person.name</stringProp>
-        <stringProp name="JSONPostProcessor.match_numbers">0</stringProp>
-        <stringProp name="Sample.scope">all</stringProp>
-        <stringProp name="JSONPostProcessor.defaultValues">NO_VALUE</stringProp>
-        <boolProp name="JSONPostProcessor.compute_concat">true</boolProp>
-      </JSONPostProcessor>
-      <hashTree/>
-      <HtmlExtractor guiclass="HtmlExtractorGui" testclass="HtmlExtractor" testname="CSS Selector Extractor">
-        <stringProp name="HtmlExtractor.refname">cssVar</stringProp>
-        <stringProp name="HtmlExtractor.expr">div.class</stringProp>
-        <stringProp name="HtmlExtractor.attribute">href</stringProp>
-        <stringProp name="HtmlExtractor.default">NO_VALUE</stringProp>
-        <boolProp name="HtmlExtractor.default_empty_value">false</boolProp>
-        <stringProp name="HtmlExtractor.match_number">0</stringProp>
-        <stringProp name="HtmlExtractor.extractor_impl">JSOUP</stringProp>
-        <stringProp name="Sample.scope">all</stringProp>
-      </HtmlExtractor>
-      <hashTree/>
-      <BoundaryExtractor guiclass="BoundaryExtractorGui" testclass="BoundaryExtractor" testname="Boundary Extractor">
-        <stringProp name="BoundaryExtractor.useHeaders">true</stringProp>
-        <stringProp name="BoundaryExtractor.refname">boundVar</stringProp>
-        <stringProp name="BoundaryExtractor.lboundary">Left</stringProp>
-        <stringProp name="BoundaryExtractor.rboundary">Right</stringProp>
-        <stringProp name="BoundaryExtractor.default">NO_VALUE</stringProp>
-        <boolProp name="BoundaryExtractor.default_empty_value">false</boolProp>
-        <stringProp name="BoundaryExtractor.match_number">0</stringProp>
-        <stringProp name="Sample.scope">all</stringProp>
-      </BoundaryExtractor>
-      <hashTree/>
-      <JMESPathExtractor guiclass="JMESPathExtractorGui" testclass="JMESPathExtractor" testname="JSON JMESPath Extractor">
-        <stringProp name="JMESExtractor.referenceName">jmesVar</stringProp>
-        <stringProp name="JMESExtractor.jmesPathExpr">person.name</stringProp>
-        <stringProp name="JMESExtractor.matchNumber">1</stringProp>
-        <stringProp name="Sample.scope">all</stringProp>
-        <stringProp name="JMESExtractor.defaultValue">NO_VALUE</stringProp>
-      </JMESPathExtractor>
-      <hashTree/>
-      <DebugPostProcessor guiclass="TestBeanGUI" testclass="DebugPostProcessor" testname="Debug PostProcessor">
-        <boolProp name="displayJMeterProperties">true</boolProp>
-        <boolProp name="displayJMeterVariables">false</boolProp>
-        <boolProp name="displaySamplerProperties">false</boolProp>
-        <boolProp name="displaySystemProperties">true</boolProp>
-      </DebugPostProcessor>
-      <hashTree/>
-      <ResultAction guiclass="ResultActionGui" testclass="ResultAction" testname="Result Status Action Handler">
-        <intProp name="OnError.action">4</intProp>
-      </ResultAction>
-      <hashTree/>
-      <XPathExtractor guiclass="XPathExtractorGui" testclass="XPathExtractor" testname="XPath Extractor">
-        <stringProp name="XPathExtractor.default">NO_VALUE</stringProp>
-        <stringProp name="XPathExtractor.refname">xpathVar</stringProp>
-        <stringProp name="XPathExtractor.matchNumber">0</stringProp>
-        <stringProp name="XPathExtractor.xpathQuery">//div</stringProp>
-        <boolProp name="XPathExtractor.validate">true</boolProp>
-        <boolProp name="XPathExtractor.tolerant">true</boolProp>
-        <boolProp name="XPathExtractor.namespace">true</boolProp>
-        <stringProp name="Sample.scope">all</stringProp>
-        <boolProp name="XPathExtractor.fragment">true</boolProp>
-      </XPathExtractor>
-      <hashTree/>
-      <XPath2Extractor guiclass="XPath2ExtractorGui" testclass="XPath2Extractor" testname="XPath2 Extractor">
-        <stringProp name="XPathExtractor2.default">NO_VALUE</stringProp>
-        <stringProp name="XPathExtractor2.refname">xpath2Var</stringProp>
-        <stringProp name="XPathExtractor2.matchNumber">1</stringProp>
-        <stringProp name="XPathExtractor2.xpathQuery">//span</stringProp>
-        <stringProp name="XPathExtractor2.namespaces">ns=http://example.com</stringProp>
-        <stringProp name="Sample.scope">all</stringProp>
-        <boolProp name="XPathExtractor2.fragment">true</boolProp>
-      </XPath2Extractor>
-      <hashTree/>
-      <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree">
-        <boolProp name="ResultCollector.error_logging">false</boolProp>
-        <objProp>
-          <name>saveConfig</name>
-          <value class="SampleSaveConfiguration">
-            <time>true</time>
-            <latency>true</latency>
-            <timestamp>true</timestamp>
-            <success>true</success>
-            <label>true</label>
-            <code>true</code>
-            <message>true</message>
-            <threadName>true</threadName>
-            <dataType>true</dataType>
-            <encoding>false</encoding>
-            <assertions>true</assertions>
-            <subresults>true</subresults>
-            <responseData>false</responseData>
-            <samplerData>false</samplerData>
-            <xml>false</xml>
-            <fieldNames>true</fieldNames>
-            <responseHeaders>false</responseHeaders>
-            <requestHeaders>false</requestHeaders>
-            <responseDataOnError>false</responseDataOnError>
-            <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
-            <assertionsResultsToSave>0</assertionsResultsToSave>
-            <bytes>true</bytes>
-            <sentBytes>true</sentBytes>
-            <url>true</url>
-            <threadCounts>true</threadCounts>
-            <idleTime>true</idleTime>
-            <connectTime>true</connectTime>
-          </value>
-        </objProp>
-        <stringProp name="filename">results.jtl</stringProp>
-        <boolProp name="ResultCollector.success_only_logging">true</boolProp>
-      </ResultCollector>
-      <hashTree/>
-      <ResultCollector guiclass="SummaryReport" testclass="ResultCollector" testname="Summary Report">
-        <boolProp name="ResultCollector.error_logging">true</boolProp>
-        <objProp>
-          <name>saveConfig</name>
-          <value class="SampleSaveConfiguration">
-            <time>true</time>
-            <latency>true</latency>
-            <timestamp>true</timestamp>
-            <success>true</success>
-            <label>true</label>
-            <code>true</code>
-            <message>true</message>
-            <threadName>true</threadName>
-            <dataType>true</dataType>
-            <encoding>true</encoding>
-            <assertions>true</assertions>
-            <subresults>true</subresults>
-            <responseData>true</responseData>
-            <samplerData>true</samplerData>
-            <xml>true</xml>
-            <fieldNames>true</fieldNames>
-            <responseHeaders>true</responseHeaders>
-            <requestHeaders>true</requestHeaders>
-            <responseDataOnError>false</responseDataOnError>
-            <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
-            <assertionsResultsToSave>0</assertionsResultsToSave>
-            <bytes>true</bytes>
-            <sentBytes>true</sentBytes>
-            <url>true</url>
-            <fileName>true</fileName>
-            <hostname>true</hostname>
-            <threadCounts>true</threadCounts>
-            <sampleCount>true</sampleCount>
-            <idleTime>true</idleTime>
-            <connectTime>true</connectTime>
-          </value>
-        </objProp>
-        <stringProp name="filename">summary.csv</stringProp>
-        <boolProp name="useGroupName">true</boolProp>
-      </ResultCollector>
-      <hashTree/>
-      <ResultCollector guiclass="StatVisualizer" testclass="ResultCollector" testname="Aggregate Report">
-        <boolProp name="ResultCollector.error_logging">false</boolProp>
-        <objProp>
-          <name>saveConfig</name>
-          <value class="SampleSaveConfiguration">
-            <time>true</time>
-            <latency>true</latency>
-            <timestamp>true</timestamp>
-            <success>true</success>
-            <label>true</label>
-            <code>true</code>
-            <message>true</message>
-            <threadName>true</threadName>
-            <dataType>true</dataType>
-            <encoding>false</encoding>
-            <assertions>true</assertions>
-            <subresults>true</subresults>
-            <responseData>false</responseData>
-            <samplerData>false</samplerData>
-            <xml>false</xml>
-            <fieldNames>true</fieldNames>
-            <responseHeaders>false</responseHeaders>
-            <requestHeaders>false</requestHeaders>
-            <responseDataOnError>false</responseDataOnError>
-            <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
-            <assertionsResultsToSave>0</assertionsResultsToSave>
-            <bytes>true</bytes>
-            <sentBytes>true</sentBytes>
-            <url>true</url>
-            <threadCounts>true</threadCounts>
-            <idleTime>true</idleTime>
-            <connectTime>true</connectTime>
-          </value>
-        </objProp>
-        <stringProp name="filename">aggregate.csv</stringProp>
-        <boolProp name="useGroupName">true</boolProp>
-      </ResultCollector>
-      <hashTree/>
-      <ResultCollector guiclass="SimpleDataWriter" testclass="ResultCollector" testname="Simple Data Writer">
-        <boolProp name="ResultCollector.error_logging">false</boolProp>
-        <objProp>
-          <name>saveConfig</name>
-          <value class="SampleSaveConfiguration">
-            <time>true</time>
-            <latency>true</latency>
-            <timestamp>true</timestamp>
-            <success>true</success>
-            <label>true</label>
-            <code>true</code>
-            <message>true</message>
-            <threadName>true</threadName>
-            <dataType>true</dataType>
-            <encoding>false</encoding>
-            <assertions>true</assertions>
-            <subresults>true</subresults>
-            <responseData>false</responseData>
-            <samplerData>false</samplerData>
-            <xml>false</xml>
-            <fieldNames>true</fieldNames>
-            <responseHeaders>false</responseHeaders>
-            <requestHeaders>false</requestHeaders>
-            <responseDataOnError>false</responseDataOnError>
-            <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
-            <assertionsResultsToSave>0</assertionsResultsToSave>
-            <bytes>true</bytes>
-            <sentBytes>true</sentBytes>
-            <url>true</url>
-            <threadCounts>true</threadCounts>
-            <idleTime>true</idleTime>
-            <connectTime>true</connectTime>
-          </value>
-        </objProp>
-        <stringProp name="filename">data.csv</stringProp>
-      </ResultCollector>
-      <hashTree/>
-      <BackendListener guiclass="BackendListenerGui" testclass="BackendListener" testname="Backend Listener">
-        <elementProp name="arguments" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments">
-          <collectionProp name="Arguments.arguments">
-            <elementProp name="graphiteMetricsSender" elementType="Argument">
-              <stringProp name="Argument.name">graphiteMetricsSender</stringProp>
-              <stringProp name="Argument.value">org.apache.jmeter.visualizers.backend.graphite.TextGraphiteMetricsSender</stringProp>
-              <stringProp name="Argument.metadata">=</stringProp>
-            </elementProp>
-            <elementProp name="graphiteHost" elementType="Argument">
-              <stringProp name="Argument.name">graphiteHost</stringProp>
-              <stringProp name="Argument.value">localhost</stringProp>
-              <stringProp name="Argument.metadata">=</stringProp>
-            </elementProp>
-            <elementProp name="graphitePort" elementType="Argument">
-              <stringProp name="Argument.name">graphitePort</stringProp>
-              <stringProp name="Argument.value">2003</stringProp>
-              <stringProp name="Argument.metadata">=</stringProp>
-            </elementProp>
-          </collectionProp>
-        </elementProp>
-        <stringProp name="classname">org.apache.jmeter.visualizers.backend.graphite.GraphiteBackendListenerClient</stringProp>
-        <stringProp name="QUEUE_SIZE">5000</stringProp>
-      </BackendListener>
+      <CounterConfig guiclass="CounterConfigGui" testclass="CounterConfig" testname="Disabled Counter" enabled="false">
+        <stringProp name="CounterConfig.start">1</stringProp>
+        <stringProp name="CounterConfig.end">1000</stringProp>
+        <stringProp name="CounterConfig.incr">5</stringProp>
+        <stringProp name="CounterConfig.name">idx</stringProp>
+        <stringProp name="CounterConfig.format">000</stringProp>
+        <boolProp name="CounterConfig.per_user">false</boolProp>
+        <boolProp name="CounterConfig.reset_on_tg_iteration">false</boolProp>
+      </CounterConfig>
       <hashTree/>
     </hashTree>
   </hashTree>
-</jmeterTestPlan>'''
+</jmeterTestPlan>"""
 
 
 parser1: TreeParser = get_configured_parser()

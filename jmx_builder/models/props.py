@@ -629,4 +629,114 @@ class BackendListenerArgumentsProp(CollectionProp):
         self.items = []
 
 
+class AuthorizationsProp(CollectionProp):
+    def __init__(self, name: str = "AuthManager.auth_list"):
+        super().__init__(name)
+    
+    def add_authorization(
+        self,
+        url: str,
+        username: str,
+        password: str,
+        domain: str = "",
+        realm: str = "",
+        mechanism: str = "BASIC"
+    ) -> None:
+        auth = ElementProp(
+            name="",
+            element_type="Authorization",
+            properties=[
+                StringProp(AUTHORIZATION_URL, url),
+                StringProp(AUTHORIZATION_USERNAME, username),
+                StringProp(AUTHORIZATION_PASSWORD, password),
+                StringProp(AUTHORIZATION_DOMAIN, domain),
+                StringProp(AUTHORIZATION_REALM, realm),
+                StringProp(AUTHORIZATION_MECHANISM, mechanism)
+            ]
+        )
+        self.items.append(auth)
+    
+    def remove_authorization(self, url: str) -> None:
+        self.items = [
+            item for item in self.items
+            if not any(
+                isinstance(p, StringProp) and p.name == AUTHORIZATION_URL and p.value == url
+                for p in item.properties
+            )
+        ]
+    
+    def get_authorization(self, url: str) -> ElementProp | None:
+        for item in self.items:
+            for prop in item.properties:
+                if isinstance(prop, StringProp) and prop.name == AUTHORIZATION_URL and prop.value == url:
+                    return item
+        return None
+    
+    def clear(self) -> None:
+        self.items = []
+
+
+class DNSServersProp(CollectionProp):
+    def __init__(self, name: str = "DNSCacheManager.servers"):
+        super().__init__(name)
+    
+    @staticmethod
+    def _java_hash(s: str) -> int:
+        h = 0
+        for c in s:
+            h = (31 * h + ord(c)) & 0xFFFFFFFF
+        if h > 0x7FFFFFFF:
+            h -= 0x100000000
+        return h
+    
+    def add_server(self, server: str) -> None:
+        hash_value = self._java_hash(server)
+        prop = StringProp(str(hash_value), server)
+        self.items.append(prop)
+    
+    def remove_server(self, server: str) -> None:
+        self.items = [
+            item for item in self.items
+            if not (isinstance(item, StringProp) and item.value == server)
+        ]
+    
+    def get_servers(self) -> list[str]:
+        return [item.value for item in self.items if isinstance(item, StringProp)]
+    
+    def clear(self) -> None:
+        self.items = []
+
+
+class DNSHostsProp(CollectionProp):
+    def __init__(self, name: str = "DNSCacheManager.hosts"):
+        super().__init__(name)
+    
+    def add_host(self, hostname: str, address: str) -> None:
+        host = ElementProp(
+            name=hostname,
+            element_type="StaticHost",
+            properties=[
+                StringProp(STATICHOST_NAME, hostname),
+                StringProp(STATICHOST_ADDRESS, address)
+            ]
+        )
+        self.items.append(host)
+    
+    def remove_host(self, hostname: str) -> None:
+        self.items = [item for item in self.items if item.name != hostname]
+    
+    def get_host(self, hostname: str) -> ElementProp | None:
+        for item in self.items:
+            if item.name == hostname:
+                return item
+        return None
+    
+    def clear(self) -> None:
+        self.items = []
+
+
+
+
+
+
 

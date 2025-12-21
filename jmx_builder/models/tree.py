@@ -1597,6 +1597,1362 @@ class HeaderManager(TreeElement):
         SLog.log(f"  children: {len(self.children)}")
 
 
+class CSVShareMode(Enum):
+    ALL = "shareMode.all"
+    GROUP = "shareMode.group"
+    THREAD = "shareMode.thread"
+
+
+class CSVFileEncoding(Enum):
+    UTF_8 = "UTF-8"
+    UTF_16 = "UTF-16"
+    ISO_8859_15 = "ISO-8859-15"
+    US_ASCII = "US-ASCII"
+
+
+class CSVDataSet(TreeElement):
+    def __init__(
+        self,
+        testname: str = "CSV Data Set Config",
+        enabled: bool = True
+    ):
+        self.filename: StringProp = StringProp(CSVDATASET_FILENAME, "")
+        self.file_encoding: StringProp = StringProp(CSVDATASET_FILE_ENCODING, "")
+        self.variable_names: StringProp = StringProp(CSVDATASET_VARIABLE_NAMES, "")
+        self.ignore_first_line: BoolProp = BoolProp(CSVDATASET_IGNORE_FIRST_LINE, False)
+        self.delimiter: StringProp = StringProp(CSVDATASET_DELIMITER, ",")
+        self.quoted_data: BoolProp = BoolProp(CSVDATASET_QUOTED_DATA, False)
+        self.recycle: BoolProp = BoolProp(CSVDATASET_RECYCLE, True)
+        self.stop_thread: BoolProp = BoolProp(CSVDATASET_STOP_THREAD, False)
+        self.share_mode: StringProp = StringProp(CSVDATASET_SHARE_MODE, CSVShareMode.ALL.value)
+        
+        super().__init__(
+            testname=testname,
+            enabled=enabled,
+            properties=[
+                self.filename,
+                self.file_encoding,
+                self.variable_names,
+                self.ignore_first_line,
+                self.delimiter,
+                self.quoted_data,
+                self.recycle,
+                self.stop_thread,
+                self.share_mode
+            ]
+        )
+    
+    @property
+    def tag_name(self) -> str:
+        return "CSVDataSet"
+    
+    @property
+    def guiclass(self) -> str:
+        return "TestBeanGUI"
+    
+    @property
+    def testclass(self) -> str:
+        return "CSVDataSet"
+    
+    @staticmethod
+    def create_default(testname: str = "CSV Data Set Config") -> "CSVDataSet":
+        return CSVDataSet(testname=testname)
+    
+    def set_filename(self, filename: str) -> None:
+        self.filename.value = filename
+    
+    def set_file_encoding(self, encoding: str) -> None:
+        self.file_encoding.value = encoding
+    
+    def set_file_encoding_typed(self, encoding: CSVFileEncoding) -> None:
+        self.file_encoding.value = encoding.value
+    
+    def set_variable_names(self, names: str) -> None:
+        self.variable_names.value = names
+    
+    def set_variable_names_list(self, names: list[str]) -> None:
+        self.variable_names.value = ",".join(names)
+    
+    def set_ignore_first_line(self, ignore: bool) -> None:
+        self.ignore_first_line.value = ignore
+    
+    def set_delimiter(self, delimiter: str) -> None:
+        self.delimiter.value = delimiter
+    
+    def set_quoted_data(self, quoted: bool) -> None:
+        self.quoted_data.value = quoted
+    
+    def set_recycle(self, recycle: bool) -> None:
+        self.recycle.value = recycle
+    
+    def set_stop_thread(self, stop: bool) -> None:
+        self.stop_thread.value = stop
+    
+    def set_share_mode(self, mode: str) -> None:
+        self.share_mode.value = mode
+    
+    def set_share_mode_typed(self, mode: CSVShareMode) -> None:
+        self.share_mode.value = mode.value
+    
+    def print_info(self) -> None:
+        SLog.log(f"=== CSVDataSet: {self.testname} ===")
+        SLog.log(f"  enabled: {self.enabled}")
+        SLog.log(f"  comment: {self.comment.value}")
+        SLog.log(f"  filename: {self.filename.value}")
+        SLog.log(f"  file_encoding: {self.file_encoding.value}")
+        SLog.log(f"  variable_names: {self.variable_names.value}")
+        SLog.log(f"  ignore_first_line: {self.ignore_first_line.value}")
+        SLog.log(f"  delimiter: {self.delimiter.value}")
+        SLog.log(f"  quoted_data: {self.quoted_data.value}")
+        SLog.log(f"  recycle: {self.recycle.value}")
+        SLog.log(f"  stop_thread: {self.stop_thread.value}")
+        SLog.log(f"  share_mode: {self.share_mode.value}")
+        SLog.log(f"  children: {len(self.children)}")
+
+
+class BoltConnectionElement(TreeElement):
+    def __init__(
+        self,
+        testname: str = "Bolt Connection Configuration",
+        enabled: bool = True
+    ):
+        self.bolt_uri: StringProp = StringProp(BOLTCONNECTION_URI, "bolt://localhost:7687")
+        self.max_connection_pool_size: IntProp = IntProp(BOLTCONNECTION_MAX_POOL_SIZE, 100)
+        self.password: StringProp = StringProp(BOLTCONNECTION_PASSWORD, "")
+        self.username: StringProp = StringProp(BOLTCONNECTION_USERNAME, "neo4j")
+        
+        super().__init__(
+            testname=testname,
+            enabled=enabled,
+            properties=[
+                self.bolt_uri,
+                self.max_connection_pool_size,
+                self.password,
+                self.username
+            ]
+        )
+    
+    @property
+    def tag_name(self) -> str:
+        return "BoltConnectionElement"
+    
+    @property
+    def guiclass(self) -> str:
+        return "TestBeanGUI"
+    
+    @property
+    def testclass(self) -> str:
+        return "BoltConnectionElement"
+    
+    @staticmethod
+    def create_default(testname: str = "Bolt Connection Configuration") -> "BoltConnectionElement":
+        return BoltConnectionElement(testname=testname)
+    
+    def set_bolt_uri(self, uri: str) -> None:
+        self.bolt_uri.value = uri
+    
+    def set_max_connection_pool_size(self, size: int) -> None:
+        self.max_connection_pool_size.value = size
+    
+    def set_password(self, password: str) -> None:
+        self.password.value = password
+    
+    def set_username(self, username: str) -> None:
+        self.username.value = username
+    
+    def print_info(self) -> None:
+        SLog.log(f"=== BoltConnectionElement: {self.testname} ===")
+        SLog.log(f"  enabled: {self.enabled}")
+        SLog.log(f"  comment: {self.comment.value}")
+        SLog.log(f"  bolt_uri: {self.bolt_uri.value}")
+        SLog.log(f"  max_connection_pool_size: {self.max_connection_pool_size.value}")
+        SLog.log(f"  username: {self.username.value}")
+        SLog.log(f"  password: {'*' * len(self.password.value) if self.password.value else '(empty)'}")
+        SLog.log(f"  children: {len(self.children)}")
+
+
+class CounterConfig(TreeElement):
+    def __init__(
+        self,
+        testname: str = "Counter",
+        enabled: bool = True
+    ):
+        self.start: StringProp = StringProp(COUNTERCONFIG_START, "")
+        self.end: StringProp = StringProp(COUNTERCONFIG_END, "")
+        self.incr: StringProp = StringProp(COUNTERCONFIG_INCR, "1")
+        self.variable_name: StringProp = StringProp(COUNTERCONFIG_NAME, "")
+        self.format: StringProp = StringProp(COUNTERCONFIG_FORMAT, "")
+        self.per_user: BoolProp = BoolProp(COUNTERCONFIG_PER_USER, False)
+        self.reset_on_tg_iteration: BoolProp = BoolProp(COUNTERCONFIG_RESET_ON_TG_ITERATION, False)
+        
+        super().__init__(
+            testname=testname,
+            enabled=enabled,
+            properties=[
+                self.start,
+                self.end,
+                self.incr,
+                self.variable_name,
+                self.format,
+                self.per_user,
+                self.reset_on_tg_iteration
+            ]
+        )
+    
+    @property
+    def tag_name(self) -> str:
+        return "CounterConfig"
+    
+    @property
+    def guiclass(self) -> str:
+        return "CounterConfigGui"
+    
+    @property
+    def testclass(self) -> str:
+        return "CounterConfig"
+    
+    @staticmethod
+    def create_default(testname: str = "Counter") -> "CounterConfig":
+        return CounterConfig(testname=testname)
+    
+    def set_start(self, start: str) -> None:
+        self.start.value = start
+    
+    def set_end(self, end: str) -> None:
+        self.end.value = end
+    
+    def set_incr(self, incr: str) -> None:
+        self.incr.value = incr
+    
+    def set_variable_name(self, name: str) -> None:
+        self.variable_name.value = name
+    
+    def set_format(self, format: str) -> None:
+        self.format.value = format
+    
+    def set_per_user(self, per_user: bool) -> None:
+        self.per_user.value = per_user
+    
+    def set_reset_on_tg_iteration(self, reset: bool) -> None:
+        self.reset_on_tg_iteration.value = reset
+    
+    def print_info(self) -> None:
+        SLog.log(f"=== CounterConfig: {self.testname} ===")
+        SLog.log(f"  enabled: {self.enabled}")
+        SLog.log(f"  comment: {self.comment.value}")
+        SLog.log(f"  start: {self.start.value}")
+        SLog.log(f"  end: {self.end.value}")
+        SLog.log(f"  incr: {self.incr.value}")
+        SLog.log(f"  variable_name: {self.variable_name.value}")
+        SLog.log(f"  format: {self.format.value}")
+        SLog.log(f"  per_user: {self.per_user.value}")
+        SLog.log(f"  reset_on_tg_iteration: {self.reset_on_tg_iteration.value}")
+        SLog.log(f"  children: {len(self.children)}")
+
+
+class RandomVariableConfig(TreeElement):
+    def __init__(
+        self,
+        testname: str = "Random Variable",
+        enabled: bool = True
+    ):
+        self.maximum_value: StringProp = StringProp(RANDOMVARIABLE_MAXIMUM_VALUE, "")
+        self.minimum_value: StringProp = StringProp(RANDOMVARIABLE_MINIMUM_VALUE, "")
+        self.output_format: StringProp = StringProp(RANDOMVARIABLE_OUTPUT_FORMAT, "")
+        self.per_thread: BoolProp = BoolProp(RANDOMVARIABLE_PER_THREAD, False)
+        self.random_seed: StringProp = StringProp(RANDOMVARIABLE_RANDOM_SEED, "")
+        self.variable_name: StringProp = StringProp(RANDOMVARIABLE_VARIABLE_NAME, "")
+        
+        super().__init__(
+            testname=testname,
+            enabled=enabled,
+            properties=[
+                self.maximum_value,
+                self.minimum_value,
+                self.output_format,
+                self.per_thread,
+                self.random_seed,
+                self.variable_name
+            ]
+        )
+    
+    @property
+    def tag_name(self) -> str:
+        return "RandomVariableConfig"
+    
+    @property
+    def guiclass(self) -> str:
+        return "TestBeanGUI"
+    
+    @property
+    def testclass(self) -> str:
+        return "RandomVariableConfig"
+    
+    @staticmethod
+    def create_default(testname: str = "Random Variable") -> "RandomVariableConfig":
+        return RandomVariableConfig(testname=testname)
+    
+    def set_maximum_value(self, value: str) -> None:
+        self.maximum_value.value = value
+    
+    def set_minimum_value(self, value: str) -> None:
+        self.minimum_value.value = value
+    
+    def set_output_format(self, format: str) -> None:
+        self.output_format.value = format
+    
+    def set_per_thread(self, per_thread: bool) -> None:
+        self.per_thread.value = per_thread
+    
+    def set_random_seed(self, seed: str) -> None:
+        self.random_seed.value = seed
+    
+    def set_variable_name(self, name: str) -> None:
+        self.variable_name.value = name
+    
+    def print_info(self) -> None:
+        SLog.log(f"=== RandomVariableConfig: {self.testname} ===")
+        SLog.log(f"  enabled: {self.enabled}")
+        SLog.log(f"  comment: {self.comment.value}")
+        SLog.log(f"  minimum_value: {self.minimum_value.value}")
+        SLog.log(f"  maximum_value: {self.maximum_value.value}")
+        SLog.log(f"  output_format: {self.output_format.value}")
+        SLog.log(f"  per_thread: {self.per_thread.value}")
+        SLog.log(f"  random_seed: {self.random_seed.value}")
+        SLog.log(f"  variable_name: {self.variable_name.value}")
+        SLog.log(f"  children: {len(self.children)}")
+
+
+class LdapExtRequestDefaults(TreeElement):
+    def __init__(
+        self,
+        testname: str = "LDAP Extended Request Defaults",
+        enabled: bool = True
+    ):
+        self.servername: StringProp = StringProp(LDAPEXT_SERVERNAME, "")
+        self.port: StringProp = StringProp(LDAPEXT_PORT, "")
+        self.rootdn: StringProp = StringProp(LDAPEXT_ROOTDN, "")
+        self.scope: StringProp = StringProp(LDAPEXT_SCOPE, "2")
+        self.countlimit: StringProp = StringProp(LDAPEXT_COUNTLIMIT, "")
+        self.timelimit: StringProp = StringProp(LDAPEXT_TIMELIMIT, "")
+        self.attributes: StringProp = StringProp(LDAPEXT_ATTRIBUTES, "")
+        self.return_object: StringProp = StringProp(LDAPEXT_RETURN_OBJECT, "false")
+        self.deref_aliases: StringProp = StringProp(LDAPEXT_DEREF_ALIASES, "false")
+        self.connection_timeout: StringProp = StringProp(LDAPEXT_CONNECTION_TIMEOUT, "")
+        self.parseflag: StringProp = StringProp(LDAPEXT_PARSEFLAG, "false")
+        self.secure: StringProp = StringProp(LDAPEXT_SECURE, "false")
+        self.trustall: StringProp = StringProp(LDAPEXT_TRUSTALL, "false")
+        self.user_dn: StringProp = StringProp(LDAPEXT_USER_DN, "")
+        self.user_pw: StringProp = StringProp(LDAPEXT_USER_PW, "")
+        self.comparedn: StringProp = StringProp(LDAPEXT_COMPAREDN, "")
+        self.comparefilt: StringProp = StringProp(LDAPEXT_COMPAREFILT, "")
+        self.modddn: StringProp = StringProp(LDAPEXT_MODDDN, "")
+        self.newdn: StringProp = StringProp(LDAPEXT_NEWDN, "")
+        self.test: StringProp = StringProp(LDAPEXT_TEST, "")
+        
+        super().__init__(
+            testname=testname,
+            enabled=enabled,
+            properties=[
+                self.servername,
+                self.port,
+                self.rootdn,
+                self.scope,
+                self.countlimit,
+                self.timelimit,
+                self.attributes,
+                self.return_object,
+                self.deref_aliases,
+                self.connection_timeout,
+                self.parseflag,
+                self.secure,
+                self.trustall,
+                self.user_dn,
+                self.user_pw,
+                self.comparedn,
+                self.comparefilt,
+                self.modddn,
+                self.newdn,
+                self.test
+            ]
+        )
+    
+    @property
+    def tag_name(self) -> str:
+        return "ConfigTestElement"
+    
+    @property
+    def guiclass(self) -> str:
+        return "LdapExtConfigGui"
+    
+    @property
+    def testclass(self) -> str:
+        return "ConfigTestElement"
+    
+    @staticmethod
+    def create_default(testname: str = "LDAP Extended Request Defaults") -> "LdapExtRequestDefaults":
+        return LdapExtRequestDefaults(testname=testname)
+    
+    def set_servername(self, servername: str) -> None:
+        self.servername.value = servername
+    
+    def set_port(self, port: str) -> None:
+        self.port.value = port
+    
+    def set_rootdn(self, rootdn: str) -> None:
+        self.rootdn.value = rootdn
+    
+    def set_scope(self, scope: str) -> None:
+        self.scope.value = scope
+    
+    def set_countlimit(self, countlimit: str) -> None:
+        self.countlimit.value = countlimit
+    
+    def set_timelimit(self, timelimit: str) -> None:
+        self.timelimit.value = timelimit
+    
+    def set_attributes(self, attributes: str) -> None:
+        self.attributes.value = attributes
+    
+    def set_return_object(self, return_object: bool) -> None:
+        self.return_object.value = str(return_object).lower()
+    
+    def set_deref_aliases(self, deref_aliases: bool) -> None:
+        self.deref_aliases.value = str(deref_aliases).lower()
+    
+    def set_connection_timeout(self, timeout: str) -> None:
+        self.connection_timeout.value = timeout
+    
+    def set_parseflag(self, parseflag: bool) -> None:
+        self.parseflag.value = str(parseflag).lower()
+    
+    def set_secure(self, secure: bool) -> None:
+        self.secure.value = str(secure).lower()
+    
+    def set_trustall(self, trustall: bool) -> None:
+        self.trustall.value = str(trustall).lower()
+    
+    def set_user_dn(self, user_dn: str) -> None:
+        self.user_dn.value = user_dn
+    
+    def set_user_pw(self, user_pw: str) -> None:
+        self.user_pw.value = user_pw
+    
+    def set_comparedn(self, comparedn: str) -> None:
+        self.comparedn.value = comparedn
+    
+    def set_comparefilt(self, comparefilt: str) -> None:
+        self.comparefilt.value = comparefilt
+    
+    def set_modddn(self, modddn: str) -> None:
+        self.modddn.value = modddn
+    
+    def set_newdn(self, newdn: str) -> None:
+        self.newdn.value = newdn
+    
+    def set_test(self, test: str) -> None:
+        self.test.value = test
+    
+    def print_info(self) -> None:
+        SLog.log(f"=== LdapExtRequestDefaults: {self.testname} ===")
+        SLog.log(f"  enabled: {self.enabled}")
+        SLog.log(f"  comment: {self.comment.value}")
+        SLog.log(f"  servername: {self.servername.value}")
+        SLog.log(f"  port: {self.port.value}")
+        SLog.log(f"  rootdn: {self.rootdn.value}")
+        SLog.log(f"  scope: {self.scope.value}")
+        SLog.log(f"  countlimit: {self.countlimit.value}")
+        SLog.log(f"  timelimit: {self.timelimit.value}")
+        SLog.log(f"  attributes: {self.attributes.value}")
+        SLog.log(f"  return_object: {self.return_object.value}")
+        SLog.log(f"  deref_aliases: {self.deref_aliases.value}")
+        SLog.log(f"  connection_timeout: {self.connection_timeout.value}")
+        SLog.log(f"  parseflag: {self.parseflag.value}")
+        SLog.log(f"  secure: {self.secure.value}")
+        SLog.log(f"  trustall: {self.trustall.value}")
+        SLog.log(f"  user_dn: {self.user_dn.value}")
+        SLog.log(f"  user_pw: {'*' * len(self.user_pw.value) if self.user_pw.value else '(empty)'}")
+        SLog.log(f"  comparedn: {self.comparedn.value}")
+        SLog.log(f"  comparefilt: {self.comparefilt.value}")
+        SLog.log(f"  modddn: {self.modddn.value}")
+        SLog.log(f"  newdn: {self.newdn.value}")
+        SLog.log(f"  test: {self.test.value}")
+        SLog.log(f"  children: {len(self.children)}")
+
+
+class FtpRequestDefaults(TreeElement):
+    def __init__(
+        self,
+        testname: str = "FTP Request Defaults",
+        enabled: bool = True
+    ):
+        self.server: StringProp = StringProp(FTPSAMPLER_SERVER, "")
+        self.port: StringProp = StringProp(FTPSAMPLER_PORT, "")
+        self.filename: StringProp = StringProp(FTPSAMPLER_FILENAME, "")
+        self.localfilename: StringProp = StringProp(FTPSAMPLER_LOCALFILENAME, "")
+        self.inputdata: StringProp = StringProp(FTPSAMPLER_INPUTDATA, "")
+        self.binarymode: BoolProp = BoolProp(FTPSAMPLER_BINARYMODE, False)
+        self.saveresponse: BoolProp = BoolProp(FTPSAMPLER_SAVERESPONSE, False)
+        self.upload: BoolProp = BoolProp(FTPSAMPLER_UPLOAD, False)
+        
+        super().__init__(
+            testname=testname,
+            enabled=enabled,
+            properties=[
+                self.server,
+                self.port,
+                self.filename,
+                self.localfilename,
+                self.inputdata,
+                self.binarymode,
+                self.saveresponse,
+                self.upload
+            ]
+        )
+    
+    @property
+    def tag_name(self) -> str:
+        return "ConfigTestElement"
+    
+    @property
+    def guiclass(self) -> str:
+        return "FtpConfigGui"
+    
+    @property
+    def testclass(self) -> str:
+        return "ConfigTestElement"
+    
+    @staticmethod
+    def create_default(testname: str = "FTP Request Defaults") -> "FtpRequestDefaults":
+        return FtpRequestDefaults(testname=testname)
+    
+    def set_server(self, server: str) -> None:
+        self.server.value = server
+    
+    def set_port(self, port: str) -> None:
+        self.port.value = port
+    
+    def set_filename(self, filename: str) -> None:
+        self.filename.value = filename
+    
+    def set_localfilename(self, localfilename: str) -> None:
+        self.localfilename.value = localfilename
+    
+    def set_inputdata(self, inputdata: str) -> None:
+        self.inputdata.value = inputdata
+    
+    def set_binarymode(self, binarymode: bool) -> None:
+        self.binarymode.value = binarymode
+    
+    def set_saveresponse(self, saveresponse: bool) -> None:
+        self.saveresponse.value = saveresponse
+    
+    def set_upload(self, upload: bool) -> None:
+        self.upload.value = upload
+    
+    def print_info(self) -> None:
+        SLog.log(f"=== FtpRequestDefaults: {self.testname} ===")
+        SLog.log(f"  enabled: {self.enabled}")
+        SLog.log(f"  comment: {self.comment.value}")
+        SLog.log(f"  server: {self.server.value}")
+        SLog.log(f"  port: {self.port.value}")
+        SLog.log(f"  filename: {self.filename.value}")
+        SLog.log(f"  localfilename: {self.localfilename.value}")
+        SLog.log(f"  inputdata: {self.inputdata.value}")
+        SLog.log(f"  binarymode: {self.binarymode.value}")
+        SLog.log(f"  saveresponse: {self.saveresponse.value}")
+        SLog.log(f"  upload: {self.upload.value}")
+        SLog.log(f"  children: {len(self.children)}")
+
+
+class LdapRequestDefaults(TreeElement):
+    def __init__(
+        self,
+        testname: str = "LDAP Request Defaults",
+        enabled: bool = True
+    ):
+        self.servername: StringProp = StringProp(LDAP_SERVERNAME, "")
+        self.port: StringProp = StringProp(LDAP_PORT, "")
+        self.rootdn: StringProp = StringProp(LDAP_ROOTDN, "")
+        self.user_defined: BoolProp = BoolProp(LDAP_USER_DEFINED, False)
+        self.test: StringProp = StringProp(LDAP_TEST, "")
+        self.base_entry_dn: StringProp = StringProp(LDAP_BASE_ENTRY_DN, "")
+        self._arguments: ArgumentsProp = ArgumentsProp(LDAP_ARGUMENTS)
+        
+        super().__init__(
+            testname=testname,
+            enabled=enabled,
+            properties=[
+                self.servername,
+                self.port,
+                self.rootdn,
+                self.user_defined,
+                self.test,
+                self.base_entry_dn,
+                self._arguments
+            ]
+        )
+    
+    @property
+    def tag_name(self) -> str:
+        return "ConfigTestElement"
+    
+    @property
+    def guiclass(self) -> str:
+        return "LdapConfigGui"
+    
+    @property
+    def testclass(self) -> str:
+        return "ConfigTestElement"
+    
+    @staticmethod
+    def create_default(testname: str = "LDAP Request Defaults") -> "LdapRequestDefaults":
+        return LdapRequestDefaults(testname=testname)
+    
+    def set_servername(self, servername: str) -> None:
+        self.servername.value = servername
+    
+    def set_port(self, port: str) -> None:
+        self.port.value = port
+    
+    def set_rootdn(self, rootdn: str) -> None:
+        self.rootdn.value = rootdn
+    
+    def set_user_defined(self, user_defined: bool) -> None:
+        self.user_defined.value = user_defined
+    
+    def set_test(self, test: str) -> None:
+        self.test.value = test
+    
+    def set_base_entry_dn(self, base_entry_dn: str) -> None:
+        self.base_entry_dn.value = base_entry_dn
+    
+    def add_argument(self, name: str, value: str) -> None:
+        self._arguments.add_argument(name, value)
+    
+    def remove_argument(self, name: str) -> None:
+        self._arguments.remove_argument(name)
+    
+    def get_argument(self, name: str) -> ElementProp | None:
+        return self._arguments.get_argument(name)
+    
+    def clear_arguments(self) -> None:
+        self._arguments.clear()
+    
+    def print_info(self) -> None:
+        SLog.log(f"=== LdapRequestDefaults: {self.testname} ===")
+        SLog.log(f"  enabled: {self.enabled}")
+        SLog.log(f"  comment: {self.comment.value}")
+        SLog.log(f"  servername: {self.servername.value}")
+        SLog.log(f"  port: {self.port.value}")
+        SLog.log(f"  rootdn: {self.rootdn.value}")
+        SLog.log(f"  user_defined: {self.user_defined.value}")
+        SLog.log(f"  test: {self.test.value}")
+        SLog.log(f"  base_entry_dn: {self.base_entry_dn.value}")
+        SLog.log(f"  arguments: {len(self._arguments.collection.items)}")
+        for arg in self._arguments.collection.items:
+            name_prop = next((p for p in arg.properties if p.name == ARGUMENT_NAME), None)
+            value_prop = next((p for p in arg.properties if p.name == ARGUMENT_VALUE), None)
+            if name_prop and value_prop:
+                SLog.log(f"    {name_prop.value} = {value_prop.value}")
+        SLog.log(f"  children: {len(self.children)}")
+
+
+class LoginConfigElement(TreeElement):
+    def __init__(
+        self,
+        testname: str = "Login Config Element",
+        enabled: bool = True
+    ):
+        self.username: StringProp = StringProp(LOGINCONFIG_USERNAME, "")
+        self.password: StringProp = StringProp(LOGINCONFIG_PASSWORD, "")
+        
+        super().__init__(
+            testname=testname,
+            enabled=enabled,
+            properties=[
+                self.username,
+                self.password
+            ]
+        )
+    
+    @property
+    def tag_name(self) -> str:
+        return "ConfigTestElement"
+    
+    @property
+    def guiclass(self) -> str:
+        return "LoginConfigGui"
+    
+    @property
+    def testclass(self) -> str:
+        return "ConfigTestElement"
+    
+    @staticmethod
+    def create_default(testname: str = "Login Config Element") -> "LoginConfigElement":
+        return LoginConfigElement(testname=testname)
+    
+    def set_username(self, username: str) -> None:
+        self.username.value = username
+    
+    def set_password(self, password: str) -> None:
+        self.password.value = password
+    
+    def print_info(self) -> None:
+        SLog.log(f"=== LoginConfigElement: {self.testname} ===")
+        SLog.log(f"  enabled: {self.enabled}")
+        SLog.log(f"  comment: {self.comment.value}")
+        SLog.log(f"  username: {self.username.value}")
+        SLog.log(f"  password: {'*' * len(self.password.value) if self.password.value else '(empty)'}")
+        SLog.log(f"  children: {len(self.children)}")
+
+
+class SimpleConfigElement(TreeElement):
+    def __init__(
+        self,
+        testname: str = "Simple Config Element",
+        enabled: bool = True
+    ):
+        self._custom_props: dict[str, StringProp] = {}
+        
+        super().__init__(
+            testname=testname,
+            enabled=enabled,
+            properties=[]
+        )
+    
+    @property
+    def tag_name(self) -> str:
+        return "ConfigTestElement"
+    
+    @property
+    def guiclass(self) -> str:
+        return "SimpleConfigGui"
+    
+    @property
+    def testclass(self) -> str:
+        return "ConfigTestElement"
+    
+    @staticmethod
+    def create_default(testname: str = "Simple Config Element") -> "SimpleConfigElement":
+        return SimpleConfigElement(testname=testname)
+    
+    def add_property(self, name: str, value: str) -> None:
+        if name in self._custom_props:
+            self._custom_props[name].value = value
+        else:
+            prop = StringProp(name, value)
+            self._custom_props[name] = prop
+            self.properties.append(prop)
+    
+    def remove_property(self, name: str) -> None:
+        if name in self._custom_props:
+            prop = self._custom_props.pop(name)
+            self.properties.remove(prop)
+    
+    def get_property(self, name: str) -> str | None:
+        if name in self._custom_props:
+            return self._custom_props[name].value
+        return None
+    
+    def get_all_properties(self) -> dict[str, str]:
+        return {name: prop.value for name, prop in self._custom_props.items()}
+    
+    def clear_properties(self) -> None:
+        for prop in self._custom_props.values():
+            self.properties.remove(prop)
+        self._custom_props.clear()
+    
+    def print_info(self) -> None:
+        SLog.log(f"=== SimpleConfigElement: {self.testname} ===")
+        SLog.log(f"  enabled: {self.enabled}")
+        SLog.log(f"  comment: {self.comment.value}")
+        SLog.log(f"  custom properties: {len(self._custom_props)}")
+        for name, prop in self._custom_props.items():
+            SLog.log(f"    {name} = {prop.value}")
+        SLog.log(f"  children: {len(self.children)}")
+
+
+class TcpSamplerConfig(TreeElement):
+    def __init__(
+        self,
+        testname: str = "TCP Sampler Config",
+        enabled: bool = True
+    ):
+        self.server: StringProp = StringProp(TCPSAMPLER_SERVER, "")
+        self.port: StringProp = StringProp(TCPSAMPLER_PORT, "")
+        self.reuse_connection: BoolProp = BoolProp(TCPSAMPLER_REUSE_CONNECTION, True)
+        self.nodelay: BoolProp = BoolProp(TCPSAMPLER_NODELAY, False)
+        self.timeout: StringProp = StringProp(TCPSAMPLER_TIMEOUT, "")
+        self.request: StringProp = StringProp(TCPSAMPLER_REQUEST, "")
+        self.close_connection: BoolProp = BoolProp(TCPSAMPLER_CLOSE_CONNECTION, False)
+        self.classname: StringProp = StringProp(TCPSAMPLER_CLASSNAME, "")
+        self.ctimeout: StringProp = StringProp(TCPSAMPLER_CTIMEOUT, "")
+        self.so_linger: StringProp = StringProp(TCPSAMPLER_SO_LINGER, "")
+        self.eol_byte: StringProp = StringProp(TCPSAMPLER_EOL_BYTE, "")
+        
+        super().__init__(
+            testname=testname,
+            enabled=enabled,
+            properties=[
+                self.server,
+                self.reuse_connection,
+                self.port,
+                self.nodelay,
+                self.timeout,
+                self.request,
+                self.close_connection,
+                self.classname,
+                self.ctimeout,
+                self.so_linger,
+                self.eol_byte
+            ]
+        )
+    
+    @property
+    def tag_name(self) -> str:
+        return "ConfigTestElement"
+    
+    @property
+    def guiclass(self) -> str:
+        return "TCPConfigGui"
+    
+    @property
+    def testclass(self) -> str:
+        return "ConfigTestElement"
+    
+    @staticmethod
+    def create_default(testname: str = "TCP Sampler Config") -> "TcpSamplerConfig":
+        return TcpSamplerConfig(testname=testname)
+    
+    def set_server(self, server: str) -> None:
+        self.server.value = server
+    
+    def set_port(self, port: str) -> None:
+        self.port.value = port
+    
+    def set_reuse_connection(self, reuse: bool) -> None:
+        self.reuse_connection.value = reuse
+    
+    def set_nodelay(self, nodelay: bool) -> None:
+        self.nodelay.value = nodelay
+    
+    def set_timeout(self, timeout: str) -> None:
+        self.timeout.value = timeout
+    
+    def set_request(self, request: str) -> None:
+        self.request.value = request
+    
+    def set_close_connection(self, close: bool) -> None:
+        self.close_connection.value = close
+    
+    def set_classname(self, classname: str) -> None:
+        self.classname.value = classname
+    
+    def set_ctimeout(self, ctimeout: str) -> None:
+        self.ctimeout.value = ctimeout
+    
+    def set_so_linger(self, so_linger: str) -> None:
+        self.so_linger.value = so_linger
+    
+    def set_eol_byte(self, eol_byte: str) -> None:
+        self.eol_byte.value = eol_byte
+    
+    def print_info(self) -> None:
+        SLog.log(f"=== TcpSamplerConfig: {self.testname} ===")
+        SLog.log(f"  enabled: {self.enabled}")
+        SLog.log(f"  comment: {self.comment.value}")
+        SLog.log(f"  server: {self.server.value}")
+        SLog.log(f"  port: {self.port.value}")
+        SLog.log(f"  reuse_connection: {self.reuse_connection.value}")
+        SLog.log(f"  nodelay: {self.nodelay.value}")
+        SLog.log(f"  timeout: {self.timeout.value}")
+        SLog.log(f"  request: {self.request.value}")
+        SLog.log(f"  close_connection: {self.close_connection.value}")
+        SLog.log(f"  classname: {self.classname.value}")
+        SLog.log(f"  ctimeout: {self.ctimeout.value}")
+        SLog.log(f"  so_linger: {self.so_linger.value}")
+        SLog.log(f"  eol_byte: {self.eol_byte.value}")
+        SLog.log(f"  children: {len(self.children)}")
+
+
+class KeystoreConfig(TreeElement):
+    def __init__(
+        self,
+        testname: str = "Keystore Configuration",
+        enabled: bool = True
+    ):
+        self.client_cert_alias_var_name: StringProp = StringProp(KEYSTORECONFIG_CLIENT_CERT_ALIAS_VAR_NAME, "")
+        self.end_index: StringProp = StringProp(KEYSTORECONFIG_END_INDEX, "")
+        self.preload: StringProp = StringProp(KEYSTORECONFIG_PRELOAD, "True")
+        self.start_index: StringProp = StringProp(KEYSTORECONFIG_START_INDEX, "")
+        
+        super().__init__(
+            testname=testname,
+            enabled=enabled,
+            properties=[
+                self.client_cert_alias_var_name,
+                self.end_index,
+                self.preload,
+                self.start_index
+            ]
+        )
+    
+    @property
+    def tag_name(self) -> str:
+        return "KeystoreConfig"
+    
+    @property
+    def guiclass(self) -> str:
+        return "TestBeanGUI"
+    
+    @property
+    def testclass(self) -> str:
+        return "KeystoreConfig"
+    
+    @staticmethod
+    def create_default(testname: str = "Keystore Configuration") -> "KeystoreConfig":
+        return KeystoreConfig(testname=testname)
+    
+    def set_client_cert_alias_var_name(self, var_name: str) -> None:
+        self.client_cert_alias_var_name.value = var_name
+    
+    def set_end_index(self, end_index: str) -> None:
+        self.end_index.value = end_index
+    
+    def set_preload(self, preload: bool) -> None:
+        self.preload.value = str(preload)
+    
+    def set_start_index(self, start_index: str) -> None:
+        self.start_index.value = start_index
+    
+    def print_info(self) -> None:
+        SLog.log(f"=== KeystoreConfig: {self.testname} ===")
+        SLog.log(f"  enabled: {self.enabled}")
+        SLog.log(f"  comment: {self.comment.value}")
+        SLog.log(f"  client_cert_alias_var_name: {self.client_cert_alias_var_name.value}")
+        SLog.log(f"  start_index: {self.start_index.value}")
+        SLog.log(f"  end_index: {self.end_index.value}")
+        SLog.log(f"  preload: {self.preload.value}")
+        SLog.log(f"  children: {len(self.children)}")
+
+
+class AuthorizationMechanism(Enum):
+    BASIC = "BASIC"
+    BASIC_DIGEST = "BASIC_DIGEST"
+    DIGEST = "DIGEST"
+    KERBEROS = "KERBEROS"
+    
+
+class AuthManager(TreeElement):
+    def __init__(
+        self,
+        testname: str = "HTTP Authorization Manager",
+        enabled: bool = True
+    ):
+        self._auth_list: AuthorizationsProp = AuthorizationsProp(AUTHMANAGER_AUTH_LIST)
+        self.controlled_by_threadgroup: BoolProp = BoolProp(AUTHMANAGER_CONTROLLED_BY_THREADGROUP, False)
+        self.clear_each_iteration: BoolProp = BoolProp(AUTHMANAGER_CLEAR_EACH_ITERATION, False)
+        
+        super().__init__(
+            testname=testname,
+            enabled=enabled,
+            properties=[
+                self._auth_list,
+                self.controlled_by_threadgroup,
+                self.clear_each_iteration
+            ]
+        )
+    
+    @property
+    def tag_name(self) -> str:
+        return "AuthManager"
+    
+    @property
+    def guiclass(self) -> str:
+        return "AuthPanel"
+    
+    @property
+    def testclass(self) -> str:
+        return "AuthManager"
+    
+    @staticmethod
+    def create_default(testname: str = "HTTP Authorization Manager") -> "AuthManager":
+        return AuthManager(testname=testname)
+    
+    def add_authorization(
+        self,
+        url: str,
+        username: str,
+        password: str,
+        domain: str = "",
+        realm: str = "",
+        mechanism: str = "BASIC"
+    ) -> None:
+        self._auth_list.add_authorization(url, username, password, domain, realm, mechanism)
+    
+    def add_authorization_typed(
+        self,
+        url: str,
+        username: str,
+        password: str,
+        domain: str = "",
+        realm: str = "",
+        mechanism: AuthorizationMechanism = AuthorizationMechanism.BASIC
+    ) -> None:
+        self._auth_list.add_authorization(url, username, password, domain, realm, mechanism.value)
+    
+    def remove_authorization(self, url: str) -> None:
+        self._auth_list.remove_authorization(url)
+    
+    def get_authorization(self, url: str) -> ElementProp | None:
+        return self._auth_list.get_authorization(url)
+    
+    def clear_authorizations(self) -> None:
+        self._auth_list.clear()
+    
+    def set_controlled_by_threadgroup(self, controlled: bool) -> None:
+        self.controlled_by_threadgroup.value = controlled
+    
+    def set_clear_each_iteration(self, clear: bool) -> None:
+        self.clear_each_iteration.value = clear
+    
+    def print_info(self) -> None:
+        SLog.log(f"=== AuthManager: {self.testname} ===")
+        SLog.log(f"  enabled: {self.enabled}")
+        SLog.log(f"  comment: {self.comment.value}")
+        SLog.log(f"  controlled_by_threadgroup: {self.controlled_by_threadgroup.value}")
+        SLog.log(f"  clear_each_iteration: {self.clear_each_iteration.value}")
+        SLog.log(f"  authorizations: {len(self._auth_list.items)}")
+        for auth in self._auth_list.items:
+            url_prop = next((p for p in auth.properties if p.name == AUTHORIZATION_URL), None)
+            username_prop = next((p for p in auth.properties if p.name == AUTHORIZATION_USERNAME), None)
+            mechanism_prop = next((p for p in auth.properties if p.name == AUTHORIZATION_MECHANISM), None)
+            if url_prop and username_prop:
+                mechanism_str = mechanism_prop.value if mechanism_prop else "BASIC"
+                SLog.log(f"    {url_prop.value} -> {username_prop.value} ({mechanism_str})")
+        SLog.log(f"  children: {len(self.children)}")
+
+
+class JDBCTransactionIsolation(Enum):
+    DEFAULT = "DEFAULT"
+    TRANSACTION_NONE = "TRANSACTION_NONE"
+    TRANSACTION_READ_UNCOMMITTED = "TRANSACTION_READ_UNCOMMITTED"
+    TRANSACTION_READ_COMMITTED = "TRANSACTION_READ_COMMITTED"
+    TRANSACTION_REPEATABLE_READ = "TRANSACTION_REPEATABLE_READ"
+    TRANSACTION_SERIALIZABLE = "TRANSACTION_SERIALIZABLE"
+
+
+class JDBCCheckQuery(Enum):
+    HSQLDB = "select 1 from INFORMATION_SCHEMA.SYSTEM_USERS"
+    ORACLE = "select 1 from dual"
+    DB2 = "select 1 from sysibm.sysdummy1"
+    GENERIC = "select 1"
+    FIREBIRD = "select 1 from rdb$database"
+
+
+class JDBCDataSource(TreeElement):
+    def __init__(
+        self,
+        testname: str = "JDBC Connection Configuration",
+        enabled: bool = True
+    ):
+        self.autocommit: BoolProp = BoolProp(JDBCDATASOURCE_AUTOCOMMIT, True)
+        self.check_query: StringProp = StringProp(JDBCDATASOURCE_CHECK_QUERY, "")
+        self.connection_age: StringProp = StringProp(JDBCDATASOURCE_CONNECTION_AGE, "5000")
+        self.connection_properties: StringProp = StringProp(JDBCDATASOURCE_CONNECTION_PROPERTIES, "")
+        self.datasource: StringProp = StringProp(JDBCDATASOURCE_DATASOURCE, "")
+        self.db_url: StringProp = StringProp(JDBCDATASOURCE_DB_URL, "")
+        self.driver: StringProp = StringProp(JDBCDATASOURCE_DRIVER, "")
+        self.init_query: StringProp = StringProp(JDBCDATASOURCE_INIT_QUERY, "")
+        self.keep_alive: BoolProp = BoolProp(JDBCDATASOURCE_KEEP_ALIVE, True)
+        self.password: StringProp = StringProp(JDBCDATASOURCE_PASSWORD, "")
+        self.pool_max: StringProp = StringProp(JDBCDATASOURCE_POOL_MAX, "0")
+        self.preinit: BoolProp = BoolProp(JDBCDATASOURCE_PREINIT, False)
+        self.timeout: StringProp = StringProp(JDBCDATASOURCE_TIMEOUT, "10000")
+        self.transaction_isolation: StringProp = StringProp(JDBCDATASOURCE_TRANSACTION_ISOLATION, "DEFAULT")
+        self.trim_interval: StringProp = StringProp(JDBCDATASOURCE_TRIM_INTERVAL, "60000")
+        self.username: StringProp = StringProp(JDBCDATASOURCE_USERNAME, "")
+        self.pool_prepared_statements: StringProp = StringProp(JDBCDATASOURCE_POOL_PREPARED_STATEMENTS, "")
+        
+        super().__init__(
+            testname=testname,
+            enabled=enabled,
+            properties=[
+                self.autocommit,
+                self.check_query,
+                self.connection_age,
+                self.connection_properties,
+                self.datasource,
+                self.db_url,
+                self.driver,
+                self.init_query,
+                self.keep_alive,
+                self.password,
+                self.pool_max,
+                self.preinit,
+                self.timeout,
+                self.transaction_isolation,
+                self.trim_interval,
+                self.username,
+                self.pool_prepared_statements
+            ]
+        )
+    
+    @property
+    def tag_name(self) -> str:
+        return "JDBCDataSource"
+    
+    @property
+    def guiclass(self) -> str:
+        return "TestBeanGUI"
+    
+    @property
+    def testclass(self) -> str:
+        return "JDBCDataSource"
+    
+    @staticmethod
+    def create_default(testname: str = "JDBC Connection Configuration") -> "JDBCDataSource":
+        return JDBCDataSource(testname=testname)
+    
+    def set_autocommit(self, autocommit: bool) -> None:
+        self.autocommit.value = autocommit
+    
+    def set_check_query(self, query: str) -> None:
+        self.check_query.value = query
+    
+    def set_check_query_typed(self, query: JDBCCheckQuery) -> None:
+        self.check_query.value = query.value
+    
+    def set_connection_age(self, age: str) -> None:
+        self.connection_age.value = age
+    
+    def set_connection_properties(self, properties: str) -> None:
+        self.connection_properties.value = properties
+    
+    def set_datasource(self, datasource: str) -> None:
+        self.datasource.value = datasource
+    
+    def set_db_url(self, url: str) -> None:
+        self.db_url.value = url
+    
+    def set_driver(self, driver: str) -> None:
+        self.driver.value = driver
+    
+    def set_init_query(self, query: str) -> None:
+        self.init_query.value = query
+    
+    def set_keep_alive(self, keep_alive: bool) -> None:
+        self.keep_alive.value = keep_alive
+    
+    def set_password(self, password: str) -> None:
+        self.password.value = password
+    
+    def set_pool_max(self, pool_max: str) -> None:
+        self.pool_max.value = pool_max
+    
+    def set_preinit(self, preinit: bool) -> None:
+        self.preinit.value = preinit
+    
+    def set_timeout(self, timeout: str) -> None:
+        self.timeout.value = timeout
+    
+    def set_transaction_isolation(self, isolation: str) -> None:
+        self.transaction_isolation.value = isolation
+    
+    def set_transaction_isolation_typed(self, isolation: JDBCTransactionIsolation) -> None:
+        self.transaction_isolation.value = isolation.value
+    
+    def set_trim_interval(self, interval: str) -> None:
+        self.trim_interval.value = interval
+    
+    def set_username(self, username: str) -> None:
+        self.username.value = username
+    
+    def set_pool_prepared_statements(self, count: str) -> None:
+        self.pool_prepared_statements.value = count
+    
+    def print_info(self) -> None:
+        SLog.log(f"=== JDBCDataSource: {self.testname} ===")
+        SLog.log(f"  enabled: {self.enabled}")
+        SLog.log(f"  comment: {self.comment.value}")
+        SLog.log(f"  datasource: {self.datasource.value}")
+        SLog.log(f"  db_url: {self.db_url.value}")
+        SLog.log(f"  driver: {self.driver.value}")
+        SLog.log(f"  username: {self.username.value}")
+        SLog.log(f"  password: {'*' * len(self.password.value) if self.password.value else '(empty)'}")
+        SLog.log(f"  autocommit: {self.autocommit.value}")
+        SLog.log(f"  keep_alive: {self.keep_alive.value}")
+        SLog.log(f"  preinit: {self.preinit.value}")
+        SLog.log(f"  pool_max: {self.pool_max.value}")
+        SLog.log(f"  pool_prepared_statements: {self.pool_prepared_statements.value}")
+        SLog.log(f"  timeout: {self.timeout.value}")
+        SLog.log(f"  connection_age: {self.connection_age.value}")
+        SLog.log(f"  trim_interval: {self.trim_interval.value}")
+        SLog.log(f"  transaction_isolation: {self.transaction_isolation.value}")
+        SLog.log(f"  check_query: {self.check_query.value}")
+        SLog.log(f"  init_query: {self.init_query.value}")
+        SLog.log(f"  connection_properties: {self.connection_properties.value}")
+        SLog.log(f"  children: {len(self.children)}")
+
+
+class JavaTestClass(Enum):
+    JAVA_TEST = "org.apache.jmeter.protocol.java.test.JavaTest"
+    SLEEP_TEST = "org.apache.jmeter.protocol.java.test.SleepTest"
+
+
+class JavaConfig(TreeElement):
+    def __init__(
+        self,
+        testname: str = "Java Request Defaults",
+        enabled: bool = True
+    ):
+        self._arguments: ArgumentsProp = ArgumentsProp(JAVACONFIG_ARGUMENTS)
+        self.classname: StringProp = StringProp(JAVACONFIG_CLASSNAME, JavaTestClass.JAVA_TEST.value)
+        
+        super().__init__(
+            testname=testname,
+            enabled=enabled,
+            properties=[
+                self._arguments,
+                self.classname
+            ]
+        )
+    
+    @property
+    def tag_name(self) -> str:
+        return "JavaConfig"
+    
+    @property
+    def guiclass(self) -> str:
+        return "JavaConfigGui"
+    
+    @property
+    def testclass(self) -> str:
+        return "JavaConfig"
+    
+    @staticmethod
+    def create_default(testname: str = "Java Request Defaults") -> "JavaConfig":
+        return JavaConfig(testname=testname)
+    
+    def set_classname(self, classname: str) -> None:
+        self.classname.value = classname
+    
+    def set_classname_typed(self, classname: JavaTestClass) -> None:
+        self.classname.value = classname.value
+    
+    def add_argument(self, name: str, value: str) -> None:
+        self._arguments.add_argument(name, value)
+    
+    def remove_argument(self, name: str) -> None:
+        self._arguments.remove_argument(name)
+    
+    def get_argument(self, name: str) -> ElementProp | None:
+        return self._arguments.get_argument(name)
+    
+    def clear_arguments(self) -> None:
+        self._arguments.clear()
+    
+    def print_info(self) -> None:
+        SLog.log(f"=== JavaConfig: {self.testname} ===")
+        SLog.log(f"  enabled: {self.enabled}")
+        SLog.log(f"  comment: {self.comment.value}")
+        SLog.log(f"  classname: {self.classname.value}")
+        SLog.log(f"  arguments: {len(self._arguments.collection.items)}")
+        for arg in self._arguments.collection.items:
+            name_prop = next((p for p in arg.properties if p.name == ARGUMENT_NAME), None)
+            value_prop = next((p for p in arg.properties if p.name == ARGUMENT_VALUE), None)
+            if name_prop and value_prop:
+                SLog.log(f"    {name_prop.value} = {value_prop.value}")
+        SLog.log(f"  children: {len(self.children)}")
+
+
+class DNSCacheManager(TreeElement):
+    def __init__(
+        self,
+        testname: str = "DNS Cache Manager",
+        enabled: bool = True
+    ):
+        self._servers: DNSServersProp = DNSServersProp(DNSCACHEMANAGER_SERVERS)
+        self._hosts: DNSHostsProp = DNSHostsProp(DNSCACHEMANAGER_HOSTS)
+        self.clear_each_iteration: BoolProp = BoolProp(DNSCACHEMANAGER_CLEAR_EACH_ITERATION, False)
+        self.is_custom_resolver: BoolProp = BoolProp(DNSCACHEMANAGER_IS_CUSTOM_RESOLVER, False)
+        
+        super().__init__(
+            testname=testname,
+            enabled=enabled,
+            properties=[
+                self._servers,
+                self._hosts,
+                self.clear_each_iteration,
+                self.is_custom_resolver
+            ]
+        )
+    
+    @property
+    def tag_name(self) -> str:
+        return "DNSCacheManager"
+    
+    @property
+    def guiclass(self) -> str:
+        return "DNSCachePanel"
+    
+    @property
+    def testclass(self) -> str:
+        return "DNSCacheManager"
+    
+    @staticmethod
+    def create_default(testname: str = "DNS Cache Manager") -> "DNSCacheManager":
+        return DNSCacheManager(testname=testname)
+    
+    def add_server(self, server: str) -> None:
+        self._servers.add_server(server)
+    
+    def remove_server(self, server: str) -> None:
+        self._servers.remove_server(server)
+    
+    def get_servers(self) -> list[str]:
+        return self._servers.get_servers()
+    
+    def clear_servers(self) -> None:
+        self._servers.clear()
+    
+    def add_host(self, hostname: str, address: str) -> None:
+        self._hosts.add_host(hostname, address)
+    
+    def remove_host(self, hostname: str) -> None:
+        self._hosts.remove_host(hostname)
+    
+    def get_host(self, hostname: str) -> ElementProp | None:
+        return self._hosts.get_host(hostname)
+    
+    def clear_hosts(self) -> None:
+        self._hosts.clear()
+    
+    def set_clear_each_iteration(self, clear: bool) -> None:
+        self.clear_each_iteration.value = clear
+    
+    def set_is_custom_resolver(self, custom: bool) -> None:
+        self.is_custom_resolver.value = custom
+    
+    def print_info(self) -> None:
+        SLog.log(f"=== DNSCacheManager: {self.testname} ===")
+        SLog.log(f"  enabled: {self.enabled}")
+        SLog.log(f"  comment: {self.comment.value}")
+        SLog.log(f"  clear_each_iteration: {self.clear_each_iteration.value}")
+        SLog.log(f"  is_custom_resolver: {self.is_custom_resolver.value}")
+        SLog.log(f"  servers: {len(self._servers.items)}")
+        for server in self._servers.get_servers():
+            SLog.log(f"    {server}")
+        SLog.log(f"  hosts: {len(self._hosts.items)}")
+        for host in self._hosts.items:
+            name_prop = next((p for p in host.properties if p.name == STATICHOST_NAME), None)
+            addr_prop = next((p for p in host.properties if p.name == STATICHOST_ADDRESS), None)
+            if name_prop and addr_prop:
+                SLog.log(f"    {name_prop.value} -> {addr_prop.value}")
+        SLog.log(f"  children: {len(self.children)}")
+
+
 ################## SAMPLERS ######################
 # Flow Control Action
 class TestActionTarget(Enum):
