@@ -1,3 +1,5 @@
+from dataclasses import dataclass
+from typing import List, Type
 from jmx_builder.models.tree import JMeterTestPlan, TreeElement
 from abc import ABC, abstractmethod
 import re
@@ -8,12 +10,14 @@ class TreeElementParser(ABC):
     def parse(xml_content: str) -> TreeElement:
         pass
 
+
 class TreeParser:
     def __init__(self):
-        self._parsers: dict[str, type] = {}
+        self._all_parsers: dict[(str, str | None), type] = {} 
     
-    def register_parser(self, tag_name: str, parser_class: type) -> None:
-        self._parsers[tag_name] = parser_class
+    def register_parser(self, tag_name: str, parser_class: type, guiclass: str | None = None) -> None:
+        key = (tag_name, guiclass)
+        self._all_parsers[key] = parser_class
 
     def parse(self, xml: str) -> JMeterTestPlan | list[TreeElement]:
         content = xml.strip()
@@ -91,7 +95,8 @@ class TreeParser:
             
             pos = len(hashtree_content) - len(hashtree_content_stripped)
             
-            tag_match = re.match(r'<(\w+)\s', hashtree_content[pos:])
+            pattern = r'<(\w+)\s'
+            tag_match = re.match(pattern, hashtree_content[pos:])
             if not tag_match:
                 break
             
@@ -103,7 +108,16 @@ class TreeParser:
             children_hashtree, hashtree_end = self.extract_hashtree(hashtree_content, pos)
             pos = hashtree_end
             
-            parser_class = self._parsers.get(tag_name)
+            parser_class = self._all_parsers.get((tag_name, None))
+            
+            if not parser_class:
+                pattern = r'<.*guiclass="([^"]*)"'
+                gui_match = re.match(pattern, hashtree_content[pos:])
+                guiclass: str | None = None
+                if gui_match:
+                    guiclass = tag_match.group(1)
+                parser_class = self._all_parsers.get((tag_name, guiclass))
+            
             if not parser_class:
                 raise ValueError(f"No parser registered for tag: {tag_name}")
             
@@ -119,6 +133,14 @@ class TreeParser:
         return elements
     
     def extract_element(self, content: str, start: int, tag_name: str) -> tuple[str, int]:
+        remaining = content[start:]
+        self_closing_pattern = rf'<{tag_name}\s[^>]*/>'
+        self_closing_match = re.match(self_closing_pattern, remaining)
+        
+        if self_closing_match:
+            end_pos = start + self_closing_match.end()
+            return content[start:end_pos], end_pos
+        
         end_tag = f'</{tag_name}>'
         end_pos = content.find(end_tag, start)
         if end_pos == -1:
@@ -174,3 +196,4 @@ class TreeParser:
             raise ValueError("Unclosed <hashTree>")
         
         raise ValueError(f"Expected <hashTree> at position {start}, got: {remaining[:50]}")
+    

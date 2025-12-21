@@ -9,12 +9,29 @@ from jmx_builder.parsers.elements.cache_manager_parser import CacheManagerParser
 from jmx_builder.parsers.elements.constant_throughput_timer_parser import ConstantThroughputTimerParser
 from jmx_builder.parsers.elements.constant_timer_parser import ConstantTimerParser
 from jmx_builder.parsers.elements.cookie_manager_parser import CookieManagerParser
+from jmx_builder.parsers.elements.critical_section_controller_parser import CriticalSectionControllerParser
+from jmx_builder.parsers.elements.foreach_controller_parser import ForeachControllerParser
+from jmx_builder.parsers.elements.generic_controller_parser import GenericControllerParser
 from jmx_builder.parsers.elements.header_manager_parser import HeaderManagerParser
 from jmx_builder.parsers.elements.http_sampler_proxy_parser import HTTPSamplerProxyParser
+from jmx_builder.parsers.elements.if_controller_parser import IfControllerParser
+from jmx_builder.parsers.elements.include_controller_parser import IncludeControllerParser
+from jmx_builder.parsers.elements.interleave_control_parser import InterleaveControlParser
 from jmx_builder.parsers.elements.jsr223_parser import JSR223PostProcessorParser, JSR223PreProcessorParser, JSR223SamplerParser
+from jmx_builder.parsers.elements.loop_controller_parser import LoopControllerParser
+from jmx_builder.parsers.elements.module_controller_parser import ModuleControllerParser
+from jmx_builder.parsers.elements.once_only_controller_parser import OnceOnlyControllerParser
 from jmx_builder.parsers.elements.precise_throughput_timer_parser import PreciseThroughputTimerParser
+from jmx_builder.parsers.elements.random_controller_parser import RandomControllerParser
+from jmx_builder.parsers.elements.random_order_controller_parser import RandomOrderControllerParser
+from jmx_builder.parsers.elements.recording_controller_parser import RecordingControllerParser
+from jmx_builder.parsers.elements.regex_extractor_parser import RegexExtractorParser
+from jmx_builder.parsers.elements.runtime_parser import RunTimeParser
+from jmx_builder.parsers.elements.switch_controller_parser import SwitchControllerParser
 from jmx_builder.parsers.elements.test_action_parser import TestActionParser
+from jmx_builder.parsers.elements.throughput_controller_parser import ThroughputControllerParser
 from jmx_builder.parsers.elements.uniform_random_timer_parser import UniformRandomTimerParser
+from jmx_builder.parsers.elements.while_controller_parser import WhileControllerParser
 from scope import extract_scope_by_element_name
 from har_parser import parse_har
 from jmeter_parser import parse_jmeter
@@ -216,222 +233,122 @@ SLog.register_logger(logger)
 xml = '''<?xml version="1.0" encoding="UTF-8"?>
 <jmeterTestPlan version="1.2" properties="5.0" jmeter="5.6.3">
   <hashTree>
-    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="My Test Plan">
+    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="Test Plan">
       <boolProp name="TestPlan.tearDown_on_shutdown">true</boolProp>
       <elementProp name="TestPlan.user_defined_variables" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables">
-        <collectionProp name="Arguments.arguments">
-          <elementProp name="host" elementType="Argument">
-            <stringProp name="Argument.name">host</stringProp>
-            <stringProp name="Argument.value">localhost</stringProp>
-            <stringProp name="Argument.metadata">=</stringProp>
-          </elementProp>
-        </collectionProp>
+        <collectionProp name="Arguments.arguments"/>
       </elementProp>
     </TestPlan>
     <hashTree>
-      <CookieManager guiclass="CookiePanel" testclass="CookieManager" testname="HTTP Cookie Manager">
-        <collectionProp name="CookieManager.cookies">
-          <elementProp name="cookie1" elementType="Cookie" testname="cookie1">
-            <stringProp name="Cookie.value">123</stringProp>
-            <stringProp name="Cookie.domain">domain</stringProp>
-            <stringProp name="Cookie.path">/index.html</stringProp>
-            <boolProp name="Cookie.secure">true</boolProp>
-            <longProp name="Cookie.expires">0</longProp>
-            <boolProp name="Cookie.path_specified">true</boolProp>
-            <boolProp name="Cookie.domain_specified">true</boolProp>
-          </elementProp>
-          <elementProp name="cookie2" elementType="Cookie" testname="cookie2">
-            <stringProp name="Cookie.value">321</stringProp>
-            <stringProp name="Cookie.domain">domain</stringProp>
-            <stringProp name="Cookie.path">/path</stringProp>
-            <boolProp name="Cookie.secure">false</boolProp>
-            <longProp name="Cookie.expires">0</longProp>
-            <boolProp name="Cookie.path_specified">true</boolProp>
-            <boolProp name="Cookie.domain_specified">true</boolProp>
-          </elementProp>
+      <ForeachController guiclass="ForeachControlPanel" testclass="ForeachController" testname="ForEach Controller">
+        <stringProp name="ForeachController.inputVal">prefix</stringProp>
+        <stringProp name="ForeachController.returnVal">varname</stringProp>
+        <boolProp name="ForeachController.useSeparator">true</boolProp>
+        <stringProp name="ForeachController.startIndex">1</stringProp>
+        <stringProp name="ForeachController.endIndex">10</stringProp>
+      </ForeachController>
+      <hashTree/>
+      <IncludeController guiclass="IncludeControllerGui" testclass="IncludeController" testname="Include Controller">
+        <stringProp name="IncludeController.includepath">filename.jmx</stringProp>
+      </IncludeController>
+      <hashTree/>
+      <OnceOnlyController guiclass="OnceOnlyControllerGui" testclass="OnceOnlyController" testname="Once Only Controller"/>
+      <hashTree/>
+      <InterleaveControl guiclass="InterleaveControlGui" testclass="InterleaveControl" testname="Interleave Controller">
+        <intProp name="InterleaveControl.style">0</intProp>
+        <boolProp name="InterleaveControl.accrossThreads">true</boolProp>
+      </InterleaveControl>
+      <hashTree/>
+      <RandomController guiclass="RandomControlGui" testclass="RandomController" testname="Random Controller">
+        <intProp name="InterleaveControl.style">1</intProp>
+      </RandomController>
+      <hashTree/>
+      <RandomOrderController guiclass="RandomOrderControllerGui" testclass="RandomOrderController" testname="Random Order Controller"/>
+      <hashTree/>
+      <RecordingController guiclass="RecordController" testclass="RecordingController" testname="Recording Controller"/>
+      <hashTree/>
+      <RunTime guiclass="RunTimeGui" testclass="RunTime" testname="Runtime Controller">
+        <stringProp name="RunTime.seconds">10</stringProp>
+      </RunTime>
+      <hashTree/>
+      <GenericController guiclass="LogicControllerGui" testclass="GenericController" testname="Simple Controller"/>
+      <hashTree/>
+      <ThroughputController guiclass="ThroughputControllerGui" testclass="ThroughputController" testname="Throughput Controller">
+        <intProp name="ThroughputController.style">1</intProp>
+        <boolProp name="ThroughputController.perThread">true</boolProp>
+        <intProp name="ThroughputController.maxThroughput">20</intProp>
+        <FloatProperty>
+          <name>ThroughputController.percentThroughput</name>
+          <value>50.5</value>
+          <savedValue>0.0</savedValue>
+        </FloatProperty>
+      </ThroughputController>
+      <hashTree/>
+      <SwitchController guiclass="SwitchControllerGui" testclass="SwitchController" testname="Switch Controller">
+        <stringProp name="SwitchController.value">switch_value</stringProp>
+      </SwitchController>
+      <hashTree/>
+      <ModuleController guiclass="ModuleControllerGui" testclass="ModuleController" testname="Module Controller">
+        <collectionProp name="ModuleController.node_path">
+          <stringProp name="764597751">Test Plan</stringProp>
+          <stringProp name="1732785315">My Test Plan</stringProp>
+          <stringProp name="-1948168983">Thread Group</stringProp>
         </collectionProp>
-        <boolProp name="CookieManager.clearEachIteration">true</boolProp>
-        <boolProp name="CookieManager.controlledByThreadGroup">true</boolProp>
-        <stringProp name="CookieManager.policy">best-match</stringProp>
-      </CookieManager>
+      </ModuleController>
       <hashTree/>
-      <CacheManager guiclass="CacheManagerGui" testclass="CacheManager" testname="HTTP Cache Manager" enabled="true">
-        <boolProp name="clearEachIteration">false</boolProp>
-        <boolProp name="useExpires">false</boolProp>
-        <boolProp name="CacheManager.controlledByThread">true</boolProp>
-        <intProp name="maxSize">5005</intProp>
-      </CacheManager>
+      <ModuleController guiclass="ModuleControllerGui" testclass="ModuleController" testname="Empty Module Controller"/>
       <hashTree/>
-      <Arguments guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
-        <collectionProp name="Arguments.arguments">
-          <elementProp name="var1" elementType="Argument">
-            <stringProp name="Argument.name">var1</stringProp>
-            <stringProp name="Argument.value">value1</stringProp>
-            <stringProp name="Argument.desc">descr1</stringProp>
-            <stringProp name="Argument.metadata">=</stringProp>
-          </elementProp>
-          <elementProp name="var2" elementType="Argument">
-            <stringProp name="Argument.name">var2</stringProp>
-            <stringProp name="Argument.value">value2</stringProp>
-            <stringProp name="Argument.desc">desdcr2</stringProp>
-            <stringProp name="Argument.metadata">=</stringProp>
-          </elementProp>
-        </collectionProp>
-      </Arguments>
-      <hashTree/>
-      <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP Header Manager" enabled="true">
-        <collectionProp name="HeaderManager.headers">
-          <elementProp name="" elementType="Header">
-            <stringProp name="Header.name">header</stringProp>
-            <stringProp name="Header.value">shoulers</stringProp>
-          </elementProp>
-          <elementProp name="" elementType="Header">
-            <stringProp name="Header.name">header2</stringProp>
-            <stringProp name="Header.value">shoulders</stringProp>
-          </elementProp>
-        </collectionProp>
-      </HeaderManager>
-      <hashTree/>
-      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Thread Group">
-        <intProp name="ThreadGroup.num_threads">1</intProp>
-        <intProp name="ThreadGroup.ramp_time">1</intProp>
-        <longProp name="ThreadGroup.duration">0</longProp>
-        <longProp name="ThreadGroup.delay">0</longProp>
-        <boolProp name="ThreadGroup.same_user_on_next_iteration">true</boolProp>
-        <stringProp name="ThreadGroup.on_sample_error">stopthread</stringProp>
-        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller">
-          <stringProp name="LoopController.loops">1</stringProp>
-          <boolProp name="LoopController.continue_forever">false</boolProp>
-        </elementProp>
-      </ThreadGroup>
-      <hashTree>
-        <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="Transaction Controller">
-          <boolProp name="TransactionController.includeTimers">false</boolProp>
-        </TransactionController>
-        <hashTree>
-          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="HTTP Request">
-            <stringProp name="TestPlan.comments">comment</stringProp>
-            <boolProp name="HTTPSampler.image_parser">true</boolProp>
-            <boolProp name="HTTPSampler.md5">true</boolProp>
-            <stringProp name="HTTPSampler.ipSource">192.168.1.1</stringProp>
-            <stringProp name="HTTPSampler.proxyScheme">scheme</stringProp>
-            <stringProp name="HTTPSampler.proxyHost">127.0.0.1</stringProp>
-            <intProp name="HTTPSampler.proxyPort">8080</intProp>
-            <stringProp name="HTTPSampler.proxyUser">proxyusername</stringProp>
-            <stringProp name="HTTPSampler.proxyPass">proxypass</stringProp>
-            <stringProp name="HTTPSampler.domain">127.0.0.1</stringProp>
-            <stringProp name="HTTPSampler.port">80</stringProp>
-            <stringProp name="HTTPSampler.protocol">http</stringProp>
-            <stringProp name="HTTPSampler.contentEncoding">utf-8</stringProp>
-            <stringProp name="HTTPSampler.path">/index.html</stringProp>
-            <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
-            <stringProp name="HTTPSampler.method">GET</stringProp>
-            <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
-            <boolProp name="HTTPSampler.DO_MULTIPART_POST">true</boolProp>
-            <boolProp name="HTTPSampler.BROWSER_COMPATIBLE_MULTIPART">true</boolProp>
-            <boolProp name="HTTPSampler.postBodyRaw">false</boolProp>
-            <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables">
-              <collectionProp name="Arguments.arguments">
-                <elementProp name="username" elementType="HTTPArgument">
-                  <boolProp name="HTTPArgument.always_encode">false</boolProp>
-                  <stringProp name="Argument.value">admin</stringProp>
-                  <stringProp name="Argument.metadata">=</stringProp>
-                  <boolProp name="HTTPArgument.use_equals">true</boolProp>
-                  <stringProp name="Argument.name">username</stringProp>
-                </elementProp>
-                <elementProp name="password" elementType="HTTPArgument">
-                  <boolProp name="HTTPArgument.always_encode">false</boolProp>
-                  <stringProp name="Argument.value">adminpass</stringProp>
-                  <stringProp name="Argument.metadata">=</stringProp>
-                  <boolProp name="HTTPArgument.use_equals">true</boolProp>
-                  <stringProp name="Argument.name">password</stringProp>
-                </elementProp>
-              </collectionProp>
-            </elementProp>
-            <intProp name="HTTPSampler.ipSourceType">3</intProp>
-            <stringProp name="HTTPSampler.implementation">Java</stringProp>
-          </HTTPSamplerProxy>
-          <hashTree/>
-          <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="JSR223 Sampler">
-            <stringProp name="cacheKey">true</stringProp>
-            <stringProp name="filename">path/to/file</stringProp>
-            <stringProp name="parameters">parameter</stringProp>
-            <stringProp name="script">SAMPLER
-vars.get(&quot;current_time&quot;)
-
-hello world</stringProp>
-            <stringProp name="scriptLanguage">groovy</stringProp>
-          </JSR223Sampler>
-          <hashTree/>
-          <JSR223PreProcessor guiclass="TestBeanGUI" testclass="JSR223PreProcessor" testname="JSR223 PreProcessor">
-            <stringProp name="cacheKey">true</stringProp>
-            <stringProp name="filename">path/to/file</stringProp>
-            <stringProp name="parameters">Params</stringProp>
-            <stringProp name="script">PREPROC
-vars.get(&quot;current_time&quot;)
-
-hello world</stringProp>
-            <stringProp name="scriptLanguage">groovy</stringProp>
-          </JSR223PreProcessor>
-          <hashTree/>
-          <JSR223PostProcessor guiclass="TestBeanGUI" testclass="JSR223PostProcessor" testname="JSR223 PostProcessor">
-            <stringProp name="cacheKey">true</stringProp>
-            <stringProp name="filename">path/to/file</stringProp>
-            <stringProp name="parameters">Params</stringProp>
-            <stringProp name="script">POST PROC
-vars.get(&quot;current_time&quot;)
-
-hello world</stringProp>
-            <stringProp name="scriptLanguage">groovy</stringProp>
-          </JSR223PostProcessor>
-          <hashTree/>
-          <TestAction guiclass="TestActionGui" testclass="TestAction" testname="Think Time">
-            <intProp name="ActionProcessor.action">1</intProp>
-            <intProp name="ActionProcessor.target">0</intProp>
-            <stringProp name="ActionProcessor.duration">0</stringProp>
-          </TestAction>
-          <hashTree>
-            <UniformRandomTimer guiclass="UniformRandomTimerGui" testclass="UniformRandomTimer" testname="Pause">
-              <stringProp name="ConstantTimer.delay">1000</stringProp>
-              <stringProp name="RandomTimer.range">100</stringProp>
-            </UniformRandomTimer>
-            <hashTree/>
-          </hashTree>
-        </hashTree>
-      </hashTree>
     </hashTree>
   </hashTree>
-</jmeterTestPlan>
-'''
+</jmeterTestPlan>'''
 
 parser1: TreeParser = TreeParser()
 parser1.register_parser("TestPlan", TestPlanParser)
 parser1.register_parser("ThreadGroup", ThreadGroupParser)
-parser1.register_parser("TransactionController", TransactionControllerParser)
-parser1.register_parser("HTTPSamplerProxy", HTTPSamplerProxyParser)
 parser1.register_parser("CookieManager", CookieManagerParser)
 parser1.register_parser("CacheManager", CacheManagerParser)
 parser1.register_parser("Arguments", ArgumentsParser)
 parser1.register_parser("HeaderManager", HeaderManagerParser)
-parser1.register_parser("TestAction", TestActionParser)
 parser1.register_parser("UniformRandomTimer", UniformRandomTimerParser)
 parser1.register_parser("ConstantTimer", ConstantTimerParser)
 parser1.register_parser("PreciseThroughputTimer", PreciseThroughputTimerParser)
 parser1.register_parser("ConstantThroughputTimer", ConstantThroughputTimerParser)
-parser1.register_parser("JSR223Sampler", JSR223SamplerParser)
 parser1.register_parser("JSR223PreProcessor", JSR223PreProcessorParser)
 parser1.register_parser("JSR223PostProcessor", JSR223PostProcessorParser)
 
+# Samplers
+parser1.register_parser("TestAction", TestActionParser)
+parser1.register_parser("HTTPSamplerProxy", HTTPSamplerProxyParser)
+parser1.register_parser("JSR223Sampler", JSR223SamplerParser)
+
+# POST PROCESS
+parser1.register_parser("RegexExtractor", RegexExtractorParser)
+
+# Controls
+parser1.register_parser("IfController", IfControllerParser)
+parser1.register_parser("TransactionController", TransactionControllerParser)
+parser1.register_parser("LoopController", LoopControllerParser)
+parser1.register_parser("WhileController", WhileControllerParser)
+parser1.register_parser("CriticalSectionController", CriticalSectionControllerParser)
+parser1.register_parser("ForeachController", ForeachControllerParser)
+parser1.register_parser("IncludeController", IncludeControllerParser)
+parser1.register_parser("InterleaveControl", InterleaveControlParser)
+parser1.register_parser("OnceOnlyController", OnceOnlyControllerParser)
+parser1.register_parser("RandomController", RandomControllerParser)
+parser1.register_parser("RandomOrderController", RandomOrderControllerParser)
+parser1.register_parser("RecordingController", RecordingControllerParser)
+parser1.register_parser("RunTime", RunTimeParser)
+parser1.register_parser("GenericController", GenericControllerParser)
+parser1.register_parser("ThroughputController", ThroughputControllerParser)
+parser1.register_parser("ModuleController", ModuleControllerParser)
+parser1.register_parser("SwitchController", SwitchControllerParser)
+
+
+
 test_plan = parser1.parse(xml)
 
-jsrSampler = test_plan.children[0].children[4].children[0].children[1]
-jsrPre = test_plan.children[0].children[4].children[0].children[2]
-jsrPost = test_plan.children[0].children[4].children[0].children[3]
-
-jsrSampler.print_info()
-jsrPre.print_info()
-jsrPost.print_info()
-
+for child in test_plan.children[0].children:
+    child.print_info()
 
 res = test_plan.to_xml()
 SLog.log("=============================================")

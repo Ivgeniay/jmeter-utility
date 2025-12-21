@@ -4,6 +4,7 @@ import re
 
 
 class TreeElementParser(ABC):
+    
     @staticmethod
     @abstractmethod
     def parse(xml_content: str) -> TreeElement:

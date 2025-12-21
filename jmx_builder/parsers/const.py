@@ -263,3 +263,96 @@ JSR223_PARAMETERS = "parameters"
 JSR223_SCRIPT = "script"
 # UI: Cache compiled script
 JSR223_CACHE_KEY = "cacheKey"
+
+
+# IfController
+# UI: Condition (expression)
+IFCONTROLLER_CONDITION = "IfController.condition"
+# UI: Evaluate for all children
+IFCONTROLLER_EVALUATE_ALL = "IfController.evaluateAll"
+# UI: Interpret Condition as Variable Expression
+IFCONTROLLER_USE_EXPRESSION = "IfController.useExpression"
+
+# WhileController
+# UI: Condition (function or variable)
+WHILECONTROLLER_CONDITION = "WhileController.condition"
+
+# CriticalSectionController
+# UI: Lock name
+CRITICALSECTIONCONTROLLER_LOCK_NAME = "CriticalSectionController.lockName"
+
+
+# ForeachController
+# UI: Input variable prefix
+FOREACHCONTROLLER_INPUT_VAL = "ForeachController.inputVal"
+# UI: Output variable name
+FOREACHCONTROLLER_RETURN_VAL = "ForeachController.returnVal"
+# UI: Add "_" before number
+FOREACHCONTROLLER_USE_SEPARATOR = "ForeachController.useSeparator"
+# UI: Start index for loop (exclusive)
+FOREACHCONTROLLER_START_INDEX = "ForeachController.startIndex"
+# UI: End index for loop (inclusive)
+FOREACHCONTROLLER_END_INDEX = "ForeachController.endIndex"
+
+
+# IncludeController
+# UI: Filename
+INCLUDECONTROLLER_INCLUDE_PATH = "IncludeController.includepath"
+
+# InterleaveControl
+# UI: Interleave style (0 - ignore sub-controllers, 1 - interleave across threads)
+INTERLEAVECONTROL_STYLE = "InterleaveControl.style"
+# UI: Interleave across threads
+INTERLEAVECONTROL_ACCROSS_THREADS = "InterleaveControl.accrossThreads"
+
+# RunTime
+# UI: Runtime (seconds)
+RUNTIME_SECONDS = "RunTime.seconds"
+
+# ThroughputController
+# UI: Based on (0 - Total Executions, 1 - Percent Executions)
+THROUGHPUTCONTROLLER_STYLE = "ThroughputController.style"
+# UI: Per User
+THROUGHPUTCONTROLLER_PER_THREAD = "ThroughputController.perThread"
+# UI: Throughput (for Total Executions mode)
+THROUGHPUTCONTROLLER_MAX_THROUGHPUT = "ThroughputController.maxThroughput"
+# UI: Throughput (for Percent Executions mode)
+THROUGHPUTCONTROLLER_PERCENT_THROUGHPUT = "ThroughputController.percentThroughput"
+
+
+# SwitchController
+# UI: Switch Value
+SWITCHCONTROLLER_VALUE = "SwitchController.value"
+
+# ModuleController
+# UI: Module path
+MODULECONTROLLER_NODE_PATH = "ModuleController.node_path"
+
+# DebugSampler
+# UI: JMeter properties
+DEBUGSAMPLER_DISPLAY_JMETER_PROPERTIES = "displayJMeterProperties"
+# UI: JMeter variables
+DEBUGSAMPLER_DISPLAY_JMETER_VARIABLES = "displayJMeterVariables"
+# UI: System properties
+DEBUGSAMPLER_DISPLAY_SYSTEM_PROPERTIES = "displaySystemProperties"
+
+
+# RegexExtractor
+# UI: Field to check
+REGEXEXTRACTOR_USE_HEADERS = "RegexExtractor.useHeaders"
+# UI: Name of created variable
+REGEXEXTRACTOR_REFNAME = "RegexExtractor.refname"
+# UI: Regular Expression
+REGEXEXTRACTOR_REGEX = "RegexExtractor.regex"
+# UI: Template
+REGEXEXTRACTOR_TEMPLATE = "RegexExtractor.template"
+# UI: Default Value
+REGEXEXTRACTOR_DEFAULT = "RegexExtractor.default"
+# UI: Use empty default value
+REGEXEXTRACTOR_DEFAULT_EMPTY_VALUE = "RegexExtractor.default_empty_value"
+# UI: Match No.
+REGEXEXTRACTOR_MATCH_NUMBER = "RegexExtractor.match_number"
+# UI: Apply to (scope)
+SAMPLE_SCOPE = "Sample.scope"
+# UI: JMeter Variable Name (when scope=variable)
+SCOPE_VARIABLE = "Scope.variable"

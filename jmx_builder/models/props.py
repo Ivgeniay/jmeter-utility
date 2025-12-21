@@ -484,5 +484,23 @@ class DoubleProp(JMXElement):
         return f"<{self.tag_name}>\n{inner}\n</{self.tag_name}>"
 
 
+class FloatProperty(JMXElement):
+    def __init__(self, name: str, value: float = 0.0, saved_value: float = 0.0):
+        self.name = name
+        self.value = value
+        self.saved_value = saved_value
+    
+    @property
+    def tag_name(self) -> str:
+        return "FloatProperty"
+    
+    def to_xml(self) -> str:
+        parts = [
+            f"<name>{self.name}</name>",
+            f"<value>{self.value}</value>",
+            f"<savedValue>{self.saved_value}</savedValue>"
+        ]
+        inner = "\n".join([self._indent(p) for p in parts])
+        return f"<{self.tag_name}>\n{inner}\n</{self.tag_name}>"
 
 

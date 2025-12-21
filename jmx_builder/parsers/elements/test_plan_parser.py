@@ -1,18 +1,6 @@
 from jmx_builder.parsers.elements.base import TreeElementParser
 from jmx_builder.models.tree import TestPlan
-from jmx_builder.parsers.const import (
-    ATTR_ENABLED,
-    ATTR_TESTNAME,
-    TESTPLAN_COMMENTS,
-    TESTPLAN_FUNCTIONAL_MODE,
-    TESTPLAN_SERIALIZE_THREADGROUPS,
-    TESTPLAN_TEARDOWN_ON_SHUTDOWN,
-    TESTPLAN_USER_DEFINED_VARIABLES,
-    TESTPLAN_USER_DEFINE_CLASSPATH,
-    ARGUMENT_NAME,
-    ARGUMENT_VALUE,
-    ARGUMENTS_ARGUMENTS,
-)
+from jmx_builder.parsers.const import *
 
 
 class TestPlanParser(TreeElementParser):

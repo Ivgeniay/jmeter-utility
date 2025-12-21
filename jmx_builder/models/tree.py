@@ -410,7 +410,844 @@ class TransactionController(TreeElement):
         SLog.log(f"  children: {len(self.children)}")
 
 
-################## SAMPLERS ######################
+class IfController(TreeElement):
+    def __init__(
+        self,
+        testname: str = "If Controller",
+        enabled: bool = True
+    ):
+        self.condition: StringProp = StringProp(IFCONTROLLER_CONDITION, "")
+        self.evaluate_all: BoolProp = BoolProp(IFCONTROLLER_EVALUATE_ALL, False)
+        self.use_expression: BoolProp = BoolProp(IFCONTROLLER_USE_EXPRESSION, True)
+        
+        super().__init__(
+            testname=testname,
+            enabled=enabled,
+            properties=[
+                self.condition,
+                self.evaluate_all,
+                self.use_expression
+            ]
+        )
+    
+    @property
+    def tag_name(self) -> str:
+        return "IfController"
+    
+    @property
+    def guiclass(self) -> str:
+        return "IfControllerPanel"
+    
+    @property
+    def testclass(self) -> str:
+        return "IfController"
+    
+    @staticmethod
+    def create_default(testname: str = "If Controller") -> "IfController":
+        return IfController(testname=testname)
+    
+    def set_condition(self, condition: str) -> None:
+        self.condition.value = condition
+    
+    def set_evaluate_all(self, enable: bool) -> None:
+        self.evaluate_all.value = enable
+    
+    def set_use_expression(self, enable: bool) -> None:
+        self.use_expression.value = enable
+    
+    def print_info(self) -> None:
+        SLog.log(f"=== IfController: {self.testname} ===")
+        SLog.log(f"  enabled: {self.enabled}")
+        SLog.log(f"  comment: {self.comment.value}")
+        SLog.log(f"  condition: {self.condition.value}")
+        SLog.log(f"  evaluate_all: {self.evaluate_all.value}")
+        SLog.log(f"  use_expression: {self.use_expression.value}")
+        SLog.log(f"  children: {len(self.children)}")
+
+
+class LoopController(TreeElement):
+    def __init__(
+        self,
+        testname: str = "Loop Controller",
+        enabled: bool = True
+    ):
+        self._loop_count_infinite: bool = False
+        self._loop_count_prop: IntProp | StringProp = StringProp(LOOPCONTROLLER_LOOPS, "1")
+        self._continue_forever: BoolProp = BoolProp(LOOPCONTROLLER_CONTINUE_FOREVER, True)
+        
+        super().__init__(
+            testname=testname,
+            enabled=enabled,
+            properties=[
+                self._loop_count_prop,
+                self._continue_forever
+            ]
+        )
+    
+    @property
+    def tag_name(self) -> str:
+        return "LoopController"
+    
+    @property
+    def guiclass(self) -> str:
+        return "LoopControlPanel"
+    
+    @property
+    def testclass(self) -> str:
+        return "LoopController"
+    
+    @staticmethod
+    def create_default(testname: str = "Loop Controller") -> "LoopController":
+        return LoopController(testname=testname)
+    
+    def set_loop_count(self, count: int) -> None:
+        if self._loop_count_infinite:
+            new_prop = StringProp(LOOPCONTROLLER_LOOPS, str(count))
+            self._replace_property(self._loop_count_prop, new_prop)
+            self._loop_count_prop = new_prop
+            self._loop_count_infinite = False
+        else:
+            self._loop_count_prop.value = str(count)
+    
+    def set_loop_count_infinite(self, enable: bool) -> None:
+        if enable and not self._loop_count_infinite:
+            new_prop = IntProp(LOOPCONTROLLER_LOOPS, -1)
+            self._replace_property(self._loop_count_prop, new_prop)
+            self._loop_count_prop = new_prop
+            self._loop_count_infinite = True
+        elif not enable and self._loop_count_infinite:
+            new_prop = StringProp(LOOPCONTROLLER_LOOPS, "1")
+            self._replace_property(self._loop_count_prop, new_prop)
+            self._loop_count_prop = new_prop
+            self._loop_count_infinite = False
+    
+    def _replace_property(self, old_prop: PropElement, new_prop: PropElement) -> None:
+        if old_prop in self.properties:
+            index = self.properties.index(old_prop)
+            self.properties[index] = new_prop
+    
+    def print_info(self) -> None:
+        SLog.log(f"=== LoopController: {self.testname} ===")
+        SLog.log(f"  enabled: {self.enabled}")
+        SLog.log(f"  comment: {self.comment.value}")
+        SLog.log(f"  loop_count_infinite: {self._loop_count_infinite}")
+        SLog.log(f"  loop_count: {self._loop_count_prop.value}")
+        SLog.log(f"  continue_forever: {self._continue_forever.value}")
+        SLog.log(f"  children: {len(self.children)}")
+
+
+class WhileController(TreeElement):
+    def __init__(
+        self,
+        testname: str = "While Controller",
+        enabled: bool = True
+    ):
+        self.condition: StringProp = StringProp(WHILECONTROLLER_CONDITION, "")
+        
+        super().__init__(
+            testname=testname,
+            enabled=enabled,
+            properties=[
+                self.condition
+            ]
+        )
+    
+    @property
+    def tag_name(self) -> str:
+        return "WhileController"
+    
+    @property
+    def guiclass(self) -> str:
+        return "WhileControllerGui"
+    
+    @property
+    def testclass(self) -> str:
+        return "WhileController"
+    
+    @staticmethod
+    def create_default(testname: str = "While Controller") -> "WhileController":
+        return WhileController(testname=testname)
+    
+    def set_condition(self, condition: str) -> None:
+        self.condition.value = condition
+    
+    def print_info(self) -> None:
+        SLog.log(f"=== WhileController: {self.testname} ===")
+        SLog.log(f"  enabled: {self.enabled}")
+        SLog.log(f"  comment: {self.comment.value}")
+        condition_preview = self.condition.value[:50] + "..." if len(self.condition.value) > 50 else self.condition.value
+        SLog.log(f"  condition: {condition_preview}")
+        SLog.log(f"  children: {len(self.children)}")
+
+
+class CriticalSectionController(TreeElement):
+    def __init__(
+        self,
+        testname: str = "Critical Section Controller",
+        enabled: bool = True
+    ):
+        self.lock_name: StringProp = StringProp(CRITICALSECTIONCONTROLLER_LOCK_NAME, "global_lock")
+        
+        super().__init__(
+            testname=testname,
+            enabled=enabled,
+            properties=[
+                self.lock_name
+            ]
+        )
+    
+    @property
+    def tag_name(self) -> str:
+        return "CriticalSectionController"
+    
+    @property
+    def guiclass(self) -> str:
+        return "CriticalSectionControllerGui"
+    
+    @property
+    def testclass(self) -> str:
+        return "CriticalSectionController"
+    
+    @staticmethod
+    def create_default(testname: str = "Critical Section Controller") -> "CriticalSectionController":
+        return CriticalSectionController(testname=testname)
+    
+    def set_lock_name(self, name: str) -> None:
+        self.lock_name.value = name
+    
+    def print_info(self) -> None:
+        SLog.log(f"=== CriticalSectionController: {self.testname} ===")
+        SLog.log(f"  enabled: {self.enabled}")
+        SLog.log(f"  comment: {self.comment.value}")
+        SLog.log(f"  lock_name: {self.lock_name.value}")
+        SLog.log(f"  children: {len(self.children)}")
+
+
+class ForeachController(TreeElement):
+    def __init__(
+        self,
+        testname: str = "ForEach Controller",
+        enabled: bool = True
+    ):
+        self.input_val: StringProp = StringProp(FOREACHCONTROLLER_INPUT_VAL, "")
+        self.return_val: StringProp = StringProp(FOREACHCONTROLLER_RETURN_VAL, "")
+        self.use_separator: BoolProp = BoolProp(FOREACHCONTROLLER_USE_SEPARATOR, True)
+        self.start_index: StringProp = StringProp(FOREACHCONTROLLER_START_INDEX, "")
+        self.end_index: StringProp = StringProp(FOREACHCONTROLLER_END_INDEX, "")
+        
+        super().__init__(
+            testname=testname,
+            enabled=enabled,
+            properties=[
+                self.input_val,
+                self.return_val,
+                self.use_separator,
+                self.start_index,
+                self.end_index
+            ]
+        )
+    
+    @property
+    def tag_name(self) -> str:
+        return "ForeachController"
+    
+    @property
+    def guiclass(self) -> str:
+        return "ForeachControlPanel"
+    
+    @property
+    def testclass(self) -> str:
+        return "ForeachController"
+    
+    @staticmethod
+    def create_default(testname: str = "ForEach Controller") -> "ForeachController":
+        return ForeachController(testname=testname)
+    
+    def set_input_variable(self, prefix: str) -> None:
+        self.input_val.value = prefix
+    
+    def set_output_variable(self, name: str) -> None:
+        self.return_val.value = name
+    
+    def set_use_separator(self, enable: bool) -> None:
+        self.use_separator.value = enable
+    
+    def set_start_index(self, index: int) -> None:
+        self.start_index.value = str(index)
+    
+    def set_start_index_raw(self, index: str) -> None:
+        self.start_index.value = index
+    
+    def set_end_index(self, index: int) -> None:
+        self.end_index.value = str(index)
+    
+    def set_end_index_raw(self, index: str) -> None:
+        self.end_index.value = index
+    
+    def print_info(self) -> None:
+        SLog.log(f"=== ForeachController: {self.testname} ===")
+        SLog.log(f"  enabled: {self.enabled}")
+        SLog.log(f"  comment: {self.comment.value}")
+        SLog.log(f"  input_val: {self.input_val.value}")
+        SLog.log(f"  return_val: {self.return_val.value}")
+        SLog.log(f"  use_separator: {self.use_separator.value}")
+        SLog.log(f"  start_index: {self.start_index.value}")
+        SLog.log(f"  end_index: {self.end_index.value}")
+        SLog.log(f"  children: {len(self.children)}")
+
+
+class IncludeController(TreeElement):
+    def __init__(
+        self,
+        testname: str = "Include Controller",
+        enabled: bool = True
+    ):
+        self.include_path: StringProp = StringProp(INCLUDECONTROLLER_INCLUDE_PATH, "")
+        
+        super().__init__(
+            testname=testname,
+            enabled=enabled,
+            properties=[
+                self.include_path
+            ]
+        )
+    
+    @property
+    def tag_name(self) -> str:
+        return "IncludeController"
+    
+    @property
+    def guiclass(self) -> str:
+        return "IncludeControllerGui"
+    
+    @property
+    def testclass(self) -> str:
+        return "IncludeController"
+    
+    @staticmethod
+    def create_default(testname: str = "Include Controller") -> "IncludeController":
+        return IncludeController(testname=testname)
+    
+    def set_include_path(self, path: str) -> None:
+        self.include_path.value = path
+    
+    def print_info(self) -> None:
+        SLog.log(f"=== IncludeController: {self.testname} ===")
+        SLog.log(f"  enabled: {self.enabled}")
+        SLog.log(f"  comment: {self.comment.value}")
+        SLog.log(f"  include_path: {self.include_path.value}")
+        SLog.log(f"  children: {len(self.children)}")
+
+
+class OnceOnlyController(TreeElement):
+    def __init__(
+        self,
+        testname: str = "Once Only Controller",
+        enabled: bool = True
+    ):
+        super().__init__(
+            testname=testname,
+            enabled=enabled,
+            properties=[]
+        )
+    
+    @property
+    def tag_name(self) -> str:
+        return "OnceOnlyController"
+    
+    @property
+    def guiclass(self) -> str:
+        return "OnceOnlyControllerGui"
+    
+    @property
+    def testclass(self) -> str:
+        return "OnceOnlyController"
+    
+    @staticmethod
+    def create_default(testname: str = "Once Only Controller") -> "OnceOnlyController":
+        return OnceOnlyController(testname=testname)
+    
+    def print_info(self) -> None:
+        SLog.log(f"=== OnceOnlyController: {self.testname} ===")
+        SLog.log(f"  enabled: {self.enabled}")
+        SLog.log(f"  comment: {self.comment.value}")
+        SLog.log(f"  children: {len(self.children)}")
+
+
+class InterleaveStyle(Enum):
+    IGNORE_SUB_CONTROLLERS = 0
+    INTERLEAVE_SUB_CONTROLLERS = 1
+
+
+class InterleaveControl(TreeElement):
+    def __init__(
+        self,
+        testname: str = "Interleave Controller",
+        enabled: bool = True
+    ):
+        self.style: IntProp = IntProp(INTERLEAVECONTROL_STYLE, InterleaveStyle.IGNORE_SUB_CONTROLLERS.value)
+        self.accross_threads: BoolProp = BoolProp(INTERLEAVECONTROL_ACCROSS_THREADS, False)
+        
+        super().__init__(
+            testname=testname,
+            enabled=enabled,
+            properties=[
+                self.style,
+                self.accross_threads
+            ]
+        )
+    
+    @property
+    def tag_name(self) -> str:
+        return "InterleaveControl"
+    
+    @property
+    def guiclass(self) -> str:
+        return "InterleaveControlGui"
+    
+    @property
+    def testclass(self) -> str:
+        return "InterleaveControl"
+    
+    @staticmethod
+    def create_default(testname: str = "Interleave Controller") -> "InterleaveControl":
+        return InterleaveControl(testname=testname)
+    
+    def set_style(self, style: InterleaveStyle) -> None:
+        self.style.value = style.value
+    
+    def set_style_raw(self, style: int) -> None:
+        self.style.value = style
+    
+    def set_accross_threads(self, enable: bool) -> None:
+        self.accross_threads.value = enable
+    
+    def print_info(self) -> None:
+        SLog.log(f"=== InterleaveControl: {self.testname} ===")
+        SLog.log(f"  enabled: {self.enabled}")
+        SLog.log(f"  comment: {self.comment.value}")
+        
+        style_name = "unknown"
+        for s in InterleaveStyle:
+            if s.value == self.style.value:
+                style_name = s.name
+                break
+        SLog.log(f"  style: {self.style.value} ({style_name})")
+        SLog.log(f"  accross_threads: {self.accross_threads.value}")
+        SLog.log(f"  children: {len(self.children)}")
+
+
+class RandomController(TreeElement):
+    def __init__(
+        self,
+        testname: str = "Random Controller",
+        enabled: bool = True
+    ):
+        self.style: IntProp = IntProp(INTERLEAVECONTROL_STYLE, InterleaveStyle.IGNORE_SUB_CONTROLLERS.value)
+        
+        super().__init__(
+            testname=testname,
+            enabled=enabled,
+            properties=[
+                self.style
+            ]
+        )
+    
+    @property
+    def tag_name(self) -> str:
+        return "RandomController"
+    
+    @property
+    def guiclass(self) -> str:
+        return "RandomControlGui"
+    
+    @property
+    def testclass(self) -> str:
+        return "RandomController"
+    
+    @staticmethod
+    def create_default(testname: str = "Random Controller") -> "RandomController":
+        return RandomController(testname=testname)
+    
+    def set_style(self, style: InterleaveStyle) -> None:
+        self.style.value = style.value
+    
+    def set_style_raw(self, style: int) -> None:
+        self.style.value = style
+    
+    def print_info(self) -> None:
+        SLog.log(f"=== RandomController: {self.testname} ===")
+        SLog.log(f"  enabled: {self.enabled}")
+        SLog.log(f"  comment: {self.comment.value}")
+        
+        style_name = "unknown"
+        for s in InterleaveStyle:
+            if s.value == self.style.value:
+                style_name = s.name
+                break
+        SLog.log(f"  style: {self.style.value} ({style_name})")
+        SLog.log(f"  children: {len(self.children)}")
+
+
+class RandomOrderController(TreeElement):
+    def __init__(
+        self,
+        testname: str = "Random Order Controller",
+        enabled: bool = True
+    ):
+        super().__init__(
+            testname=testname,
+            enabled=enabled,
+            properties=[]
+        )
+    
+    @property
+    def tag_name(self) -> str:
+        return "RandomOrderController"
+    
+    @property
+    def guiclass(self) -> str:
+        return "RandomOrderControllerGui"
+    
+    @property
+    def testclass(self) -> str:
+        return "RandomOrderController"
+    
+    @staticmethod
+    def create_default(testname: str = "Random Order Controller") -> "RandomOrderController":
+        return RandomOrderController(testname=testname)
+    
+    def print_info(self) -> None:
+        SLog.log(f"=== RandomOrderController: {self.testname} ===")
+        SLog.log(f"  enabled: {self.enabled}")
+        SLog.log(f"  comment: {self.comment.value}")
+        SLog.log(f"  children: {len(self.children)}")
+
+
+class RecordingController(TreeElement):
+    def __init__(
+        self,
+        testname: str = "Recording Controller",
+        enabled: bool = True
+    ):
+        super().__init__(
+            testname=testname,
+            enabled=enabled,
+            properties=[]
+        )
+    
+    @property
+    def tag_name(self) -> str:
+        return "RecordingController"
+    
+    @property
+    def guiclass(self) -> str:
+        return "RecordController"
+    
+    @property
+    def testclass(self) -> str:
+        return "RecordingController"
+    
+    @staticmethod
+    def create_default(testname: str = "Recording Controller") -> "RecordingController":
+        return RecordingController(testname=testname)
+    
+    def print_info(self) -> None:
+        SLog.log(f"=== RecordingController: {self.testname} ===")
+        SLog.log(f"  enabled: {self.enabled}")
+        SLog.log(f"  comment: {self.comment.value}")
+        SLog.log(f"  children: {len(self.children)}")
+
+
+class RunTime(TreeElement):
+    def __init__(
+        self,
+        testname: str = "Runtime Controller",
+        enabled: bool = True
+    ):
+        self.seconds: StringProp = StringProp(RUNTIME_SECONDS, "1")
+        
+        super().__init__(
+            testname=testname,
+            enabled=enabled,
+            properties=[
+                self.seconds
+            ]
+        )
+    
+    @property
+    def tag_name(self) -> str:
+        return "RunTime"
+    
+    @property
+    def guiclass(self) -> str:
+        return "RunTimeGui"
+    
+    @property
+    def testclass(self) -> str:
+        return "RunTime"
+    
+    @staticmethod
+    def create_default(testname: str = "Runtime Controller") -> "RunTime":
+        return RunTime(testname=testname)
+    
+    def set_seconds(self, seconds: int) -> None:
+        self.seconds.value = str(seconds)
+    
+    def set_seconds_raw(self, seconds: str) -> None:
+        self.seconds.value = seconds
+    
+    def print_info(self) -> None:
+        SLog.log(f"=== RunTime: {self.testname} ===")
+        SLog.log(f"  enabled: {self.enabled}")
+        SLog.log(f"  comment: {self.comment.value}")
+        SLog.log(f"  seconds: {self.seconds.value}")
+        SLog.log(f"  children: {len(self.children)}")
+
+
+class GenericController(TreeElement):
+    def __init__(
+        self,
+        testname: str = "Simple Controller",
+        enabled: bool = True
+    ):
+        super().__init__(
+            testname=testname,
+            enabled=enabled,
+            properties=[]
+        )
+    
+    @property
+    def tag_name(self) -> str:
+        return "GenericController"
+    
+    @property
+    def guiclass(self) -> str:
+        return "LogicControllerGui"
+    
+    @property
+    def testclass(self) -> str:
+        return "GenericController"
+    
+    @staticmethod
+    def create_default(testname: str = "Simple Controller") -> "GenericController":
+        return GenericController(testname=testname)
+    
+    def print_info(self) -> None:
+        SLog.log(f"=== GenericController: {self.testname} ===")
+        SLog.log(f"  enabled: {self.enabled}")
+        SLog.log(f"  comment: {self.comment.value}")
+        SLog.log(f"  children: {len(self.children)}")
+
+
+class ThroughputControllerStyle(Enum):
+    TOTAL_EXECUTIONS = 0
+    PERCENT_EXECUTIONS = 1
+
+
+class ThroughputController(TreeElement):
+    def __init__(
+        self,
+        testname: str = "Throughput Controller",
+        enabled: bool = True
+    ):
+        self.style: IntProp = IntProp(THROUGHPUTCONTROLLER_STYLE, ThroughputControllerStyle.TOTAL_EXECUTIONS.value)
+        self.per_thread: BoolProp = BoolProp(THROUGHPUTCONTROLLER_PER_THREAD, False)
+        self.max_throughput: IntProp = IntProp(THROUGHPUTCONTROLLER_MAX_THROUGHPUT, 1)
+        self.percent_throughput: FloatProperty = FloatProperty(THROUGHPUTCONTROLLER_PERCENT_THROUGHPUT, 100.0)
+        
+        super().__init__(
+            testname=testname,
+            enabled=enabled,
+            properties=[
+                self.style,
+                self.per_thread,
+                self.max_throughput,
+                self.percent_throughput
+            ]
+        )
+    
+    @property
+    def tag_name(self) -> str:
+        return "ThroughputController"
+    
+    @property
+    def guiclass(self) -> str:
+        return "ThroughputControllerGui"
+    
+    @property
+    def testclass(self) -> str:
+        return "ThroughputController"
+    
+    @staticmethod
+    def create_default(testname: str = "Throughput Controller") -> "ThroughputController":
+        return ThroughputController(testname=testname)
+    
+    def set_style(self, style: ThroughputControllerStyle) -> None:
+        self.style.value = style.value
+    
+    def set_style_raw(self, style: int) -> None:
+        self.style.value = style
+    
+    def set_per_thread(self, enable: bool) -> None:
+        self.per_thread.value = enable
+    
+    def set_max_throughput(self, count: int) -> None:
+        self.max_throughput.value = count
+    
+    def set_percent_throughput(self, percent: float) -> None:
+        self.percent_throughput.value = percent
+    
+    def print_info(self) -> None:
+        SLog.log(f"=== ThroughputController: {self.testname} ===")
+        SLog.log(f"  enabled: {self.enabled}")
+        SLog.log(f"  comment: {self.comment.value}")
+        
+        style_name = "unknown"
+        for s in ThroughputControllerStyle:
+            if s.value == self.style.value:
+                style_name = s.name
+                break
+        SLog.log(f"  style: {self.style.value} ({style_name})")
+        SLog.log(f"  per_thread: {self.per_thread.value}")
+        SLog.log(f"  max_throughput: {self.max_throughput.value}")
+        SLog.log(f"  percent_throughput: {self.percent_throughput.value}")
+        SLog.log(f"  children: {len(self.children)}")
+
+
+class SwitchController(TreeElement):
+    def __init__(
+        self,
+        testname: str = "Switch Controller",
+        enabled: bool = True
+    ):
+        self.switch_value: StringProp = StringProp(SWITCHCONTROLLER_VALUE, "")
+        
+        super().__init__(
+            testname=testname,
+            enabled=enabled,
+            properties=[
+                self.switch_value
+            ]
+        )
+    
+    @property
+    def tag_name(self) -> str:
+        return "SwitchController"
+    
+    @property
+    def guiclass(self) -> str:
+        return "SwitchControllerGui"
+    
+    @property
+    def testclass(self) -> str:
+        return "SwitchController"
+    
+    @staticmethod
+    def create_default(testname: str = "Switch Controller") -> "SwitchController":
+        return SwitchController(testname=testname)
+    
+    def set_switch_value(self, value: str) -> None:
+        self.switch_value.value = value
+    
+    def print_info(self) -> None:
+        SLog.log(f"=== SwitchController: {self.testname} ===")
+        SLog.log(f"  enabled: {self.enabled}")
+        SLog.log(f"  comment: {self.comment.value}")
+        SLog.log(f"  switch_value: {self.switch_value.value}")
+        SLog.log(f"  children: {len(self.children)}")
+
+
+class ModuleController(TreeElement):
+    def __init__(
+        self,
+        testname: str = "Module Controller",
+        enabled: bool = True
+    ):
+        self._node_path: list[str] = []
+        self._node_path_prop: CollectionProp = CollectionProp(MODULECONTROLLER_NODE_PATH)
+        
+        super().__init__(
+            testname=testname,
+            enabled=enabled,
+            properties=[]
+        )
+    
+    @property
+    def tag_name(self) -> str:
+        return "ModuleController"
+    
+    @property
+    def guiclass(self) -> str:
+        return "ModuleControllerGui"
+    
+    @property
+    def testclass(self) -> str:
+        return "ModuleController"
+    
+    @staticmethod
+    def create_default(testname: str = "Module Controller") -> "ModuleController":
+        return ModuleController(testname=testname)
+    
+    def set_module_path(self, path: str, separator: str = "/") -> None:
+        """
+        Устанавливает путь к модулю в дереве JMeter.
+        
+        Путь задаётся строкой с разделителем (по умолчанию "/").
+        Пример: "Test Plan/My Test Plan/Thread Group/If Controller"
+        
+        Также поддерживается "\\" как разделитель.
+        """
+        path_list = [p.strip() for p in path.split(separator) if p.strip()]
+        self.set_module_path_list(path_list)
+    
+    def set_module_path_list(self, path_list: list[str]) -> None:
+        """
+        Устанавливает путь к модулю как список элементов дерева.
+        
+        Пример: ["Test Plan", "My Test Plan", "Thread Group", "If Controller"]
+        """
+        self._node_path = path_list
+        self._node_path_prop.items = []
+        
+        for item in path_list:
+            hash_value = hash(item) & 0xFFFFFFFF
+            if hash_value > 0x7FFFFFFF:
+                hash_value -= 0x100000000
+            self._node_path_prop.items.append(StringProp(str(hash_value), item))
+        
+        if path_list:
+            self._ensure_property(self._node_path_prop)
+        else:
+            self._remove_property(self._node_path_prop)
+    
+    def get_module_path(self) -> list[str]:
+        """Возвращает путь к модулю как список."""
+        return self._node_path.copy()
+    
+    def clear_module_path(self) -> None:
+        """Очищает путь к модулю."""
+        self._node_path = []
+        self._node_path_prop.items = []
+        self._remove_property(self._node_path_prop)
+    
+    def _ensure_property(self, prop: PropElement) -> None:
+        if prop not in self.properties:
+            self.properties.append(prop)
+    
+    def _remove_property(self, prop: PropElement) -> None:
+        if prop in self.properties:
+            self.properties.remove(prop)
+    
+    def print_info(self) -> None:
+        SLog.log(f"=== ModuleController: {self.testname} ===")
+        SLog.log(f"  enabled: {self.enabled}")
+        SLog.log(f"  comment: {self.comment.value}")
+        SLog.log(f"  module_path: {' / '.join(self._node_path) if self._node_path else '(not set)'}")
+        SLog.log(f"  children: {len(self.children)}")
+
+
+################## CONFIGURE ELEMENTS ######################
 
 class HttpMethod(Enum):
     GET = "GET"
@@ -761,6 +1598,12 @@ class HeaderManager(TreeElement):
 
 
 ################## SAMPLERS ######################
+# Flow Control Action
+class TestActionTarget(Enum):
+    CURRENT_THREAD = 0
+    ALL_THREADS = 2
+
+
 class TestActionType(Enum):
     STOP = 0
     PAUSE = 1
@@ -768,6 +1611,84 @@ class TestActionType(Enum):
     START_NEXT_THREAD_LOOP = 3
     GO_TO_NEXT_LOOP_ITERATION = 4
     BREAK_CURRENT_LOOP = 5
+
+
+class TestAction(TreeElement):
+    def __init__(
+        self,
+        testname: str = "Think Time",
+        enabled: bool = True
+    ):
+        self.action: IntProp = IntProp(TESTACTION_ACTION, TestActionType.PAUSE.value)
+        self.target: IntProp = IntProp(TESTACTION_TARGET, TestActionTarget.CURRENT_THREAD.value)
+        self.duration: StringProp = StringProp(TESTACTION_DURATION, "0")
+        
+        super().__init__(
+            testname=testname,
+            enabled=enabled,
+            properties=[
+                self.action,
+                self.target,
+                self.duration
+            ]
+        )
+    
+    @property
+    def tag_name(self) -> str:
+        return "TestAction"
+    
+    @property
+    def guiclass(self) -> str:
+        return "TestActionGui"
+    
+    @property
+    def testclass(self) -> str:
+        return "TestAction"
+    
+    @staticmethod
+    def create_default(testname: str = "Think Time") -> "TestAction":
+        return TestAction(testname=testname)
+    
+    def set_action(self, action: TestActionType) -> None:
+        self.action.value = action.value
+    
+    def set_action_raw(self, action: int) -> None:
+        self.action.value = action
+    
+    def set_target(self, target: TestActionTarget) -> None:
+        self.target.value = target.value
+    
+    def set_target_raw(self, target: int) -> None:
+        self.target.value = target
+    
+    def set_duration(self, duration_ms: int) -> None:
+        self.duration.value = str(duration_ms)
+    
+    def set_duration_raw(self, duration: str) -> None:
+        self.duration.value = duration
+    
+    def print_info(self) -> None:
+        SLog.log(f"=== TestAction: {self.testname} ===")
+        SLog.log(f"  enabled: {self.enabled}")
+        SLog.log(f"  comment: {self.comment.value}")
+        
+        action_name = "unknown"
+        for a in TestActionType:
+            if a.value == self.action.value:
+                action_name = a.name
+                break
+        SLog.log(f"  action: {self.action.value} ({action_name})")
+        
+        target_name = "unknown"
+        for t in TestActionTarget:
+            if t.value == self.target.value:
+                target_name = t.name
+                break
+        SLog.log(f"  target: {self.target.value} ({target_name})")
+        
+        SLog.log(f"  duration: {self.duration.value}")
+        SLog.log(f"  children: {len(self.children)}")
+
 
 # Http Request
 class HTTPSamplerProxy(TreeElement):
@@ -1105,6 +2026,62 @@ class HTTPSamplerProxy(TreeElement):
                 SLog.log(f"    {path_prop.value}")
         SLog.log(f"  children: {len(self.children)}")
 
+
+class DebugSampler(TreeElement):
+    def __init__(
+        self,
+        testname: str = "Debug Sampler",
+        enabled: bool = True
+    ):
+        self.display_jmeter_properties: BoolProp = BoolProp(DEBUGSAMPLER_DISPLAY_JMETER_PROPERTIES, False)
+        self.display_jmeter_variables: BoolProp = BoolProp(DEBUGSAMPLER_DISPLAY_JMETER_VARIABLES, True)
+        self.display_system_properties: BoolProp = BoolProp(DEBUGSAMPLER_DISPLAY_SYSTEM_PROPERTIES, False)
+        
+        super().__init__(
+            testname=testname,
+            enabled=enabled,
+            properties=[
+                self.display_jmeter_properties,
+                self.display_jmeter_variables,
+                self.display_system_properties
+            ]
+        )
+    
+    @property
+    def tag_name(self) -> str:
+        return "DebugSampler"
+    
+    @property
+    def guiclass(self) -> str:
+        return "TestBeanGUI"
+    
+    @property
+    def testclass(self) -> str:
+        return "DebugSampler"
+    
+    @staticmethod
+    def create_default(testname: str = "Debug Sampler") -> "DebugSampler":
+        return DebugSampler(testname=testname)
+    
+    def set_display_jmeter_properties(self, enable: bool) -> None:
+        self.display_jmeter_properties.value = enable
+    
+    def set_display_jmeter_variables(self, enable: bool) -> None:
+        self.display_jmeter_variables.value = enable
+    
+    def set_display_system_properties(self, enable: bool) -> None:
+        self.display_system_properties.value = enable
+    
+    def print_info(self) -> None:
+        SLog.log(f"=== DebugSampler: {self.testname} ===")
+        SLog.log(f"  enabled: {self.enabled}")
+        SLog.log(f"  comment: {self.comment.value}")
+        SLog.log(f"  display_jmeter_properties: {self.display_jmeter_properties.value}")
+        SLog.log(f"  display_jmeter_variables: {self.display_jmeter_variables.value}")
+        SLog.log(f"  display_system_properties: {self.display_system_properties.value}")
+        SLog.log(f"  children: {len(self.children)}")
+
+
 class JSR223Element(TreeElement):
     def __init__(
         self,
@@ -1181,87 +2158,182 @@ class JSR223Sampler(JSR223Element):
     def create_default(testname: str = "JSR223 Sampler") -> "JSR223Sampler":
         return JSR223Sampler(testname=testname)
 
-# Flow Control Action
-class TestActionTarget(Enum):
-    CURRENT_THREAD = 0
-    ALL_THREADS = 2
 
-
-class TestAction(TreeElement):
+################## PREPROCESS ######################
+class JSR223PreProcessor(JSR223Element):
     def __init__(
         self,
-        testname: str = "Think Time",
+        testname: str = "JSR223 PreProcessor",
         enabled: bool = True
     ):
-        self.action: IntProp = IntProp(TESTACTION_ACTION, TestActionType.PAUSE.value)
-        self.target: IntProp = IntProp(TESTACTION_TARGET, TestActionTarget.CURRENT_THREAD.value)
-        self.duration: StringProp = StringProp(TESTACTION_DURATION, "0")
+        super().__init__(testname=testname, enabled=enabled)
+    
+    @property
+    def tag_name(self) -> str:
+        return "JSR223PreProcessor"
+    
+    @property
+    def testclass(self) -> str:
+        return "JSR223PreProcessor"
+    
+    @staticmethod
+    def create_default(testname: str = "JSR223 PreProcessor") -> "JSR223PreProcessor":
+        return JSR223PreProcessor(testname=testname)
+
+
+
+################## POSTPROCESS ######################
+class JSR223PostProcessor(JSR223Element):
+    def __init__(
+        self,
+        testname: str = "JSR223 PostProcessor",
+        enabled: bool = True
+    ):
+        super().__init__(testname=testname, enabled=enabled)
+    
+    @property
+    def tag_name(self) -> str:
+        return "JSR223PostProcessor"
+    
+    @property
+    def testclass(self) -> str:
+        return "JSR223PostProcessor"
+    
+    @staticmethod
+    def create_default(testname: str = "JSR223 PostProcessor") -> "JSR223PostProcessor":
+        return JSR223PostProcessor(testname=testname)
+
+
+class RegexField(Enum):
+    BODY = "false"
+    BODY_UNESCAPED = "unescaped"
+    BODY_AS_DOCUMENT = "as_document"
+    RESPONSE_HEADERS = "true"
+    REQUEST_HEADERS = "request_headers"
+    URL = "URL"
+    RESPONSE_CODE = "code"
+    RESPONSE_MESSAGE = "message"
+
+
+class SampleScope(Enum):
+    MAIN_AND_SUB = "all"
+    MAIN_ONLY = ""
+    SUB_ONLY = "children"
+    VARIABLE = "variable"
+
+
+class RegexExtractor(TreeElement):
+    def __init__(
+        self,
+        testname: str = "Regular Expression Extractor",
+        enabled: bool = True
+    ):
+        self.use_headers: StringProp = StringProp(REGEXEXTRACTOR_USE_HEADERS, RegexField.BODY.value)
+        self.refname: StringProp = StringProp(REGEXEXTRACTOR_REFNAME, "")
+        self.regex: StringProp = StringProp(REGEXEXTRACTOR_REGEX, "")
+        self.template: StringProp = StringProp(REGEXEXTRACTOR_TEMPLATE, "$1$")
+        self.default: StringProp = StringProp(REGEXEXTRACTOR_DEFAULT, "")
+        self.default_empty_value: BoolProp = BoolProp(REGEXEXTRACTOR_DEFAULT_EMPTY_VALUE, False)
+        self.match_number: StringProp = StringProp(REGEXEXTRACTOR_MATCH_NUMBER, "1")
+        self.scope: StringProp = StringProp(SAMPLE_SCOPE, "")
+        self.scope_variable: StringProp = StringProp(SCOPE_VARIABLE, "")
         
         super().__init__(
             testname=testname,
             enabled=enabled,
             properties=[
-                self.action,
-                self.target,
-                self.duration
+                self.use_headers,
+                self.refname,
+                self.regex,
+                self.template,
+                self.default,
+                self.default_empty_value,
+                self.match_number,
+                self.scope,
+                self.scope_variable
             ]
         )
     
     @property
     def tag_name(self) -> str:
-        return "TestAction"
+        return "RegexExtractor"
     
     @property
     def guiclass(self) -> str:
-        return "TestActionGui"
+        return "RegexExtractorGui"
     
     @property
     def testclass(self) -> str:
-        return "TestAction"
+        return "RegexExtractor"
     
     @staticmethod
-    def create_default(testname: str = "Think Time") -> "TestAction":
-        return TestAction(testname=testname)
+    def create_default(testname: str = "Regular Expression Extractor") -> "RegexExtractor":
+        return RegexExtractor(testname=testname)
     
-    def set_action(self, action: TestActionType) -> None:
-        self.action.value = action.value
+    def set_field(self, field: RegexField) -> None:
+        self.use_headers.value = field.value
     
-    def set_action_raw(self, action: int) -> None:
-        self.action.value = action
+    def set_field_raw(self, field: str) -> None:
+        self.use_headers.value = field
     
-    def set_target(self, target: TestActionTarget) -> None:
-        self.target.value = target.value
+    def set_refname(self, name: str) -> None:
+        self.refname.value = name
     
-    def set_target_raw(self, target: int) -> None:
-        self.target.value = target
+    def set_regex(self, regex: str) -> None:
+        self.regex.value = regex
     
-    def set_duration(self, duration_ms: int) -> None:
-        self.duration.value = str(duration_ms)
+    def set_template(self, template: str) -> None:
+        self.template.value = template
     
-    def set_duration_raw(self, duration: str) -> None:
-        self.duration.value = duration
+    def set_default(self, default: str) -> None:
+        self.default.value = default
+    
+    def set_default_empty_value(self, enable: bool) -> None:
+        self.default_empty_value.value = enable
+    
+    def set_match_number(self, number: int) -> None:
+        self.match_number.value = str(number)
+    
+    def set_match_number_raw(self, number: str) -> None:
+        self.match_number.value = number
+    
+    def set_scope(self, scope: SampleScope) -> None:
+        self.scope.value = scope.value
+    
+    def set_scope_raw(self, scope: str) -> None:
+        self.scope.value = scope
+    
+    def set_scope_variable(self, variable: str) -> None:
+        self.scope_variable.value = variable
     
     def print_info(self) -> None:
-        SLog.log(f"=== TestAction: {self.testname} ===")
+        SLog.log(f"=== RegexExtractor: {self.testname} ===")
         SLog.log(f"  enabled: {self.enabled}")
         SLog.log(f"  comment: {self.comment.value}")
         
-        action_name = "unknown"
-        for a in TestActionType:
-            if a.value == self.action.value:
-                action_name = a.name
+        field_name = "unknown"
+        for f in RegexField:
+            if f.value == self.use_headers.value:
+                field_name = f.name
                 break
-        SLog.log(f"  action: {self.action.value} ({action_name})")
+        SLog.log(f"  field: {self.use_headers.value} ({field_name})")
+        SLog.log(f"  refname: {self.refname.value}")
+        SLog.log(f"  regex: {self.regex.value}")
+        SLog.log(f"  template: {self.template.value}")
+        SLog.log(f"  default: {self.default.value}")
+        SLog.log(f"  default_empty_value: {self.default_empty_value.value}")
+        SLog.log(f"  match_number: {self.match_number.value}")
         
-        target_name = "unknown"
-        for t in TestActionTarget:
-            if t.value == self.target.value:
-                target_name = t.name
+        scope_name = "unknown"
+        for s in SampleScope:
+            if s.value == self.scope.value:
+                scope_name = s.name
                 break
-        SLog.log(f"  target: {self.target.value} ({target_name})")
-        
-        SLog.log(f"  duration: {self.duration.value}")
+        SLog.log(f"  scope: {self.scope.value} ({scope_name})")
+        SLog.log(f"  scope_variable: {self.scope_variable.value}")
         SLog.log(f"  children: {len(self.children)}")
+
+
 
 
 ################## TIMERS ######################
@@ -1518,50 +2590,9 @@ class ConstantThroughputTimer(TreeElement):
         SLog.log(f"  children: {len(self.children)}")
 
 
-################## Pre Processors ######################
-
-class JSR223PreProcessor(JSR223Element):
-    def __init__(
-        self,
-        testname: str = "JSR223 PreProcessor",
-        enabled: bool = True
-    ):
-        super().__init__(testname=testname, enabled=enabled)
-    
-    @property
-    def tag_name(self) -> str:
-        return "JSR223PreProcessor"
-    
-    @property
-    def testclass(self) -> str:
-        return "JSR223PreProcessor"
-    
-    @staticmethod
-    def create_default(testname: str = "JSR223 PreProcessor") -> "JSR223PreProcessor":
-        return JSR223PreProcessor(testname=testname)
 
 
-################## Post Processors ######################
 
-class JSR223PostProcessor(JSR223Element):
-    def __init__(
-        self,
-        testname: str = "JSR223 PostProcessor",
-        enabled: bool = True
-    ):
-        super().__init__(testname=testname, enabled=enabled)
-    
-    @property
-    def tag_name(self) -> str:
-        return "JSR223PostProcessor"
-    
-    @property
-    def testclass(self) -> str:
-        return "JSR223PostProcessor"
-    
-    @staticmethod
-    def create_default(testname: str = "JSR223 PostProcessor") -> "JSR223PostProcessor":
-        return JSR223PostProcessor(testname=testname)
 
 
 
