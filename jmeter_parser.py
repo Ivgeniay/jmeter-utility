@@ -1,5 +1,5 @@
 import re
-from models import Request, Record, PostData
+from har_builder.parsers.models import Request, Record, PostData
 from scope import extract_scope_by_element_name
 
 

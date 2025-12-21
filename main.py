@@ -3,58 +3,12 @@ import sys;
 import re
 
 from jmeter_runner import run_and_collect
-from console import CompositeLog, ConsoleLog, Log, SLog
-from jmx_builder.parsers.elements.aggregate_report_parser import AggregateReportParser
-from jmx_builder.parsers.elements.arguments_parser import ArgumentsParser
-from jmx_builder.parsers.elements.backend_listener_parser import BackendListenerParser
-from jmx_builder.parsers.elements.boundary_extractor_parser import BoundaryExtractorParser
-from jmx_builder.parsers.elements.cache_manager_parser import CacheManagerParser
-from jmx_builder.parsers.elements.constant_throughput_timer_parser import ConstantThroughputTimerParser
-from jmx_builder.parsers.elements.constant_timer_parser import ConstantTimerParser
-from jmx_builder.parsers.elements.cookie_manager_parser import CookieManagerParser
-from jmx_builder.parsers.elements.critical_section_controller_parser import CriticalSectionControllerParser
-from jmx_builder.parsers.elements.debug_post_processor_parser import DebugPostProcessorParser
-from jmx_builder.parsers.elements.debug_sampler_parser import DebugSamplerParser
-from jmx_builder.parsers.elements.foreach_controller_parser import ForeachControllerParser
-from jmx_builder.parsers.elements.generic_controller_parser import GenericControllerParser
-from jmx_builder.parsers.elements.header_manager_parser import HeaderManagerParser
-from jmx_builder.parsers.elements.html_extractor_parser import HtmlExtractorParser
-from jmx_builder.parsers.elements.http_sampler_proxy_parser import HTTPSamplerProxyParser
-from jmx_builder.parsers.elements.if_controller_parser import IfControllerParser
-from jmx_builder.parsers.elements.include_controller_parser import IncludeControllerParser
-from jmx_builder.parsers.elements.interleave_control_parser import InterleaveControlParser
-from jmx_builder.parsers.elements.jmes_path_extractor_parser import JMESPathExtractorParser
-from jmx_builder.parsers.elements.json_post_processor_parser import JSONPostProcessorParser
-from jmx_builder.parsers.elements.jsr223_parser import JSR223PostProcessorParser, JSR223PreProcessorParser, JSR223SamplerParser
-from jmx_builder.parsers.elements.loop_controller_parser import LoopControllerParser
-from jmx_builder.parsers.elements.module_controller_parser import ModuleControllerParser
-from jmx_builder.parsers.elements.once_only_controller_parser import OnceOnlyControllerParser
-from jmx_builder.parsers.elements.precise_throughput_timer_parser import PreciseThroughputTimerParser
-from jmx_builder.parsers.elements.random_controller_parser import RandomControllerParser
-from jmx_builder.parsers.elements.random_order_controller_parser import RandomOrderControllerParser
-from jmx_builder.parsers.elements.recording_controller_parser import RecordingControllerParser
-from jmx_builder.parsers.elements.regex_extractor_parser import RegexExtractorParser
-from jmx_builder.parsers.elements.result_action_parser import ResultActionParser
-from jmx_builder.parsers.elements.runtime_parser import RunTimeParser
-from jmx_builder.parsers.elements.simple_data_writer_parser import SimpleDataWriterParser
-from jmx_builder.parsers.elements.summary_report_parser import SummaryReportParser
-from jmx_builder.parsers.elements.switch_controller_parser import SwitchControllerParser
-from jmx_builder.parsers.elements.test_action_parser import TestActionParser
-from jmx_builder.parsers.elements.throughput_controller_parser import ThroughputControllerParser
-from jmx_builder.parsers.elements.uniform_random_timer_parser import UniformRandomTimerParser
-from jmx_builder.parsers.elements.view_results_tree_parser import ViewResultsTreeParser
-from jmx_builder.parsers.elements.while_controller_parser import WhileControllerParser
-from jmx_builder.parsers.elements.xpath2_extractor_parser import XPath2ExtractorParser
-from jmx_builder.parsers.elements.xpath_extractor_parser import XPathExtractorParser
+from console import CompositeLog, ConsoleLog, SLog
+from jmx_builder_parser_export import get_configured_parser
 from scope import extract_scope_by_element_name
-from har_parser import parse_har
+from har_builder.parsers.har_parser import parse_har
 from jmeter_parser import parse_jmeter
 from comparer import SimpleComparer, TransactionComparer
-
-
-from jmx_builder.parsers.elements.test_plan_parser import TestPlanParser
-from jmx_builder.parsers.elements.thread_group_parser import ThreadGroupParser
-from jmx_builder.parsers.elements.transaction_controller_parser import TransactionControllerParser
 from jmx_builder.parsers.tree_parser import TreeParser
 
 
@@ -254,136 +208,287 @@ xml = '''<?xml version="1.0" encoding="UTF-8"?>
       </elementProp>
     </TestPlan>
     <hashTree>
-      <ForeachController guiclass="ForeachControlPanel" testclass="ForeachController" testname="ForEach Controller">
-        <stringProp name="ForeachController.inputVal">prefix</stringProp>
-        <stringProp name="ForeachController.returnVal">varname</stringProp>
-        <boolProp name="ForeachController.useSeparator">true</boolProp>
-        <stringProp name="ForeachController.startIndex">1</stringProp>
-        <stringProp name="ForeachController.endIndex">10</stringProp>
-      </ForeachController>
+      <DebugSampler guiclass="TestBeanGUI" testclass="DebugSampler" testname="Debug Sampler">
+        <boolProp name="displayJMeterProperties">true</boolProp>
+        <boolProp name="displayJMeterVariables">false</boolProp>
+        <boolProp name="displaySystemProperties">true</boolProp>
+      </DebugSampler>
       <hashTree/>
-      <IncludeController guiclass="IncludeControllerGui" testclass="IncludeController" testname="Include Controller">
-        <stringProp name="IncludeController.includepath">filename.jmx</stringProp>
-      </IncludeController>
+      <JSR223PostProcessor guiclass="TestBeanGUI" testclass="JSR223PostProcessor" testname="JSR223 PostProcessor">
+        <stringProp name="cacheKey">true</stringProp>
+        <stringProp name="filename">path/to/file</stringProp>
+        <stringProp name="parameters">Params</stringProp>
+        <stringProp name="script">vars.get("test")</stringProp>
+        <stringProp name="scriptLanguage">groovy</stringProp>
+      </JSR223PostProcessor>
       <hashTree/>
-      <OnceOnlyController guiclass="OnceOnlyControllerGui" testclass="OnceOnlyController" testname="Once Only Controller"/>
+      <RegexExtractor guiclass="RegexExtractorGui" testclass="RegexExtractor" testname="Regular Expression Extractor">
+        <stringProp name="RegexExtractor.useHeaders">false</stringProp>
+        <stringProp name="RegexExtractor.refname">var</stringProp>
+        <stringProp name="RegexExtractor.regex">.*</stringProp>
+        <stringProp name="RegexExtractor.template">$1$</stringProp>
+        <stringProp name="RegexExtractor.default">NO_VALUE</stringProp>
+        <boolProp name="RegexExtractor.default_empty_value">false</boolProp>
+        <stringProp name="RegexExtractor.match_number">0</stringProp>
+        <stringProp name="Sample.scope">all</stringProp>
+      </RegexExtractor>
       <hashTree/>
-      <InterleaveControl guiclass="InterleaveControlGui" testclass="InterleaveControl" testname="Interleave Controller">
-        <intProp name="InterleaveControl.style">0</intProp>
-        <boolProp name="InterleaveControl.accrossThreads">true</boolProp>
-      </InterleaveControl>
+      <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="JSON Extractor">
+        <stringProp name="JSONPostProcessor.referenceNames">jsonVar</stringProp>
+        <stringProp name="JSONPostProcessor.jsonPathExprs">$.person.name</stringProp>
+        <stringProp name="JSONPostProcessor.match_numbers">0</stringProp>
+        <stringProp name="Sample.scope">all</stringProp>
+        <stringProp name="JSONPostProcessor.defaultValues">NO_VALUE</stringProp>
+        <boolProp name="JSONPostProcessor.compute_concat">true</boolProp>
+      </JSONPostProcessor>
       <hashTree/>
-      <RandomController guiclass="RandomControlGui" testclass="RandomController" testname="Random Controller">
-        <intProp name="InterleaveControl.style">1</intProp>
-      </RandomController>
+      <HtmlExtractor guiclass="HtmlExtractorGui" testclass="HtmlExtractor" testname="CSS Selector Extractor">
+        <stringProp name="HtmlExtractor.refname">cssVar</stringProp>
+        <stringProp name="HtmlExtractor.expr">div.class</stringProp>
+        <stringProp name="HtmlExtractor.attribute">href</stringProp>
+        <stringProp name="HtmlExtractor.default">NO_VALUE</stringProp>
+        <boolProp name="HtmlExtractor.default_empty_value">false</boolProp>
+        <stringProp name="HtmlExtractor.match_number">0</stringProp>
+        <stringProp name="HtmlExtractor.extractor_impl">JSOUP</stringProp>
+        <stringProp name="Sample.scope">all</stringProp>
+      </HtmlExtractor>
       <hashTree/>
-      <RandomOrderController guiclass="RandomOrderControllerGui" testclass="RandomOrderController" testname="Random Order Controller"/>
+      <BoundaryExtractor guiclass="BoundaryExtractorGui" testclass="BoundaryExtractor" testname="Boundary Extractor">
+        <stringProp name="BoundaryExtractor.useHeaders">true</stringProp>
+        <stringProp name="BoundaryExtractor.refname">boundVar</stringProp>
+        <stringProp name="BoundaryExtractor.lboundary">Left</stringProp>
+        <stringProp name="BoundaryExtractor.rboundary">Right</stringProp>
+        <stringProp name="BoundaryExtractor.default">NO_VALUE</stringProp>
+        <boolProp name="BoundaryExtractor.default_empty_value">false</boolProp>
+        <stringProp name="BoundaryExtractor.match_number">0</stringProp>
+        <stringProp name="Sample.scope">all</stringProp>
+      </BoundaryExtractor>
       <hashTree/>
-      <RecordingController guiclass="RecordController" testclass="RecordingController" testname="Recording Controller"/>
+      <JMESPathExtractor guiclass="JMESPathExtractorGui" testclass="JMESPathExtractor" testname="JSON JMESPath Extractor">
+        <stringProp name="JMESExtractor.referenceName">jmesVar</stringProp>
+        <stringProp name="JMESExtractor.jmesPathExpr">person.name</stringProp>
+        <stringProp name="JMESExtractor.matchNumber">1</stringProp>
+        <stringProp name="Sample.scope">all</stringProp>
+        <stringProp name="JMESExtractor.defaultValue">NO_VALUE</stringProp>
+      </JMESPathExtractor>
       <hashTree/>
-      <RunTime guiclass="RunTimeGui" testclass="RunTime" testname="Runtime Controller">
-        <stringProp name="RunTime.seconds">10</stringProp>
-      </RunTime>
+      <DebugPostProcessor guiclass="TestBeanGUI" testclass="DebugPostProcessor" testname="Debug PostProcessor">
+        <boolProp name="displayJMeterProperties">true</boolProp>
+        <boolProp name="displayJMeterVariables">false</boolProp>
+        <boolProp name="displaySamplerProperties">false</boolProp>
+        <boolProp name="displaySystemProperties">true</boolProp>
+      </DebugPostProcessor>
       <hashTree/>
-      <GenericController guiclass="LogicControllerGui" testclass="GenericController" testname="Simple Controller"/>
+      <ResultAction guiclass="ResultActionGui" testclass="ResultAction" testname="Result Status Action Handler">
+        <intProp name="OnError.action">4</intProp>
+      </ResultAction>
       <hashTree/>
-      <ThroughputController guiclass="ThroughputControllerGui" testclass="ThroughputController" testname="Throughput Controller">
-        <intProp name="ThroughputController.style">1</intProp>
-        <boolProp name="ThroughputController.perThread">true</boolProp>
-        <intProp name="ThroughputController.maxThroughput">20</intProp>
-        <FloatProperty>
-          <name>ThroughputController.percentThroughput</name>
-          <value>50.5</value>
-          <savedValue>0.0</savedValue>
-        </FloatProperty>
-      </ThroughputController>
+      <XPathExtractor guiclass="XPathExtractorGui" testclass="XPathExtractor" testname="XPath Extractor">
+        <stringProp name="XPathExtractor.default">NO_VALUE</stringProp>
+        <stringProp name="XPathExtractor.refname">xpathVar</stringProp>
+        <stringProp name="XPathExtractor.matchNumber">0</stringProp>
+        <stringProp name="XPathExtractor.xpathQuery">//div</stringProp>
+        <boolProp name="XPathExtractor.validate">true</boolProp>
+        <boolProp name="XPathExtractor.tolerant">true</boolProp>
+        <boolProp name="XPathExtractor.namespace">true</boolProp>
+        <stringProp name="Sample.scope">all</stringProp>
+        <boolProp name="XPathExtractor.fragment">true</boolProp>
+      </XPathExtractor>
       <hashTree/>
-      <SwitchController guiclass="SwitchControllerGui" testclass="SwitchController" testname="Switch Controller">
-        <stringProp name="SwitchController.value">switch_value</stringProp>
-      </SwitchController>
+      <XPath2Extractor guiclass="XPath2ExtractorGui" testclass="XPath2Extractor" testname="XPath2 Extractor">
+        <stringProp name="XPathExtractor2.default">NO_VALUE</stringProp>
+        <stringProp name="XPathExtractor2.refname">xpath2Var</stringProp>
+        <stringProp name="XPathExtractor2.matchNumber">1</stringProp>
+        <stringProp name="XPathExtractor2.xpathQuery">//span</stringProp>
+        <stringProp name="XPathExtractor2.namespaces">ns=http://example.com</stringProp>
+        <stringProp name="Sample.scope">all</stringProp>
+        <boolProp name="XPathExtractor2.fragment">true</boolProp>
+      </XPath2Extractor>
       <hashTree/>
-      <ModuleController guiclass="ModuleControllerGui" testclass="ModuleController" testname="Module Controller">
-        <collectionProp name="ModuleController.node_path">
-          <stringProp name="764597751">Test Plan</stringProp>
-          <stringProp name="1732785315">My Test Plan</stringProp>
-          <stringProp name="-1948168983">Thread Group</stringProp>
-        </collectionProp>
-      </ModuleController>
+      <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree">
+        <boolProp name="ResultCollector.error_logging">false</boolProp>
+        <objProp>
+          <name>saveConfig</name>
+          <value class="SampleSaveConfiguration">
+            <time>true</time>
+            <latency>true</latency>
+            <timestamp>true</timestamp>
+            <success>true</success>
+            <label>true</label>
+            <code>true</code>
+            <message>true</message>
+            <threadName>true</threadName>
+            <dataType>true</dataType>
+            <encoding>false</encoding>
+            <assertions>true</assertions>
+            <subresults>true</subresults>
+            <responseData>false</responseData>
+            <samplerData>false</samplerData>
+            <xml>false</xml>
+            <fieldNames>true</fieldNames>
+            <responseHeaders>false</responseHeaders>
+            <requestHeaders>false</requestHeaders>
+            <responseDataOnError>false</responseDataOnError>
+            <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+            <assertionsResultsToSave>0</assertionsResultsToSave>
+            <bytes>true</bytes>
+            <sentBytes>true</sentBytes>
+            <url>true</url>
+            <threadCounts>true</threadCounts>
+            <idleTime>true</idleTime>
+            <connectTime>true</connectTime>
+          </value>
+        </objProp>
+        <stringProp name="filename">results.jtl</stringProp>
+        <boolProp name="ResultCollector.success_only_logging">true</boolProp>
+      </ResultCollector>
       <hashTree/>
-      <ModuleController guiclass="ModuleControllerGui" testclass="ModuleController" testname="Empty Module Controller"/>
+      <ResultCollector guiclass="SummaryReport" testclass="ResultCollector" testname="Summary Report">
+        <boolProp name="ResultCollector.error_logging">true</boolProp>
+        <objProp>
+          <name>saveConfig</name>
+          <value class="SampleSaveConfiguration">
+            <time>true</time>
+            <latency>true</latency>
+            <timestamp>true</timestamp>
+            <success>true</success>
+            <label>true</label>
+            <code>true</code>
+            <message>true</message>
+            <threadName>true</threadName>
+            <dataType>true</dataType>
+            <encoding>true</encoding>
+            <assertions>true</assertions>
+            <subresults>true</subresults>
+            <responseData>true</responseData>
+            <samplerData>true</samplerData>
+            <xml>true</xml>
+            <fieldNames>true</fieldNames>
+            <responseHeaders>true</responseHeaders>
+            <requestHeaders>true</requestHeaders>
+            <responseDataOnError>false</responseDataOnError>
+            <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+            <assertionsResultsToSave>0</assertionsResultsToSave>
+            <bytes>true</bytes>
+            <sentBytes>true</sentBytes>
+            <url>true</url>
+            <fileName>true</fileName>
+            <hostname>true</hostname>
+            <threadCounts>true</threadCounts>
+            <sampleCount>true</sampleCount>
+            <idleTime>true</idleTime>
+            <connectTime>true</connectTime>
+          </value>
+        </objProp>
+        <stringProp name="filename">summary.csv</stringProp>
+        <boolProp name="useGroupName">true</boolProp>
+      </ResultCollector>
+      <hashTree/>
+      <ResultCollector guiclass="StatVisualizer" testclass="ResultCollector" testname="Aggregate Report">
+        <boolProp name="ResultCollector.error_logging">false</boolProp>
+        <objProp>
+          <name>saveConfig</name>
+          <value class="SampleSaveConfiguration">
+            <time>true</time>
+            <latency>true</latency>
+            <timestamp>true</timestamp>
+            <success>true</success>
+            <label>true</label>
+            <code>true</code>
+            <message>true</message>
+            <threadName>true</threadName>
+            <dataType>true</dataType>
+            <encoding>false</encoding>
+            <assertions>true</assertions>
+            <subresults>true</subresults>
+            <responseData>false</responseData>
+            <samplerData>false</samplerData>
+            <xml>false</xml>
+            <fieldNames>true</fieldNames>
+            <responseHeaders>false</responseHeaders>
+            <requestHeaders>false</requestHeaders>
+            <responseDataOnError>false</responseDataOnError>
+            <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+            <assertionsResultsToSave>0</assertionsResultsToSave>
+            <bytes>true</bytes>
+            <sentBytes>true</sentBytes>
+            <url>true</url>
+            <threadCounts>true</threadCounts>
+            <idleTime>true</idleTime>
+            <connectTime>true</connectTime>
+          </value>
+        </objProp>
+        <stringProp name="filename">aggregate.csv</stringProp>
+        <boolProp name="useGroupName">true</boolProp>
+      </ResultCollector>
+      <hashTree/>
+      <ResultCollector guiclass="SimpleDataWriter" testclass="ResultCollector" testname="Simple Data Writer">
+        <boolProp name="ResultCollector.error_logging">false</boolProp>
+        <objProp>
+          <name>saveConfig</name>
+          <value class="SampleSaveConfiguration">
+            <time>true</time>
+            <latency>true</latency>
+            <timestamp>true</timestamp>
+            <success>true</success>
+            <label>true</label>
+            <code>true</code>
+            <message>true</message>
+            <threadName>true</threadName>
+            <dataType>true</dataType>
+            <encoding>false</encoding>
+            <assertions>true</assertions>
+            <subresults>true</subresults>
+            <responseData>false</responseData>
+            <samplerData>false</samplerData>
+            <xml>false</xml>
+            <fieldNames>true</fieldNames>
+            <responseHeaders>false</responseHeaders>
+            <requestHeaders>false</requestHeaders>
+            <responseDataOnError>false</responseDataOnError>
+            <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+            <assertionsResultsToSave>0</assertionsResultsToSave>
+            <bytes>true</bytes>
+            <sentBytes>true</sentBytes>
+            <url>true</url>
+            <threadCounts>true</threadCounts>
+            <idleTime>true</idleTime>
+            <connectTime>true</connectTime>
+          </value>
+        </objProp>
+        <stringProp name="filename">data.csv</stringProp>
+      </ResultCollector>
+      <hashTree/>
+      <BackendListener guiclass="BackendListenerGui" testclass="BackendListener" testname="Backend Listener">
+        <elementProp name="arguments" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments">
+          <collectionProp name="Arguments.arguments">
+            <elementProp name="graphiteMetricsSender" elementType="Argument">
+              <stringProp name="Argument.name">graphiteMetricsSender</stringProp>
+              <stringProp name="Argument.value">org.apache.jmeter.visualizers.backend.graphite.TextGraphiteMetricsSender</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+            <elementProp name="graphiteHost" elementType="Argument">
+              <stringProp name="Argument.name">graphiteHost</stringProp>
+              <stringProp name="Argument.value">localhost</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+            <elementProp name="graphitePort" elementType="Argument">
+              <stringProp name="Argument.name">graphitePort</stringProp>
+              <stringProp name="Argument.value">2003</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+          </collectionProp>
+        </elementProp>
+        <stringProp name="classname">org.apache.jmeter.visualizers.backend.graphite.GraphiteBackendListenerClient</stringProp>
+        <stringProp name="QUEUE_SIZE">5000</stringProp>
+      </BackendListener>
       <hashTree/>
     </hashTree>
   </hashTree>
 </jmeterTestPlan>'''
 
-parser1: TreeParser = TreeParser()
-parser1.register_parser("TestPlan", TestPlanParser)
 
-# Thread
-parser1.register_parser("ThreadGroup", ThreadGroupParser)
-
-# Config Elements
-parser1.register_parser("CookieManager", CookieManagerParser)
-parser1.register_parser("CacheManager", CacheManagerParser)
-parser1.register_parser("Arguments", ArgumentsParser)
-parser1.register_parser("HeaderManager", HeaderManagerParser)
-
-# Timers
-parser1.register_parser("UniformRandomTimer", UniformRandomTimerParser)
-parser1.register_parser("ConstantTimer", ConstantTimerParser)
-parser1.register_parser("PreciseThroughputTimer", PreciseThroughputTimerParser)
-parser1.register_parser("ConstantThroughputTimer", ConstantThroughputTimerParser)
-
-# Samplers
-parser1.register_parser("TestAction", TestActionParser)
-parser1.register_parser("HTTPSamplerProxy", HTTPSamplerProxyParser)
-parser1.register_parser("JSR223Sampler", JSR223SamplerParser)
-parser1.register_parser("DebugSampler", DebugSamplerParser)
-
-# LISTENERS
-parser1.register_parser("ResultCollector", ViewResultsTreeParser, "ViewResultsFullVisualizer")
-parser1.register_parser("ResultCollector", SummaryReportParser, "SummaryReport")
-parser1.register_parser("ResultCollector", AggregateReportParser, "StatVisualizer")
-parser1.register_parser("ResultCollector", SimpleDataWriterParser, "SimpleDataWriter")
-parser1.register_parser("BackendListener", BackendListenerParser)
-
-
-# PRE PROCESS
-parser1.register_parser("JSR223PreProcessor", JSR223PreProcessorParser)
-
-# POST PROCESS
-parser1.register_parser("JSR223PostProcessor", JSR223PostProcessorParser)
-parser1.register_parser("RegexExtractor", RegexExtractorParser)
-parser1.register_parser("JSONPostProcessor", JSONPostProcessorParser)
-parser1.register_parser("HtmlExtractor", HtmlExtractorParser)
-parser1.register_parser("BoundaryExtractor", BoundaryExtractorParser)
-parser1.register_parser("JMESPathExtractor", JMESPathExtractorParser)
-parser1.register_parser("DebugPostProcessor", DebugPostProcessorParser)
-parser1.register_parser("ResultAction", ResultActionParser)
-parser1.register_parser("XPathExtractor", XPathExtractorParser)
-parser1.register_parser("XPath2Extractor", XPath2ExtractorParser)
-
-# Controls
-parser1.register_parser("IfController", IfControllerParser)
-parser1.register_parser("TransactionController", TransactionControllerParser)
-parser1.register_parser("LoopController", LoopControllerParser)
-parser1.register_parser("WhileController", WhileControllerParser)
-parser1.register_parser("CriticalSectionController", CriticalSectionControllerParser)
-parser1.register_parser("ForeachController", ForeachControllerParser)
-parser1.register_parser("IncludeController", IncludeControllerParser)
-parser1.register_parser("InterleaveControl", InterleaveControlParser)
-parser1.register_parser("OnceOnlyController", OnceOnlyControllerParser)
-parser1.register_parser("RandomController", RandomControllerParser)
-parser1.register_parser("RandomOrderController", RandomOrderControllerParser)
-parser1.register_parser("RecordingController", RecordingControllerParser)
-parser1.register_parser("RunTime", RunTimeParser)
-parser1.register_parser("GenericController", GenericControllerParser)
-parser1.register_parser("ThroughputController", ThroughputControllerParser)
-parser1.register_parser("ModuleController", ModuleControllerParser)
-parser1.register_parser("SwitchController", SwitchControllerParser)
-
-
-
+parser1: TreeParser = get_configured_parser()
 test_plan = parser1.parse(xml)
 
 for child in test_plan.children[0].children:

@@ -1,6 +1,6 @@
 import json
 from urllib.parse import urlparse
-from models import (
+from har_builder.parsers.models import (
     Request, Record, Cookie, PostData
 )
 

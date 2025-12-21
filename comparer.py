@@ -1,7 +1,8 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from models import JMeterResult, Request
-from console import Log, NullLog, SLog
+from models import JMeterResult
+from har_builder.parsers.models import Request
+from console import SLog
 
 
 @dataclass

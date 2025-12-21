@@ -7,6 +7,15 @@
             "request": "launch",
             "program": "${workspaceFolder}/main.py",
             "console": "integratedTerminal",
+            "args": [
+                "-i", "/opt/apache-jmeter-5.6.3/bin/TEST22.jmx",
+                "-c", "/opt/Fiddler/fiddler_classic_setup/Capturies/1_browser_1_step_har/S1_4.har",
+                "-v",
+                "-s", "Records"
+            ]
+            // "args": [
+                
+            // ]
             // "args": [
             //     "-i", "/opt/apache-jmeter-5.6.3/bin/Task6_RuchkinEvgenii_V3T.jmx",
             //     "-c", "/opt/Fiddler/fiddler_classic_setup/Capturies/1_browser_1_step_har/S1_4.har",
@@ -34,9 +43,6 @@
             //     "-v", 
             //     "-p"
             // ]
-            "args": [
-                
-            ]
         }
     ]
 }

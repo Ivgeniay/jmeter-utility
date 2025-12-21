@@ -4,8 +4,9 @@ import os
 import uuid
 import csv
 from urllib.parse import urlparse
-from models import JMeterResult, Request, Record, TransactionGroup
-from console import Log, NullLog, SLog
+from models import JMeterResult, TransactionGroup
+from har_builder.parsers.models import Request, Record
+from console import SLog
 
 
 SIMPLE_DATA_WRITER_TEMPLATE = '''<ResultCollector guiclass="SimpleDataWriter" testclass="ResultCollector" testname="__temp_data_writer__" enabled="true">
