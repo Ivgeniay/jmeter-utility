@@ -651,3 +651,20 @@ DNSCACHEMANAGER_IS_CUSTOM_RESOLVER = "DNSCacheManager.isCustomResolver"
 # StaticHost (внутри DNSCacheManager.hosts)
 STATICHOST_NAME = "StaticHost.Name"
 STATICHOST_ADDRESS = "StaticHost.Address"
+
+
+# HttpDefaultsGui (HTTP Request Defaults) - дополнительные константы
+HTTPSAMPLER_IMAGE_PARSER = "HTTPSampler.image_parser"
+HTTPSAMPLER_CONCURRENT_DWN = "HTTPSampler.concurrentDwn"
+HTTPSAMPLER_CONCURRENT_POOL = "HTTPSampler.concurrentPool"
+HTTPSAMPLER_MD5 = "HTTPSampler.md5"
+HTTPSAMPLER_EMBEDDED_URL_RE = "HTTPSampler.embedded_url_re"
+HTTPSAMPLER_EMBEDDED_URL_EXCLUDE_RE = "HTTPSampler.embedded_url_exclude_re"
+HTTPSAMPLER_IP_SOURCE = "HTTPSampler.ipSource"
+HTTPSAMPLER_IP_SOURCE_TYPE = "HTTPSampler.ipSourceType"
+HTTPSAMPLER_PROXY_SCHEME = "HTTPSampler.proxyScheme"
+HTTPSAMPLER_PROXY_HOST = "HTTPSampler.proxyHost"
+HTTPSAMPLER_PROXY_PORT = "HTTPSampler.proxyPort"
+HTTPSAMPLER_PROXY_USER = "HTTPSampler.proxyUser"
+HTTPSAMPLER_PROXY_PASS = "HTTPSampler.proxyPass"
+HTTPSAMPLER_IMPLEMENTATION = "HTTPSampler.implementation"

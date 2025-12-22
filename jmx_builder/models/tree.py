@@ -3,18 +3,39 @@ from console import SLog
 from jmx_builder.parsers.const import *
 from jmx_builder.models.base import IHierarchable, JMXElement
 from jmx_builder.models.props import *
+import uuid
 from enum import Enum
+
+
+class CategoryElement(Enum):
+    UNDEFINED = "Undefined"
+    ROOT = "Root"
+    TEST_PLAN = "Test Plan"
+    THREADS = "Threads"
+    CONFIG_ELEMENT = "Config Element"
+    LISTENER = "Listener"
+    TIMER = "Timer"
+    PRE_PROCESSORS = "Pre Processors"
+    POST_PROCESSORS= "Post Processors"
+    ASSERTIONS = "Assertions"
+    TEST_FRAGMENT = "Test Fragment"
+    NON_TEST_ELEMENTS = "Non-Test Elements"
+    SAMPLER = "Sampler"
+    LOGIC_CONTROLLER = "Logic Controller"
 
 
 ################## GENERAL ######################
 
 class TreeElement(JMXElement, IHierarchable):
+    category: CategoryElement = CategoryElement.UNDEFINED
+    
     def __init__(
         self,
         testname: str,
         enabled: bool = True,
         properties: list[PropElement] | None = None
     ):
+        self.guid = uuid.uuid4()
         self.testname = testname
         self.enabled = enabled
         self.children: list[TreeElement] = []
@@ -22,7 +43,19 @@ class TreeElement(JMXElement, IHierarchable):
         self.properties: list[PropElement] = [self.comment]
         if properties:
             self.properties.extend(properties)
-    
+
+    @staticmethod
+    def is_numeric(value: str) -> bool:
+        """Проверяет, является ли строка числом (включая отрицательные)"""
+        return value.lstrip("-").isdigit()
+
+    @staticmethod  
+    def parse_int_or_raw(value: str) -> int | str:
+        """Возвращает int если это число, иначе строку как есть"""
+        if value.lstrip("-").isdigit():
+            return int(value)
+        return value
+
     @property
     @abstractmethod
     def guiclass(self) -> str:
@@ -95,6 +128,8 @@ class TreeElement(JMXElement, IHierarchable):
 
 
 class JMeterTestPlan(JMXElement, IHierarchable):
+    category: CategoryElement = CategoryElement.ROOT
+    
     def __init__(
         self,
         version: str = "1.2",
@@ -148,6 +183,8 @@ class JMeterTestPlan(JMXElement, IHierarchable):
 
 
 class TestPlan(TreeElement):
+    category: CategoryElement = CategoryElement.TEST_PLAN
+    
     def __init__(
         self,
         testname: str = "Test Plan",
@@ -235,6 +272,8 @@ class OnSampleError(Enum):
 
 
 class ThreadGroup(TreeElement):
+    category: CategoryElement = CategoryElement.THREADS
+    
     def __init__(
         self,
         testname: str = "Thread Group",
@@ -299,6 +338,14 @@ class ThreadGroup(TreeElement):
     def set_on_sample_error_raw(self, value: str) -> None:
         self._on_sample_error.value = value
     
+    def set_loop_count_raw(self, value: str) -> None:
+        if self._loop_count_infinite:
+            self._loop_count_prop = StringProp(LOOPCONTROLLER_LOOPS, value)
+            self._loop_controller.properties[0] = self._loop_count_prop
+            self._loop_count_infinite = False
+        else:
+            self._loop_count_prop.value = value
+    
     def set_loop_count(self, count: int) -> None:
         if self._loop_count_infinite:
             self._loop_count_prop = StringProp("LoopController.loops", str(count))
@@ -362,6 +409,8 @@ class ThreadGroup(TreeElement):
 ################## LOGIC CONTROLLERS ######################
 
 class TransactionController(TreeElement):
+    category: CategoryElement = CategoryElement.LOGIC_CONTROLLER
+    
     def __init__(
         self,
         testname: str = "Transaction Controller",
@@ -411,6 +460,8 @@ class TransactionController(TreeElement):
 
 
 class IfController(TreeElement):
+    category: CategoryElement = CategoryElement.LOGIC_CONTROLLER
+    
     def __init__(
         self,
         testname: str = "If Controller",
@@ -466,6 +517,8 @@ class IfController(TreeElement):
 
 
 class LoopController(TreeElement):
+    category: CategoryElement = CategoryElement.LOGIC_CONTROLLER
+    
     def __init__(
         self,
         testname: str = "Loop Controller",
@@ -499,6 +552,16 @@ class LoopController(TreeElement):
     @staticmethod
     def create_default(testname: str = "Loop Controller") -> "LoopController":
         return LoopController(testname=testname)
+    
+    def set_loop_count_raw(self, value: str) -> None:
+        """Устанавливает значение loops как строку (для переменных типа ${var})"""
+        if self._loop_count_infinite:
+            new_prop = StringProp(LOOPCONTROLLER_LOOPS, value)
+            self._replace_property(self._loop_count_prop, new_prop)
+            self._loop_count_prop = new_prop
+            self._loop_count_infinite = False
+        else:
+            self._loop_count_prop.value = value
     
     def set_loop_count(self, count: int) -> None:
         if self._loop_count_infinite:
@@ -537,6 +600,8 @@ class LoopController(TreeElement):
 
 
 class WhileController(TreeElement):
+    category: CategoryElement = CategoryElement.LOGIC_CONTROLLER
+    
     def __init__(
         self,
         testname: str = "While Controller",
@@ -581,6 +646,8 @@ class WhileController(TreeElement):
 
 
 class CriticalSectionController(TreeElement):
+    category: CategoryElement = CategoryElement.LOGIC_CONTROLLER
+    
     def __init__(
         self,
         testname: str = "Critical Section Controller",
@@ -624,6 +691,8 @@ class CriticalSectionController(TreeElement):
 
 
 class ForeachController(TreeElement):
+    category: CategoryElement = CategoryElement.LOGIC_CONTROLLER
+    
     def __init__(
         self,
         testname: str = "ForEach Controller",
@@ -697,6 +766,8 @@ class ForeachController(TreeElement):
 
 
 class IncludeController(TreeElement):
+    category: CategoryElement = CategoryElement.LOGIC_CONTROLLER
+    
     def __init__(
         self,
         testname: str = "Include Controller",
@@ -740,6 +811,8 @@ class IncludeController(TreeElement):
 
 
 class OnceOnlyController(TreeElement):
+    category: CategoryElement = CategoryElement.LOGIC_CONTROLLER
+    
     def __init__(
         self,
         testname: str = "Once Only Controller",
@@ -780,6 +853,8 @@ class InterleaveStyle(Enum):
 
 
 class InterleaveControl(TreeElement):
+    category: CategoryElement = CategoryElement.LOGIC_CONTROLLER
+    
     def __init__(
         self,
         testname: str = "Interleave Controller",
@@ -838,6 +913,8 @@ class InterleaveControl(TreeElement):
 
 
 class RandomController(TreeElement):
+    category: CategoryElement = CategoryElement.LOGIC_CONTROLLER
+    
     def __init__(
         self,
         testname: str = "Random Controller",
@@ -890,6 +967,8 @@ class RandomController(TreeElement):
 
 
 class RandomOrderController(TreeElement):
+    category: CategoryElement = CategoryElement.LOGIC_CONTROLLER
+    
     def __init__(
         self,
         testname: str = "Random Order Controller",
@@ -925,6 +1004,8 @@ class RandomOrderController(TreeElement):
 
 
 class RecordingController(TreeElement):
+    category: CategoryElement = CategoryElement.LOGIC_CONTROLLER
+    
     def __init__(
         self,
         testname: str = "Recording Controller",
@@ -960,6 +1041,8 @@ class RecordingController(TreeElement):
 
 
 class RunTime(TreeElement):
+    category: CategoryElement = CategoryElement.LOGIC_CONTROLLER
+    
     def __init__(
         self,
         testname: str = "Runtime Controller",
@@ -1006,6 +1089,8 @@ class RunTime(TreeElement):
 
 
 class GenericController(TreeElement):
+    category: CategoryElement = CategoryElement.LOGIC_CONTROLLER
+    
     def __init__(
         self,
         testname: str = "Simple Controller",
@@ -1046,6 +1131,8 @@ class ThroughputControllerStyle(Enum):
 
 
 class ThroughputController(TreeElement):
+    category: CategoryElement = CategoryElement.LOGIC_CONTROLLER
+    
     def __init__(
         self,
         testname: str = "Throughput Controller",
@@ -1116,6 +1203,8 @@ class ThroughputController(TreeElement):
 
 
 class SwitchController(TreeElement):
+    category: CategoryElement = CategoryElement.LOGIC_CONTROLLER
+    
     def __init__(
         self,
         testname: str = "Switch Controller",
@@ -1159,6 +1248,8 @@ class SwitchController(TreeElement):
 
 
 class ModuleController(TreeElement):
+    category: CategoryElement = CategoryElement.LOGIC_CONTROLLER
+    
     def __init__(
         self,
         testname: str = "Module Controller",
@@ -1301,6 +1392,8 @@ class CookieManagerPolicy(Enum):
 
 
 class CookieManager(TreeElement):
+    category: CategoryElement = CategoryElement.CONFIG_ELEMENT
+    
     def __init__(
         self,
         testname: str = "HTTP Cookie Manager",
@@ -1404,6 +1497,8 @@ class CookieManager(TreeElement):
 
 
 class CacheManager(TreeElement):
+    category: CategoryElement = CategoryElement.CONFIG_ELEMENT
+    
     def __init__(
         self,
         testname: str = "HTTP Cache Manager",
@@ -1465,6 +1560,8 @@ class CacheManager(TreeElement):
 
 
 class Arguments(TreeElement):
+    category: CategoryElement = CategoryElement.CONFIG_ELEMENT
+    
     def __init__(
         self,
         testname: str = "User Defined Variables",
@@ -1533,6 +1630,8 @@ class Arguments(TreeElement):
 
 
 class HeaderManager(TreeElement):
+    category: CategoryElement = CategoryElement.CONFIG_ELEMENT
+    
     def __init__(
         self,
         testname: str = "HTTP Header Manager",
@@ -1611,6 +1710,8 @@ class CSVFileEncoding(Enum):
 
 
 class CSVDataSet(TreeElement):
+    category: CategoryElement = CategoryElement.CONFIG_ELEMENT
+    
     def __init__(
         self,
         testname: str = "CSV Data Set Config",
@@ -1711,6 +1812,8 @@ class CSVDataSet(TreeElement):
 
 
 class BoltConnectionElement(TreeElement):
+    category: CategoryElement = CategoryElement.CONFIG_ELEMENT
+    
     def __init__(
         self,
         testname: str = "Bolt Connection Configuration",
@@ -1772,6 +1875,8 @@ class BoltConnectionElement(TreeElement):
 
 
 class CounterConfig(TreeElement):
+    category: CategoryElement = CategoryElement.CONFIG_ELEMENT
+    
     def __init__(
         self,
         testname: str = "Counter",
@@ -1851,6 +1956,8 @@ class CounterConfig(TreeElement):
 
 
 class RandomVariableConfig(TreeElement):
+    category: CategoryElement = CategoryElement.CONFIG_ELEMENT
+    
     def __init__(
         self,
         testname: str = "Random Variable",
@@ -1924,6 +2031,8 @@ class RandomVariableConfig(TreeElement):
 
 
 class LdapExtRequestDefaults(TreeElement):
+    category: CategoryElement = CategoryElement.CONFIG_ELEMENT
+    
     def __init__(
         self,
         testname: str = "LDAP Extended Request Defaults",
@@ -2081,6 +2190,8 @@ class LdapExtRequestDefaults(TreeElement):
 
 
 class FtpRequestDefaults(TreeElement):
+    category: CategoryElement = CategoryElement.CONFIG_ELEMENT
+    
     def __init__(
         self,
         testname: str = "FTP Request Defaults",
@@ -2166,6 +2277,8 @@ class FtpRequestDefaults(TreeElement):
 
 
 class LdapRequestDefaults(TreeElement):
+    category: CategoryElement = CategoryElement.CONFIG_ELEMENT
+    
     def __init__(
         self,
         testname: str = "LDAP Request Defaults",
@@ -2177,7 +2290,15 @@ class LdapRequestDefaults(TreeElement):
         self.user_defined: BoolProp = BoolProp(LDAP_USER_DEFINED, False)
         self.test: StringProp = StringProp(LDAP_TEST, "")
         self.base_entry_dn: StringProp = StringProp(LDAP_BASE_ENTRY_DN, "")
-        self._arguments: ArgumentsProp = ArgumentsProp(LDAP_ARGUMENTS)
+        self._arguments_collection: ArgumentsProp = ArgumentsProp()
+        self._arguments: ElementProp = ElementProp(
+            name=LDAP_ARGUMENTS,
+            element_type="Arguments",
+            guiclass="ArgumentsPanel",
+            testclass="Arguments",
+            testname="User Defined Variables",
+            properties=[self._arguments_collection]
+        )
         
         super().__init__(
             testname=testname,
@@ -2228,16 +2349,19 @@ class LdapRequestDefaults(TreeElement):
         self.base_entry_dn.value = base_entry_dn
     
     def add_argument(self, name: str, value: str) -> None:
-        self._arguments.add_argument(name, value)
+        self._arguments_collection.add_argument(name, value)
     
     def remove_argument(self, name: str) -> None:
-        self._arguments.remove_argument(name)
+        self._arguments_collection.remove_argument(name)
     
     def get_argument(self, name: str) -> ElementProp | None:
-        return self._arguments.get_argument(name)
+        return self._arguments_collection.get_argument(name)
+    
+    def set_argument(self, name: str, value: str) -> bool:
+        return self._arguments_collection.set_argument(name, value)
     
     def clear_arguments(self) -> None:
-        self._arguments.clear()
+        self._arguments_collection.clear()
     
     def print_info(self) -> None:
         SLog.log(f"=== LdapRequestDefaults: {self.testname} ===")
@@ -2249,8 +2373,8 @@ class LdapRequestDefaults(TreeElement):
         SLog.log(f"  user_defined: {self.user_defined.value}")
         SLog.log(f"  test: {self.test.value}")
         SLog.log(f"  base_entry_dn: {self.base_entry_dn.value}")
-        SLog.log(f"  arguments: {len(self._arguments.collection.items)}")
-        for arg in self._arguments.collection.items:
+        SLog.log(f"  arguments: {len(self._arguments_collection.items)}")
+        for arg in self._arguments_collection.items:
             name_prop = next((p for p in arg.properties if p.name == ARGUMENT_NAME), None)
             value_prop = next((p for p in arg.properties if p.name == ARGUMENT_VALUE), None)
             if name_prop and value_prop:
@@ -2259,6 +2383,8 @@ class LdapRequestDefaults(TreeElement):
 
 
 class LoginConfigElement(TreeElement):
+    category: CategoryElement = CategoryElement.CONFIG_ELEMENT
+    
     def __init__(
         self,
         testname: str = "Login Config Element",
@@ -2308,6 +2434,8 @@ class LoginConfigElement(TreeElement):
 
 
 class SimpleConfigElement(TreeElement):
+    category: CategoryElement = CategoryElement.CONFIG_ELEMENT
+    
     def __init__(
         self,
         testname: str = "Simple Config Element",
@@ -2374,6 +2502,8 @@ class SimpleConfigElement(TreeElement):
 
 
 class TcpSamplerConfig(TreeElement):
+    category: CategoryElement = CategoryElement.CONFIG_ELEMENT
+    
     def __init__(
         self,
         testname: str = "TCP Sampler Config",
@@ -2477,6 +2607,8 @@ class TcpSamplerConfig(TreeElement):
 
 
 class KeystoreConfig(TreeElement):
+    category: CategoryElement = CategoryElement.CONFIG_ELEMENT
+    
     def __init__(
         self,
         testname: str = "Keystore Configuration",
@@ -2545,6 +2677,8 @@ class AuthorizationMechanism(Enum):
     
 
 class AuthManager(TreeElement):
+    category: CategoryElement = CategoryElement.CONFIG_ELEMENT
+    
     def __init__(
         self,
         testname: str = "HTTP Authorization Manager",
@@ -2652,6 +2786,8 @@ class JDBCCheckQuery(Enum):
 
 
 class JDBCDataSource(TreeElement):
+    category: CategoryElement = CategoryElement.CONFIG_ELEMENT
+    
     def __init__(
         self,
         testname: str = "JDBC Connection Configuration",
@@ -2802,12 +2938,21 @@ class JavaTestClass(Enum):
 
 
 class JavaConfig(TreeElement):
+    category: CategoryElement = CategoryElement.CONFIG_ELEMENT
+    
     def __init__(
         self,
         testname: str = "Java Request Defaults",
         enabled: bool = True
     ):
-        self._arguments: ArgumentsProp = ArgumentsProp(JAVACONFIG_ARGUMENTS)
+        self._arguments_collection: ArgumentsProp = ArgumentsProp()
+        self._arguments: ElementProp = ElementProp(
+            name=JAVACONFIG_ARGUMENTS,
+            element_type="Arguments",
+            guiclass="ArgumentsPanel",
+            testclass="Arguments",
+            properties=[self._arguments_collection]
+        )
         self.classname: StringProp = StringProp(JAVACONFIG_CLASSNAME, JavaTestClass.JAVA_TEST.value)
         
         super().__init__(
@@ -2842,24 +2987,27 @@ class JavaConfig(TreeElement):
         self.classname.value = classname.value
     
     def add_argument(self, name: str, value: str) -> None:
-        self._arguments.add_argument(name, value)
+        self._arguments_collection.add_argument(name, value)
     
     def remove_argument(self, name: str) -> None:
-        self._arguments.remove_argument(name)
+        self._arguments_collection.remove_argument(name)
     
     def get_argument(self, name: str) -> ElementProp | None:
-        return self._arguments.get_argument(name)
+        return self._arguments_collection.get_argument(name)
+    
+    def set_argument(self, name: str, value: str) -> bool:
+        return self._arguments_collection.set_argument(name, value)
     
     def clear_arguments(self) -> None:
-        self._arguments.clear()
+        self._arguments_collection.clear()
     
     def print_info(self) -> None:
         SLog.log(f"=== JavaConfig: {self.testname} ===")
         SLog.log(f"  enabled: {self.enabled}")
         SLog.log(f"  comment: {self.comment.value}")
         SLog.log(f"  classname: {self.classname.value}")
-        SLog.log(f"  arguments: {len(self._arguments.collection.items)}")
-        for arg in self._arguments.collection.items:
+        SLog.log(f"  arguments: {len(self._arguments_collection.items)}")
+        for arg in self._arguments_collection.items:
             name_prop = next((p for p in arg.properties if p.name == ARGUMENT_NAME), None)
             value_prop = next((p for p in arg.properties if p.name == ARGUMENT_VALUE), None)
             if name_prop and value_prop:
@@ -2868,6 +3016,8 @@ class JavaConfig(TreeElement):
 
 
 class DNSCacheManager(TreeElement):
+    category: CategoryElement = CategoryElement.CONFIG_ELEMENT
+    
     def __init__(
         self,
         testname: str = "DNS Cache Manager",
@@ -2953,6 +3103,254 @@ class DNSCacheManager(TreeElement):
         SLog.log(f"  children: {len(self.children)}")
 
 
+class HttpRequestDefaults(TreeElement):
+    def __init__(
+        self,
+        testname: str = "HTTP Request Defaults",
+        enabled: bool = True
+    ):
+        self.domain: StringProp = StringProp(HTTPSAMPLER_DOMAIN, "")
+        self.port: StringProp = StringProp(HTTPSAMPLER_PORT, "")
+        self.protocol: StringProp = StringProp(HTTPSAMPLER_PROTOCOL, "")
+        self.path: StringProp = StringProp(HTTPSAMPLER_PATH, "")
+        self.content_encoding: StringProp = StringProp(HTTPSAMPLER_CONTENT_ENCODING, "")
+        self.connect_timeout: IntProp = IntProp(HTTPSAMPLER_CONNECT_TIMEOUT, 0)
+        self.response_timeout: IntProp = IntProp(HTTPSAMPLER_RESPONSE_TIMEOUT, 0)
+        
+        self.image_parser: BoolProp = BoolProp(HTTPSAMPLER_IMAGE_PARSER, False)
+        self.concurrent_dwn: BoolProp = BoolProp(HTTPSAMPLER_CONCURRENT_DWN, False)
+        self.concurrent_pool: IntProp = IntProp(HTTPSAMPLER_CONCURRENT_POOL, 6)
+        self.md5: BoolProp = BoolProp(HTTPSAMPLER_MD5, False)
+        self.embedded_url_re: StringProp = StringProp(HTTPSAMPLER_EMBEDDED_URL_RE, "")
+        self.embedded_url_exclude_re: StringProp = StringProp(HTTPSAMPLER_EMBEDDED_URL_EXCLUDE_RE, "")
+        
+        self.ip_source: StringProp = StringProp(HTTPSAMPLER_IP_SOURCE, "")
+        self.ip_source_type: IntProp = IntProp(HTTPSAMPLER_IP_SOURCE_TYPE, 0)
+        self.implementation: StringProp = StringProp(HTTPSAMPLER_IMPLEMENTATION, "")
+        
+        self.proxy_scheme: StringProp = StringProp(HTTPSAMPLER_PROXY_SCHEME, "")
+        self.proxy_host: StringProp = StringProp(HTTPSAMPLER_PROXY_HOST, "")
+        self.proxy_port: StringProp = StringProp(HTTPSAMPLER_PROXY_PORT, "")
+        self.proxy_user: StringProp = StringProp(HTTPSAMPLER_PROXY_USER, "")
+        self.proxy_pass: StringProp = StringProp(HTTPSAMPLER_PROXY_PASS, "")
+        
+        self._post_body_raw: BoolProp = BoolProp(HTTPSAMPLER_POST_BODY_RAW, False)
+        self._arguments: HTTPArgumentsProp = HTTPArgumentsProp()
+        self._arguments_element: ElementProp = ElementProp(
+            name=HTTPSAMPLER_ARGUMENTS,
+            element_type="Arguments",
+            guiclass="HTTPArgumentsPanel",
+            testclass="Arguments",
+            testname="User Defined Variables",
+            properties=[self._arguments]
+        )
+        
+        super().__init__(
+            testname=testname,
+            enabled=enabled,
+            properties=[
+                self.image_parser,
+                self.concurrent_dwn,
+                self.concurrent_pool,
+                self.md5,
+                self.embedded_url_re,
+                self.embedded_url_exclude_re,
+                self.ip_source,
+                self.proxy_scheme,
+                self.proxy_host,
+                self.proxy_port,
+                self.proxy_user,
+                self.proxy_pass,
+                self.connect_timeout,
+                self.response_timeout,
+                self.domain,
+                self.port,
+                self.protocol,
+                self.path,
+                self.content_encoding,
+                self._post_body_raw,
+                self._arguments_element,
+                self.ip_source_type,
+                self.implementation
+            ]
+        )
+    
+    @property
+    def tag_name(self) -> str:
+        return "ConfigTestElement"
+    
+    @property
+    def guiclass(self) -> str:
+        return "HttpDefaultsGui"
+    
+    @property
+    def testclass(self) -> str:
+        return "ConfigTestElement"
+    
+    @staticmethod
+    def create_default(testname: str = "HTTP Request Defaults") -> "HttpRequestDefaults":
+        return HttpRequestDefaults(testname=testname)
+    
+    def set_domain(self, domain: str) -> None:
+        self.domain.value = domain
+    
+    def set_port(self, port: str) -> None:
+        self.port.value = port
+    
+    def set_protocol(self, protocol: str) -> None:
+        self.protocol.value = protocol
+    
+    def set_path(self, path: str) -> None:
+        self.path.value = path
+    
+    def set_content_encoding(self, encoding: str) -> None:
+        self.content_encoding.value = encoding
+    
+    def set_connect_timeout(self, timeout: int) -> None:
+        self.connect_timeout.value = timeout
+    
+    def set_response_timeout(self, timeout: int) -> None:
+        self.response_timeout.value = timeout
+    
+    def set_image_parser(self, enable: bool) -> None:
+        self.image_parser.value = enable
+    
+    def set_concurrent_dwn(self, enable: bool) -> None:
+        self.concurrent_dwn.value = enable
+    
+    def set_concurrent_pool(self, pool: int) -> None:
+        self.concurrent_pool.value = pool
+    
+    def set_md5(self, enable: bool) -> None:
+        self.md5.value = enable
+    
+    def set_embedded_url_re(self, regex: str) -> None:
+        self.embedded_url_re.value = regex
+    
+    def set_embedded_url_exclude_re(self, regex: str) -> None:
+        self.embedded_url_exclude_re.value = regex
+    
+    def set_ip_source(self, ip: str) -> None:
+        self.ip_source.value = ip
+    
+    def set_ip_source_type(self, source_type: int) -> None:
+        self.ip_source_type.value = source_type
+    
+    def set_ip_source_type_typed(self, source_type: IpSourceType) -> None:
+        self.ip_source_type.value = source_type.value
+    
+    def set_implementation(self, impl: str) -> None:
+        self.implementation.value = impl
+    
+    def set_implementation_typed(self, impl: HttpImplementation) -> None:
+        self.implementation.value = impl.value
+    
+    def set_proxy_scheme(self, scheme: str) -> None:
+        self.proxy_scheme.value = scheme
+    
+    def set_proxy_host(self, host: str) -> None:
+        self.proxy_host.value = host
+    
+    def set_proxy_port(self, port: str) -> None:
+        self.proxy_port.value = port
+    
+    def set_proxy_user(self, user: str) -> None:
+        self.proxy_user.value = user
+    
+    def set_proxy_pass(self, password: str) -> None:
+        self.proxy_pass.value = password
+    
+    def set_body_data(self, body: str) -> None:
+        self._post_body_raw.value = True
+        self._arguments.clear()
+        self._arguments_element.guiclass = None
+        self._arguments_element.testclass = None
+        self._arguments_element.testname = None
+        
+        body_arg = ElementProp(
+            name="",
+            element_type="HTTPArgument",
+            properties=[
+                BoolProp(HTTPARGUMENT_ALWAYS_ENCODE, False),
+                StringProp(ARGUMENT_VALUE, body),
+                StringProp(ARGUMENT_METADATA, "=")
+            ]
+        )
+        self._arguments.items.append(body_arg)
+    
+    def get_body_data(self) -> str | None:
+        if not self._post_body_raw.value:
+            return None
+        if self._arguments.items:
+            for prop in self._arguments.items[0].properties:
+                if isinstance(prop, StringProp) and prop.name == ARGUMENT_VALUE:
+                    return prop.value
+        return None
+    
+    def add_argument(
+        self,
+        name: str,
+        value: str,
+        always_encode: bool = False,
+        use_equals: bool = True
+    ) -> None:
+        if self._post_body_raw.value:
+            self._post_body_raw.value = False
+            self._arguments.clear()
+            self._arguments_element.guiclass = "HTTPArgumentsPanel"
+            self._arguments_element.testclass = "Arguments"
+            self._arguments_element.testname = "User Defined Variables"
+        
+        self._arguments.add_argument(name, value, always_encode, use_equals)
+    
+    def remove_argument(self, name: str) -> None:
+        self._arguments.remove_argument(name)
+    
+    def get_argument(self, name: str) -> ElementProp | None:
+        return self._arguments.get_argument(name)
+    
+    def clear_arguments(self) -> None:
+        self._arguments.clear()
+    
+    def print_info(self) -> None:
+        SLog.log(f"=== HttpRequestDefaults: {self.testname} ===")
+        SLog.log(f"  enabled: {self.enabled}")
+        SLog.log(f"  comment: {self.comment.value}")
+        SLog.log(f"  protocol: {self.protocol.value}")
+        SLog.log(f"  domain: {self.domain.value}")
+        SLog.log(f"  port: {self.port.value}")
+        SLog.log(f"  path: {self.path.value}")
+        SLog.log(f"  content_encoding: {self.content_encoding.value}")
+        SLog.log(f"  connect_timeout: {self.connect_timeout.value}")
+        SLog.log(f"  response_timeout: {self.response_timeout.value}")
+        SLog.log(f"  implementation: {self.implementation.value}")
+        SLog.log(f"  image_parser: {self.image_parser.value}")
+        SLog.log(f"  concurrent_dwn: {self.concurrent_dwn.value}")
+        SLog.log(f"  concurrent_pool: {self.concurrent_pool.value}")
+        SLog.log(f"  md5: {self.md5.value}")
+        SLog.log(f"  embedded_url_re: {self.embedded_url_re.value}")
+        SLog.log(f"  embedded_url_exclude_re: {self.embedded_url_exclude_re.value}")
+        SLog.log(f"  ip_source: {self.ip_source.value}")
+        SLog.log(f"  ip_source_type: {self.ip_source_type.value}")
+        SLog.log(f"  proxy_scheme: {self.proxy_scheme.value}")
+        SLog.log(f"  proxy_host: {self.proxy_host.value}")
+        SLog.log(f"  proxy_port: {self.proxy_port.value}")
+        SLog.log(f"  proxy_user: {self.proxy_user.value}")
+        SLog.log(f"  proxy_pass: {'*' * len(self.proxy_pass.value) if self.proxy_pass.value else '(empty)'}")
+        SLog.log(f"  post_body_raw: {self._post_body_raw.value}")
+        if self._post_body_raw.value:
+            body = self.get_body_data()
+            SLog.log(f"  body: {body[:50]}..." if body and len(body) > 50 else f"  body: {body}")
+        else:
+            SLog.log(f"  arguments: {len(self._arguments.items)}")
+            for arg in self._arguments.items:
+                name_prop = next((p for p in arg.properties if p.name == ARGUMENT_NAME), None)
+                value_prop = next((p for p in arg.properties if p.name == ARGUMENT_VALUE), None)
+                if name_prop and value_prop:
+                    SLog.log(f"    {name_prop.value} = {value_prop.value}")
+        SLog.log(f"  children: {len(self.children)}")
+
+
 ################## SAMPLERS ######################
 # Flow Control Action
 class TestActionTarget(Enum):
@@ -2970,6 +3368,8 @@ class TestActionType(Enum):
 
 
 class TestAction(TreeElement):
+    category: CategoryElement = CategoryElement.SAMPLER
+    
     def __init__(
         self,
         testname: str = "Think Time",
@@ -3048,6 +3448,8 @@ class TestAction(TreeElement):
 
 # Http Request
 class HTTPSamplerProxy(TreeElement):
+    category: CategoryElement = CategoryElement.SAMPLER
+    
     def __init__(
         self,
         testname: str = "HTTP Request",
@@ -3384,6 +3786,8 @@ class HTTPSamplerProxy(TreeElement):
 
 
 class DebugSampler(TreeElement):
+    category: CategoryElement = CategoryElement.SAMPLER
+    
     def __init__(
         self,
         testname: str = "Debug Sampler",
@@ -3439,6 +3843,8 @@ class DebugSampler(TreeElement):
 
 
 class JSR223Element(TreeElement):
+    category: CategoryElement = CategoryElement.SAMPLER
+    
     def __init__(
         self,
         testname: str,
@@ -3495,6 +3901,8 @@ class JSR223Element(TreeElement):
 
 
 class JSR223Sampler(JSR223Element):
+    category: CategoryElement = CategoryElement.SAMPLER
+    
     def __init__(
         self,
         testname: str = "JSR223 Sampler",
@@ -3517,6 +3925,8 @@ class JSR223Sampler(JSR223Element):
 
 ################## PREPROCESS ######################
 class JSR223PreProcessor(JSR223Element):
+    category: CategoryElement = CategoryElement.PRE_PROCESSORS
+    
     def __init__(
         self,
         testname: str = "JSR223 PreProcessor",
@@ -3540,6 +3950,8 @@ class JSR223PreProcessor(JSR223Element):
 
 ################## POSTPROCESS ######################
 class JSR223PostProcessor(JSR223Element):
+    category: CategoryElement = CategoryElement.POST_PROCESSORS
+    
     def __init__(
         self,
         testname: str = "JSR223 PostProcessor",
@@ -3579,6 +3991,8 @@ class SampleScope(Enum):
 
 
 class RegexExtractor(TreeElement):
+    category: CategoryElement = CategoryElement.POST_PROCESSORS
+    
     def __init__(
         self,
         testname: str = "Regular Expression Extractor",
@@ -3691,6 +4105,8 @@ class RegexExtractor(TreeElement):
 
 
 class JSONPostProcessor(TreeElement):
+    category: CategoryElement = CategoryElement.POST_PROCESSORS
+    
     def __init__(
         self,
         testname: str = "JSON Extractor",
@@ -3785,6 +4201,8 @@ class CssSelectorImpl(Enum):
 
 # CSS EXTRACTOR 
 class HtmlExtractor(TreeElement):
+    category: CategoryElement = CategoryElement.POST_PROCESSORS
+    
     def __init__(
         self,
         testname: str = "CSS Selector Extractor",
@@ -3897,6 +4315,8 @@ class HtmlExtractor(TreeElement):
 
 
 class BoundaryExtractor(TreeElement):
+    category: CategoryElement = CategoryElement.POST_PROCESSORS
+    
     def __init__(
         self,
         testname: str = "Boundary Extractor",
@@ -4009,6 +4429,8 @@ class BoundaryExtractor(TreeElement):
 
 
 class JMESPathExtractor(TreeElement):
+    category: CategoryElement = CategoryElement.POST_PROCESSORS
+    
     def __init__(
         self,
         testname: str = "JSON JMESPath Extractor",
@@ -4094,6 +4516,8 @@ class JMESPathExtractor(TreeElement):
 
 
 class DebugPostProcessor(TreeElement):
+    category: CategoryElement = CategoryElement.POST_PROCESSORS
+    
     def __init__(
         self,
         testname: str = "Debug PostProcessor",
@@ -4165,6 +4589,8 @@ class ResultActionOnError(Enum):
 
 
 class ResultAction(TreeElement):
+    category: CategoryElement = CategoryElement.POST_PROCESSORS
+    
     def __init__(
         self,
         testname: str = "Result Status Action Handler",
@@ -4217,6 +4643,8 @@ class ResultAction(TreeElement):
 
 
 class XPathExtractor(TreeElement):
+    category: CategoryElement = CategoryElement.POST_PROCESSORS
+    
     def __init__(
         self,
         testname: str = "XPath Extractor",
@@ -4350,6 +4778,8 @@ class XPathExtractor(TreeElement):
 
 
 class XPath2Extractor(TreeElement):
+    category: CategoryElement = CategoryElement.POST_PROCESSORS
+    
     def __init__(
         self,
         testname: str = "XPath2 Extractor",
@@ -4450,6 +4880,8 @@ class XPath2Extractor(TreeElement):
 ################## TIMERS ######################
 
 class UniformRandomTimer(TreeElement):
+    category: CategoryElement = CategoryElement.TIMER
+    
     def __init__(
         self,
         testname: str = "Uniform Random Timer",
@@ -4505,6 +4937,8 @@ class UniformRandomTimer(TreeElement):
 
 
 class ConstantTimer(TreeElement):
+    category: CategoryElement = CategoryElement.TIMER
+    
     def __init__(
         self,
         testname: str = "Constant Timer",
@@ -4551,6 +4985,8 @@ class ConstantTimer(TreeElement):
 
 
 class PreciseThroughputTimer(TreeElement):
+    category: CategoryElement = CategoryElement.TIMER
+    
     def __init__(
         self,
         testname: str = "Precise Throughput Timer",
@@ -4644,6 +5080,8 @@ class ThroughputCalcMode(Enum):
 
 
 class ConstantThroughputTimer(TreeElement):
+    category: CategoryElement = CategoryElement.TIMER
+    
     def __init__(
         self,
         testname: str = "Constant Throughput Timer",
@@ -4704,6 +5142,8 @@ class ConstantThroughputTimer(TreeElement):
 ################## LISTENERS ######################
 
 class ViewResultsTree(TreeElement):
+    category: CategoryElement = CategoryElement.LISTENER
+    
     def __init__(
         self,
         testname: str = "View Results Tree",
@@ -4761,6 +5201,8 @@ class ViewResultsTree(TreeElement):
 
 
 class SummaryReport(TreeElement):
+    category: CategoryElement = CategoryElement.LISTENER
+    
     def __init__(
         self,
         testname: str = "Summary Report",
@@ -4818,6 +5260,8 @@ class SummaryReport(TreeElement):
 
 
 class AggregateReport(TreeElement):
+    category: CategoryElement = CategoryElement.LISTENER
+    
     def __init__(
         self,
         testname: str = "Aggregate Report",
@@ -4875,6 +5319,8 @@ class AggregateReport(TreeElement):
 
 
 class SimpleDataWriter(TreeElement):
+    category: CategoryElement = CategoryElement.LISTENER
+    
     def __init__(
         self,
         testname: str = "Simple Data Writer",
@@ -4932,12 +5378,14 @@ class BackendListenerClient(Enum):
 
 
 class BackendListener(TreeElement):
+    category: CategoryElement = CategoryElement.LISTENER
+    
     def __init__(
         self,
         testname: str = "Backend Listener",
         enabled: bool = True
     ):
-        self._arguments_collection: BackendListenerArgumentsProp = BackendListenerArgumentsProp()
+        self._arguments_collection: ArgumentsProp = ArgumentsProp()
         self._arguments: ElementProp = ElementProp(
             name=BACKENDLISTENER_ARGUMENTS,
             element_type="Arguments",

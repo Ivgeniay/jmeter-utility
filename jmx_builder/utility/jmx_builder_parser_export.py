@@ -19,6 +19,7 @@ from jmx_builder.parsers.elements.ftp_request_defaults_parser import FtpRequestD
 from jmx_builder.parsers.elements.generic_controller_parser import GenericControllerParser
 from jmx_builder.parsers.elements.header_manager_parser import HeaderManagerParser
 from jmx_builder.parsers.elements.html_extractor_parser import HtmlExtractorParser
+from jmx_builder.parsers.elements.http_request_defaults_parser import HttpRequestDefaultsParser
 from jmx_builder.parsers.elements.http_sampler_proxy_parser import HTTPSamplerProxyParser
 from jmx_builder.parsers.elements.if_controller_parser import IfControllerParser
 from jmx_builder.parsers.elements.include_controller_parser import IncludeControllerParser
@@ -89,6 +90,8 @@ def get_configured_parser() -> TreeParser:
     parser.register_parser("JDBCDataSource", JDBCDataSourceParser)
     parser.register_parser("JavaConfig", JavaConfigParser)
     parser.register_parser("DNSCacheManager", DNSCacheManagerParser)
+    parser.register_parser("ConfigTestElement", HttpRequestDefaultsParser, "HttpDefaultsGui")
+
 
     # Timers
     parser.register_parser("UniformRandomTimer", UniformRandomTimerParser)

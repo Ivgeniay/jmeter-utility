@@ -1,21 +1,6 @@
 from jmx_builder.parsers.elements.base import TreeElementParser
 from jmx_builder.models.tree import ThreadGroup
-from jmx_builder.parsers.const import (
-    ATTR_TESTNAME,
-    ATTR_ENABLED,
-    TESTPLAN_COMMENTS,
-    THREADGROUP_DELAYED_START,
-    THREADGROUP_NUM_THREADS,
-    THREADGROUP_RAMP_TIME,
-    THREADGROUP_DURATION,
-    THREADGROUP_DELAY,
-    THREADGROUP_SAME_USER_ON_NEXT_ITERATION,
-    THREADGROUP_SCHEDULER,
-    THREADGROUP_ON_SAMPLE_ERROR,
-    THREADGROUP_MAIN_CONTROLLER,
-    LOOPCONTROLLER_LOOPS,
-    LOOPCONTROLLER_CONTINUE_FOREVER,
-)
+from jmx_builder.parsers.const import *
 
 
 class ThreadGroupParser(TreeElementParser):
@@ -75,8 +60,10 @@ class ThreadGroupParser(TreeElementParser):
         if loops:
             if loops == "-1":
                 thread_group.set_loop_count_infinite(True)
-            else:
+            elif loops.lstrip("-").isdigit():
                 thread_group.set_loop_count(int(loops))
+            else:
+                thread_group.set_loop_count_raw(loops)
         
         continue_forever = TreeElementParser.extract_simple_prop_value(content, LOOPCONTROLLER_CONTINUE_FOREVER)
         if continue_forever:

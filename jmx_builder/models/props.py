@@ -589,46 +589,6 @@ class SampleSaveConfiguration(JMXElement):
         return f"<{self.tag_name}>\n{inner}\n</{self.tag_name}>"
 
 
-class BackendListenerArgumentsProp(CollectionProp):
-    def __init__(self, name: str = "Arguments.arguments"):
-        super().__init__(name)
-    
-    def add_argument(self, name: str, value: str) -> None:
-        argument = ElementProp(
-            name=name,
-            element_type="Argument",
-            properties=[
-                StringProp("Argument.name", name),
-                StringProp("Argument.value", value),
-                StringProp("Argument.metadata", "=")
-            ]
-        )
-        self.items.append(argument)
-    
-    def remove_argument(self, name: str) -> None:
-        self.items = [item for item in self.items if item.name != name]
-    
-    def get_argument(self, name: str) -> ElementProp | None:
-        for item in self.items:
-            if item.name == name:
-                return item
-        return None
-    
-    def set_argument(self, name: str, value: str) -> bool:
-        argument = self.get_argument(name)
-        if argument is None:
-            return False
-        
-        for prop in argument.properties:
-            if isinstance(prop, StringProp) and prop.name == "Argument.value":
-                prop.value = value
-                return True
-        return False
-    
-    def clear(self) -> None:
-        self.items = []
-
-
 class AuthorizationsProp(CollectionProp):
     def __init__(self, name: str = "AuthManager.auth_list"):
         super().__init__(name)
@@ -735,7 +695,44 @@ class DNSHostsProp(CollectionProp):
         self.items = []
 
 
-
+class ArgumentsProp(CollectionProp):
+    def __init__(self, name: str = ARGUMENTS_ARGUMENTS):
+        super().__init__(name)
+    
+    def add_argument(self, name: str, value: str) -> None:
+        argument = ElementProp(
+            name=name,
+            element_type="Argument",
+            properties=[
+                StringProp(ARGUMENT_NAME, name),
+                StringProp(ARGUMENT_VALUE, value),
+                StringProp(ARGUMENT_METADATA, "=")
+            ]
+        )
+        self.items.append(argument)
+    
+    def remove_argument(self, name: str) -> None:
+        self.items = [item for item in self.items if item.name != name]
+    
+    def get_argument(self, name: str) -> ElementProp | None:
+        for item in self.items:
+            if item.name == name:
+                return item
+        return None
+    
+    def set_argument(self, name: str, value: str) -> bool:
+        argument = self.get_argument(name)
+        if argument is None:
+            return False
+        
+        for prop in argument.properties:
+            if isinstance(prop, StringProp) and prop.name == ARGUMENT_VALUE:
+                prop.value = value
+                return True
+        return False
+    
+    def clear(self) -> None:
+        self.items = []
 
 
 

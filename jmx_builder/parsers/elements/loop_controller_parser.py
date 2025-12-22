@@ -26,7 +26,9 @@ class LoopControllerParser(TreeElementParser):
         if loops:
             if loops == "-1":
                 controller.set_loop_count_infinite(True)
-            else:
+            elif loops.lstrip("-").isdigit():
                 controller.set_loop_count(int(loops))
+            else:
+                controller.set_loop_count_raw(loops)
         
         return controller
