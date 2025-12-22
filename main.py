@@ -3,12 +3,13 @@ import sys;
 import re
 from typing import Callable, Literal
 
-from console import CompositeLog, ConsoleLog, SLog
+from console import CompositeLog, ConsoleLog, SLog 
 from jmx_builder.models.tree import CategoryElement, HTTPSamplerProxy
 from jmx_builder.utility.console import print_path, print_paths, print_tree
 from jmx_builder.utility.jmx_builder_parser_export import get_configured_parser
 from jmx_builder.utility.search import search_element, search_elements
 from jmx_builder.parsers.tree_parser import TreeParser
+from traffic_builder.har_parsers.har_parser import parse_har 
 
 
 def remove_suffix(
@@ -126,6 +127,9 @@ consLog = ConsoleLog()
 logger: CompositeLog = CompositeLog(consLog)
 SLog.register_logger(logger)
 
+har = parse_har('/opt/Fiddler/fiddler_classic_setup/Capturies/1_browser_1_step_har/S1_1.har')
+request = har.log.entries[0].request
+
 xml= '''
 
 '''
@@ -159,8 +163,8 @@ xml= '''
 def consent_overwrite_file() -> Literal['y', 'n']:
     msg = "You did not specify the path to the output file (the -o option is used). Without this parameter, the current file will be overwritten. Do you agree to re-record? (y/n)"
     user_answer: str = ""
-    while user_answer != 'y' and user_answer != 'n':
-        user_answer = input(msg)
+    while user_answer not in ('y', 'n'):
+        user_answer = input(msg).lower().strip()
     return user_answer
 
 def validating_overiting(o: str | None, function: Callable[[], None]) -> None:

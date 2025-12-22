@@ -10,6 +10,7 @@ class Cookie:
     expires: str = ""
     http_only: bool = False
     secure: bool = False
+    same_site: str = ""
     comment: str = ""
 
 @dataclass
@@ -19,10 +20,19 @@ class Record:
     comment: str = ""
 
 @dataclass
+class Param:
+    name: str
+    value: str = ""
+    file_name: str = ""      
+    content_type: str = "" 
+    comment: str = ""
+
+
+@dataclass
 class PostData:
     mime_type: str
     text: str = ""
-    params: list[Record] = field(default_factory=list)
+    params: list[Param] = field(default_factory=list) 
     comment: str = ""
 
 
