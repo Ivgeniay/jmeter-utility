@@ -8,9 +8,11 @@ from jmx_builder.models.tree import CategoryElement, HTTPSamplerProxy
 from jmx_builder.utility.console import print_path, print_paths, print_tree
 from jmx_builder.utility.jmx_builder_parser_export import get_configured_parser
 from jmx_builder.utility.search import search_element, search_elements
-from jmx_builder.parsers.tree_parser import TreeParser
-from traffic_builder.har_jtl_converter.jtl_to_har_conterter import convert_jtl_to_har, save_har
-from traffic_builder.har_parsers.har_parser import parse_har 
+from jmx_builder.parsers.tree_parser import TreeParser 
+from traffic_builder.converters_to_har.jtl_to_har_conterter import convert_jtl_to_har, save_har
+from traffic_builder.converters_to_har.saz_to_har_converter import convert_saz_to_har
+from traffic_builder.har_parsers.har_parser import parse_har
+from traffic_builder.saz_parser.saz_parser import parse_saz 
 
 
 def remove_suffix(
@@ -134,16 +136,23 @@ request = har.log.entries[0].request
 xml= '''
 '''
 
-from traffic_builder.jtl_parser.jtl_parser import parse_jtl, get_all_samples
+# from traffic_builder.jtl_parser.jtl_parser import parse_jtl, get_all_samples
 
-test_results = parse_jtl('/opt/apache-jmeter-5.6.3/bin/traffic.xml')
-all_samples = get_all_samples(test_results)
+# test_results = parse_jtl('/opt/apache-jmeter-5.6.3/bin/traffic.xml')
+# all_samples = get_all_samples(test_results)
 
-for sample in test_results.http_sample:
-    print(f"{sample.label}: {sample.response_code} ({sample.elapsed}ms)")
+# for sample in test_results.http_sample:
+#     print(f"{sample.label}: {sample.response_code} ({sample.elapsed}ms)")
 
-har = convert_jtl_to_har(test_results, include_sub_samples=True)
-save_har(har, '/opt/apache-jmeter-5.6.3/bin/test_traffic.har')
+# har = convert_jtl_to_har(test_results, include_sub_samples=True)
+# save_har(har, '/opt/apache-jmeter-5.6.3/bin/test_traffic.har')
+
+
+saz = parse_saz('/opt/Fiddler/fiddler_classic_setup/Capturies/1_browser/1.saz')
+har = convert_saz_to_har(saz, "JOP")
+save_har(har, '/opt/Fiddler/fiddler_classic_setup/Capturies/1_browser/1.har')
+
+
 
 # parser1: TreeParser = get_configured_parser()
 # test_plan = parser1.parse(xml)
