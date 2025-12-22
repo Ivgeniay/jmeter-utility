@@ -35,7 +35,6 @@ class TreeElement(JMXElement, IHierarchable):
         enabled: bool = True,
         properties: list[PropElement] | None = None
     ):
-        self.guid = uuid.uuid4()
         self.testname = testname
         self.enabled = enabled
         self.children: list[TreeElement] = []

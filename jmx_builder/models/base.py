@@ -1,7 +1,13 @@
 from abc import ABC, abstractmethod
+import uuid
 
 
 class JMXElement(ABC):
+    def __new__(cls, *args, **kwargs):
+        instance = super().__new__(cls)
+        instance.guid = uuid.uuid4()
+        return instance
+    
     @abstractmethod
     def to_xml(self) -> str:
         pass

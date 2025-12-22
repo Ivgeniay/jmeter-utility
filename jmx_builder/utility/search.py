@@ -1,9 +1,9 @@
 from typing import Callable
-from jmx_builder.models.tree import TreeElement
+from jmx_builder.models.tree import JMeterTestPlan, TreeElement
 
 
-def search_element(root: TreeElement, predicate: Callable[[TreeElement], bool], include_root: bool = False) -> TreeElement | None:
-    if include_root and predicate(root):
+def search_element(root: TreeElement | JMeterTestPlan, predicate: Callable[[TreeElement], bool], include_root: bool = False) -> TreeElement | None:
+    if include_root and not isinstance(root, JMeterTestPlan) and predicate(root):
         return root
     
     for child in root.children:
@@ -16,10 +16,10 @@ def search_element(root: TreeElement, predicate: Callable[[TreeElement], bool], 
     
     return None
 
-def search_elements(root: TreeElement, predicate: Callable[[TreeElement], bool], include_root: bool = False) -> list[TreeElement]:
+def search_elements(root: TreeElement | JMeterTestPlan, predicate: Callable[[TreeElement], bool], include_root: bool = False) -> list[TreeElement]:
     result_list: list[TreeElement] = []
     
-    if include_root and predicate(root):
+    if include_root and not isinstance(root, JMeterTestPlan) and predicate(root):
         result_list.append(root)
     
     for child in root.children:
