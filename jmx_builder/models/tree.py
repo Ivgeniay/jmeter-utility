@@ -3401,7 +3401,7 @@ class TestAction(TreeElement):
         return "TestAction"
     
     @staticmethod
-    def create_default(testname: str = "Think Time") -> "TestAction":
+    def create_default(testname: str = "Flow Control Action") -> "TestAction":
         return TestAction(testname=testname)
     
     def set_action(self, action: TestActionType) -> None:
@@ -4004,7 +4004,7 @@ class RegexExtractor(TreeElement):
         self.default: StringProp = StringProp(REGEXEXTRACTOR_DEFAULT, "")
         self.default_empty_value: BoolProp = BoolProp(REGEXEXTRACTOR_DEFAULT_EMPTY_VALUE, False)
         self.match_number: StringProp = StringProp(REGEXEXTRACTOR_MATCH_NUMBER, "1")
-        self.scope: StringProp = StringProp(SAMPLE_SCOPE, "")
+        #self.scope: StringProp = StringProp(SAMPLE_SCOPE, "")
         self.scope_variable: StringProp = StringProp(SCOPE_VARIABLE, "")
         
         super().__init__(
@@ -4018,7 +4018,7 @@ class RegexExtractor(TreeElement):
                 self.default,
                 self.default_empty_value,
                 self.match_number,
-                self.scope,
+                #self.scope,
                 self.scope_variable
             ]
         )
@@ -4067,10 +4067,19 @@ class RegexExtractor(TreeElement):
         self.match_number.value = number
     
     def set_scope(self, scope: SampleScope) -> None:
-        self.scope.value = scope.value
+        self.set_scope_raw(scope.value)
     
     def set_scope_raw(self, scope: str) -> None:
-        self.scope.value = scope
+        if scope == '':
+            if self.scope:
+                self.properties.remove(self.scope)
+                self.scope = None
+        else:
+            if self.scope:
+                self.scope.value = scope
+            else:
+                self.scope = StringProp(SAMPLE_SCOPE, scope)
+                self.properties.append(self.scope)
     
     def set_scope_variable(self, variable: str) -> None:
         self.scope_variable.value = variable
@@ -4116,7 +4125,7 @@ class JSONPostProcessor(TreeElement):
         self.match_numbers: StringProp = StringProp(JSONPOSTPROCESSOR_MATCH_NUMBERS, "")
         self.default_values: StringProp = StringProp(JSONPOSTPROCESSOR_DEFAULT_VALUES, "")
         self.compute_concat: BoolProp = BoolProp(JSONPOSTPROCESSOR_COMPUTE_CONCAT, False)
-        self.scope: StringProp = StringProp(SAMPLE_SCOPE, "")
+        #self.scope: StringProp = StringProp(SAMPLE_SCOPE, "")
         self.scope_variable: StringProp = StringProp(SCOPE_VARIABLE, "")
         
         super().__init__(
@@ -4126,7 +4135,7 @@ class JSONPostProcessor(TreeElement):
                 self.reference_names,
                 self.json_path_exprs,
                 self.match_numbers,
-                self.scope,
+                #self.scope,
                 self.default_values,
                 self.compute_concat,
                 self.scope_variable
@@ -4165,10 +4174,19 @@ class JSONPostProcessor(TreeElement):
         self.compute_concat.value = enable
     
     def set_scope(self, scope: SampleScope) -> None:
-        self.scope.value = scope.value
+        self.set_scope_raw(scope.value)
     
     def set_scope_raw(self, scope: str) -> None:
-        self.scope.value = scope
+        if scope == '':
+            if self.scope:
+                self.properties.remove(self.scope)
+                self.scope = None
+        else:
+            if self.scope:
+                self.scope.value = scope
+            else:
+                self.scope = StringProp(SAMPLE_SCOPE, scope)
+                self.properties.append(self.scope)
     
     def set_scope_variable(self, variable: str) -> None:
         self.scope_variable.value = variable
@@ -4214,7 +4232,7 @@ class HtmlExtractor(TreeElement):
         self.default_empty_value: BoolProp = BoolProp(HTMLEXTRACTOR_DEFAULT_EMPTY_VALUE, False)
         self.match_number: StringProp = StringProp(HTMLEXTRACTOR_MATCH_NUMBER, "")
         self.extractor_impl: StringProp = StringProp(HTMLEXTRACTOR_EXTRACTOR_IMPL, CssSelectorImpl.JSOUP.value)
-        self.scope: StringProp = StringProp(SAMPLE_SCOPE, "")
+        #self.scope: StringProp = StringProp(SAMPLE_SCOPE, "")
         self.scope_variable: StringProp = StringProp(SCOPE_VARIABLE, "")
         
         super().__init__(
@@ -4228,7 +4246,7 @@ class HtmlExtractor(TreeElement):
                 self.default_empty_value,
                 self.match_number,
                 self.extractor_impl,
-                self.scope,
+                #self.scope,
                 self.scope_variable
             ]
         )
@@ -4277,10 +4295,19 @@ class HtmlExtractor(TreeElement):
         self.extractor_impl.value = impl
     
     def set_scope(self, scope: SampleScope) -> None:
-        self.scope.value = scope.value
+        self.set_scope_raw(scope.value)
     
     def set_scope_raw(self, scope: str) -> None:
-        self.scope.value = scope
+        if scope == '':
+            if self.scope:
+                self.properties.remove(self.scope)
+                self.scope = None
+        else:
+            if self.scope:
+                self.scope.value = scope
+            else:
+                self.scope = StringProp(SAMPLE_SCOPE, scope)
+                self.properties.append(self.scope)
     
     def set_scope_variable(self, variable: str) -> None:
         self.scope_variable.value = variable
@@ -4328,7 +4355,7 @@ class BoundaryExtractor(TreeElement):
         self.default: StringProp = StringProp(BOUNDARYEXTRACTOR_DEFAULT, "")
         self.default_empty_value: BoolProp = BoolProp(BOUNDARYEXTRACTOR_DEFAULT_EMPTY_VALUE, False)
         self.match_number: StringProp = StringProp(BOUNDARYEXTRACTOR_MATCH_NUMBER, "1")
-        self.scope: StringProp = StringProp(SAMPLE_SCOPE, "")
+        #self.scope: StringProp = StringProp(SAMPLE_SCOPE, "")
         self.scope_variable: StringProp = StringProp(SCOPE_VARIABLE, "")
         
         super().__init__(
@@ -4342,7 +4369,7 @@ class BoundaryExtractor(TreeElement):
                 self.default,
                 self.default_empty_value,
                 self.match_number,
-                self.scope,
+                #self.scope,
                 self.scope_variable
             ]
         )
@@ -4391,10 +4418,19 @@ class BoundaryExtractor(TreeElement):
         self.match_number.value = number
     
     def set_scope(self, scope: SampleScope) -> None:
-        self.scope.value = scope.value
+        self.set_scope_raw(scope.value)
     
     def set_scope_raw(self, scope: str) -> None:
-        self.scope.value = scope
+        if scope == '':
+            if self.scope:
+                self.properties.remove(self.scope)
+                self.scope = None
+        else:
+            if self.scope:
+                self.scope.value = scope
+            else:
+                self.scope = StringProp(SAMPLE_SCOPE, scope)
+                self.properties.append(self.scope)
     
     def set_scope_variable(self, variable: str) -> None:
         self.scope_variable.value = variable
@@ -4487,10 +4523,19 @@ class JMESPathExtractor(TreeElement):
         self.default_value.value = default
     
     def set_scope(self, scope: SampleScope) -> None:
-        self.scope.value = scope.value
+        self.set_scope_raw(scope.value)
     
     def set_scope_raw(self, scope: str) -> None:
-        self.scope.value = scope
+        if scope == '':
+            if self.scope:
+                self.properties.remove(self.scope)
+                self.scope = None
+        else:
+            if self.scope:
+                self.scope.value = scope
+            else:
+                self.scope = StringProp(SAMPLE_SCOPE, scope)
+                self.properties.append(self.scope)
     
     def set_scope_variable(self, variable: str) -> None:
         self.scope_variable.value = variable
@@ -4741,10 +4786,19 @@ class XPathExtractor(TreeElement):
         self.download_dtds.value = enable
     
     def set_scope(self, scope: SampleScope) -> None:
-        self.scope.value = scope.value
+        self.set_scope_raw(scope.value)
     
     def set_scope_raw(self, scope: str) -> None:
-        self.scope.value = scope
+        if scope == '':
+            if self.scope:
+                self.properties.remove(self.scope)
+                self.scope = None
+        else:
+            if self.scope:
+                self.scope.value = scope
+            else:
+                self.scope = StringProp(SAMPLE_SCOPE, scope)
+                self.properties.append(self.scope)
     
     def set_scope_variable(self, variable: str) -> None:
         self.scope_variable.value = variable
@@ -4846,10 +4900,19 @@ class XPath2Extractor(TreeElement):
         self.namespaces.value = namespaces
     
     def set_scope(self, scope: SampleScope) -> None:
-        self.scope.value = scope.value
+        self.set_scope_raw(scope.value)
     
     def set_scope_raw(self, scope: str) -> None:
-        self.scope.value = scope
+        if scope == '':
+            if self.scope:
+                self.properties.remove(self.scope)
+                self.scope = None
+        else:
+            if self.scope:
+                self.scope.value = scope
+            else:
+                self.scope = StringProp(SAMPLE_SCOPE, scope)
+                self.properties.append(self.scope)
     
     def set_scope_variable(self, variable: str) -> None:
         self.scope_variable.value = variable

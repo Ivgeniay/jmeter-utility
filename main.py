@@ -4,12 +4,12 @@ import re
 from typing import Callable, Literal
 
 from payloads.console import CompositeLog, ConsoleLog, SLog 
-from jmx_builder.models.tree import CategoryElement, HTTPSamplerProxy
+from jmx_builder.models.tree import CategoryElement, HTTPSamplerProxy, TestAction, UniformRandomTimer
 from jmx_builder.utility.console import print_path, print_paths, print_tree
 from jmx_builder.utility.jmx_builder_parser_export import get_configured_parser
 from jmx_builder.utility.search import search_element, search_elements
 from jmx_builder.parsers.tree_parser import TreeParser 
-from payloads.har_to_hmx_converter import add_har_to_scope
+from payloads.har_saz_payloads import SazGroupingMode, add_har_to_scope, add_saz_to_scope
 from traffic_builder.converters_to_har.jtl_to_har_conterter import convert_jtl_to_har, save_har
 from traffic_builder.converters_to_har.saz_to_har_converter import convert_saz_to_har
 from traffic_builder.har_parsers.har_parser import parse_har
@@ -139,8 +139,11 @@ def har_injection(
         
         parser1: TreeParser = get_configured_parser()
         test_plan = parser1.parse(xml)
-        scope = search_element(test_plan, lambda e: e.testname == "Recordt")
-        add_har_to_scope(scope, har)
+        scope_e = search_element(test_plan, lambda e: e.testname == scope)
+        if not scope_e:
+            SLog.log(f"There is no element {scope}")
+            exit(1)
+        add_har_to_scope(scope_e, har)
         new_content = test_plan.to_xml()
         
         if output:
@@ -163,42 +166,59 @@ consLog = ConsoleLog()
 logger: CompositeLog = CompositeLog(consLog)
 SLog.register_logger(logger)
 
-har = parse_har('/opt/Fiddler/fiddler_classic_setup/Capturies/1_browser_1_step_har/S1_5.har')
-request = har.log.entries[0].request
+# har = parse_har('/opt/Fiddler/fiddler_classic_setup/Capturies/1_browser_1_step_har/S1_5.har')
+# request = har.log.entries[0].request
 
-xml= '''<?xml version="1.0" encoding="UTF-8"?>
-<jmeterTestPlan version="1.2" properties="5.0" jmeter="5.6.3">
-  <hashTree>
-    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="Test Plan">
-      <boolProp name="TestPlan.tearDown_on_shutdown">true</boolProp>
-      <elementProp name="TestPlan.user_defined_variables" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables">
-        <collectionProp name="Arguments.arguments"/>
-      </elementProp>
-    </TestPlan>
-    <hashTree>
-      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Regural User">
-        <intProp name="ThreadGroup.num_threads">1</intProp>
-        <intProp name="ThreadGroup.ramp_time">1</intProp>
-        <longProp name="ThreadGroup.duration">0</longProp>
-        <longProp name="ThreadGroup.delay">0</longProp>
-        <boolProp name="ThreadGroup.same_user_on_next_iteration">false</boolProp>
-        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
-        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller">
-          <stringProp name="LoopController.loops">1</stringProp>
-          <boolProp name="LoopController.continue_forever">false</boolProp>
-        </elementProp>
-      </ThreadGroup>
-      <hashTree>
-        <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="Recordt">
-          <boolProp name="TransactionController.includeTimers">false</boolProp>
-        </TransactionController>
-        <hashTree/>
-      </hashTree>
-    </hashTree>
-  </hashTree>
-</jmeterTestPlan>'''
+# xml= '''<?xml version="1.0" encoding="UTF-8"?>
+# <jmeterTestPlan version="1.2" properties="5.0" jmeter="5.6.3">
+#   <hashTree>
+#     <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="Test Plan">
+#       <boolProp name="TestPlan.tearDown_on_shutdown">true</boolProp>
+#       <elementProp name="TestPlan.user_defined_variables" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables">
+#         <collectionProp name="Arguments.arguments"/>
+#       </elementProp>
+#     </TestPlan>
+#     <hashTree>
+#       <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Regural User">
+#         <intProp name="ThreadGroup.num_threads">1</intProp>
+#         <intProp name="ThreadGroup.ramp_time">1</intProp>
+#         <longProp name="ThreadGroup.duration">0</longProp>
+#         <longProp name="ThreadGroup.delay">0</longProp>
+#         <boolProp name="ThreadGroup.same_user_on_next_iteration">false</boolProp>
+#         <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+#         <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller">
+#           <stringProp name="LoopController.loops">1</stringProp>
+#           <boolProp name="LoopController.continue_forever">false</boolProp>
+#         </elementProp>
+#       </ThreadGroup>
+#       <hashTree>
+#         <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="Recordt">
+#           <boolProp name="TransactionController.includeTimers">false</boolProp>
+#         </TransactionController>
+#         <hashTree/>
+#       </hashTree>
+#     </hashTree>
+#   </hashTree>
+# </jmeterTestPlan>'''
 
+saz = parse_saz('/opt/Fiddler/fiddler_classic_setup/Capturies/1_2_step_brows/1-2_step_brows.saz')
 
+filepath = '/opt/apache-jmeter-5.6.3/bin/TEST22.jmx'
+with open(filepath, 'r', encoding='utf-8') as f:
+    xml = f.read()
+
+parser = get_configured_parser()
+test_plan = parser.parse(xml)
+# scope_ = search_element(test_plan, lambda e: e.testname == 'Rec')
+# add_saz_to_scope(scope_, saz, SazGroupingMode.BY_UNIQUE_COLORS)
+
+# flow = search_element(test_plan, lambda e: e.testname == 'Flow Control Action22')
+# timer = UniformRandomTimer.create_default()
+# flow.add_child(timer)
+xml = test_plan.to_xml()
+newName = filepath.replace(".jmx", "_TEST.jmx");
+with open(newName, 'w', encoding='utf-8') as f:
+    f.write(xml)
 
 # from traffic_builder.jtl_parser.jtl_parser import parse_jtl, get_all_samples
 
