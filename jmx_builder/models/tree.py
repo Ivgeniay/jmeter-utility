@@ -1,5 +1,5 @@
 from abc import abstractmethod
-from console import SLog
+from payloads.console import SLog
 from jmx_builder.parsers.const import *
 from jmx_builder.models.base import IHierarchable, JMXElement
 from jmx_builder.models.props import *
