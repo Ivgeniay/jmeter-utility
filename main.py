@@ -127,14 +127,15 @@ def add_methods(
     return 0
 
 def har_injection(        
-        filepath: str, 
+        file_path: str, 
         verbose: bool, 
         output: str | None, 
-        scope: str | None
+        scope: str | None,
+        har_path: str
         ) -> int:
     
     try:
-        with open(filepath, 'r', encoding='utf-8') as f:
+        with open(file_path, 'r', encoding='utf-8') as f:
             xml = f.read()
         
         parser1: TreeParser = get_configured_parser()
@@ -143,15 +144,13 @@ def har_injection(
         if not scope_e:
             SLog.log(f"There is no element {scope}")
             exit(1)
+        har = parse_har(har_path)
         add_har_to_scope(scope_e, har)
         new_content = test_plan.to_xml()
         
-        if output:
-            with open(output, 'w', encoding='utf-8') as f:
-                f.write(new_content)
-        else:
-            with open(filepath, 'w', encoding='utf-8') as f:
-                f.write(new_content)
+        out = output if output else file_path
+        with open(out, 'w', encoding='utf-8') as f:
+            f.write(new_content)
         
     except Exception as ex:
         SLog.log(ex)
@@ -159,6 +158,40 @@ def har_injection(
     
     return 0
 
+def saz_injection(       
+        file_path: str, 
+        verbose: bool, 
+        output: str | None, 
+        scope: str | None,
+        saz_path: str,
+        group_mode: str = SazGroupingMode.BY_UNIQUE_COLORS.value
+        ) -> int:
+    
+    try:
+        with open(file_path, 'r', encoding='utf-8') as f:
+            xml = f.read()
+        
+        parser1: TreeParser = get_configured_parser()
+        test_plan = parser1.parse(xml)
+        scope_e = search_element(test_plan, lambda e: e.testname == scope)
+        
+        if not scope_e:
+            SLog.log(f"There is no element {scope}")
+            exit(1)
+            
+        saz = parse_saz(saz_path)
+        add_saz_to_scope(scope_e, saz, group_mode)
+        new_content = test_plan.to_xml()
+        
+        out = output if output else file_path
+        with open(out, 'w', encoding='utf-8') as f:
+            f.write(new_content)
+        
+    except Exception as ex:
+        SLog.log(ex)
+        return 1
+    
+    return 0
 
 
 
@@ -200,25 +233,6 @@ SLog.register_logger(logger)
 #     </hashTree>
 #   </hashTree>
 # </jmeterTestPlan>'''
-
-saz = parse_saz('/opt/Fiddler/fiddler_classic_setup/Capturies/1_2_step_brows/1-2_step_brows.saz')
-
-filepath = '/opt/apache-jmeter-5.6.3/bin/TEST22.jmx'
-with open(filepath, 'r', encoding='utf-8') as f:
-    xml = f.read()
-
-parser = get_configured_parser()
-test_plan = parser.parse(xml)
-# scope_ = search_element(test_plan, lambda e: e.testname == 'Rec')
-# add_saz_to_scope(scope_, saz, SazGroupingMode.BY_UNIQUE_COLORS)
-
-# flow = search_element(test_plan, lambda e: e.testname == 'Flow Control Action22')
-# timer = UniformRandomTimer.create_default()
-# flow.add_child(timer)
-xml = test_plan.to_xml()
-newName = filepath.replace(".jmx", "_TEST.jmx");
-with open(newName, 'w', encoding='utf-8') as f:
-    f.write(xml)
 
 # from traffic_builder.jtl_parser.jtl_parser import parse_jtl, get_all_samples
 
