@@ -1,5 +1,6 @@
 from abc import abstractmethod
 from jmx_builder.models.base import JMXElement
+from jmx_builder.models.dto import ArgumentData, ArgumentWithDescData, AuthorizationData, CookieData, DNSHostData, HTTPArgumentData, HTTPFileData, HeaderData
 from jmx_builder.parsers.const import *
 
 
@@ -156,6 +157,40 @@ class UserDefinedVariablesProp(CollectionProp):
                 return item
         return None
     
+    def get_variable_value(self, name: str) -> str | None:
+        variable = self.get_variable(name)
+        if variable is None:
+            return None
+        for prop in variable.properties:
+            if isinstance(prop, StringProp) and prop.name == ARGUMENT_VALUE:
+                return prop.value
+        return None
+
+    def has_variable(self, name: str, value: str | None = None) -> bool:
+        if value is None:
+            return self.get_variable(name) is not None
+        return self.get_variable_value(name) == value
+    
+    def to_data(self) -> list[ArgumentData]:
+        result = []
+        for item in self.items:
+            name = None
+            value = None
+            for prop in item.properties:
+                if isinstance(prop, StringProp):
+                    if prop.name == ARGUMENT_NAME:
+                        name = prop.value
+                    elif prop.name == ARGUMENT_VALUE:
+                        value = prop.value
+            if name is not None and value is not None:
+                result.append(ArgumentData(name=name, value=value))
+        return result
+
+    def from_data(self, data: list[ArgumentData]) -> None:
+        self.items = []
+        for item in data:
+            self.add_variable(item.name, item.value)
+    
     def change_variable(self, name: str, new_name: str | None = None, new_value: str | None = None) -> bool:
         variable = self.get_variable(name)
         if variable is None:
@@ -185,6 +220,38 @@ class UserDefinedVariablesWithDescProp(UserDefinedVariablesProp):
             ]
         )
         self.items.append(variable)
+    
+    def get_variable_description(self, name: str) -> str | None:
+        variable = self.get_variable(name)
+        if variable is None:
+            return None
+        for prop in variable.properties:
+            if isinstance(prop, StringProp) and prop.name == ARGUMENT_DESC:
+                return prop.value
+        return None
+
+    def to_data(self) -> list[ArgumentWithDescData]:
+        result = []
+        for item in self.items:
+            name = None
+            value = None
+            description = ""
+            for prop in item.properties:
+                if isinstance(prop, StringProp):
+                    if prop.name == ARGUMENT_NAME:
+                        name = prop.value
+                    elif prop.name == ARGUMENT_VALUE:
+                        value = prop.value
+                    elif prop.name == ARGUMENT_DESC:
+                        description = prop.value
+            if name is not None and value is not None:
+                result.append(ArgumentWithDescData(name=name, value=value, description=description))
+        return result
+
+    def from_data(self, data: list[ArgumentWithDescData]) -> None:
+        self.items = []
+        for item in data:
+            self.add_variable(item.name, item.value, item.description)
     
     def change_variable(self, name: str, new_name: str | None = None, new_value: str | None = None, new_description: str | None = None) -> bool:
         variable = self.get_variable(name)
@@ -264,6 +331,51 @@ class HTTPArgumentsProp(CollectionProp):
         
         return True
     
+    def get_argument_value(self, name: str) -> str | None:
+        argument = self.get_argument(name)
+        if argument is None:
+            return None
+        for prop in argument.properties:
+            if isinstance(prop, StringProp) and prop.name == ARGUMENT_VALUE:
+                return prop.value
+        return None
+
+    def has_argument(self, name: str, value: str | None = None) -> bool:
+        if value is None:
+            return self.get_argument(name) is not None
+        return self.get_argument_value(name) == value
+    
+    def to_data(self) -> list[HTTPArgumentData]:
+        result = []
+        for item in self.items:
+            name = ""
+            value = ""
+            always_encode = False
+            use_equals = True
+            for prop in item.properties:
+                if isinstance(prop, StringProp):
+                    if prop.name == ARGUMENT_NAME:
+                        name = prop.value
+                    elif prop.name == ARGUMENT_VALUE:
+                        value = prop.value
+                elif isinstance(prop, BoolProp):
+                    if prop.name == HTTPARGUMENT_ALWAYS_ENCODE:
+                        always_encode = prop.value
+                    elif prop.name == HTTPARGUMENT_USE_EQUALS:
+                        use_equals = prop.value
+            result.append(HTTPArgumentData(
+                name=name,
+                value=value,
+                always_encode=always_encode,
+                use_equals=use_equals
+            ))
+        return result
+
+    def from_data(self, data: list[HTTPArgumentData]) -> None:
+        self.clear()
+        for item in data:
+            self.add_argument(item.name, item.value, item.always_encode, item.use_equals)
+    
     def clear(self) -> None:
         self.items = []
 
@@ -297,6 +409,50 @@ class HTTPFileArgsProp(CollectionProp):
             if item.name == path:
                 return item
         return None
+    
+    def get_file_mime_type(self, path: str) -> str | None:
+        file_arg = self.get_file(path)
+        if file_arg is None:
+            return None
+        for prop in file_arg.properties:
+            if isinstance(prop, StringProp) and prop.name == HTTPFILEARG_MIMETYPE:
+                return prop.value
+        return None
+
+    def get_file_param_name(self, path: str) -> str | None:
+        file_arg = self.get_file(path)
+        if file_arg is None:
+            return None
+        for prop in file_arg.properties:
+            if isinstance(prop, StringProp) and prop.name == HTTPFILEARG_PARAMNAME:
+                return prop.value
+        return None
+
+    def has_file(self, path: str) -> bool:
+        return self.get_file(path) is not None
+    
+    def to_data(self) -> list[HTTPFileData]:
+        result = []
+        for item in self.items:
+            path = ""
+            param_name = ""
+            mime_type = "application/octet-stream"
+            for prop in item.properties:
+                if isinstance(prop, StringProp):
+                    if prop.name == HTTPFILEARG_PATH:
+                        path = prop.value
+                    elif prop.name == HTTPFILEARG_PARAMNAME:
+                        param_name = prop.value
+                    elif prop.name == HTTPFILEARG_MIMETYPE:
+                        mime_type = prop.value
+            if path:
+                result.append(HTTPFileData(path=path, param_name=param_name, mime_type=mime_type))
+        return result
+
+    def from_data(self, data: list[HTTPFileData]) -> None:
+        self.clear()
+        for item in data:
+            self.add_file(item.path, item.param_name, item.mime_type)
     
     def change_file(
         self,
@@ -364,6 +520,78 @@ class CookiesProp(CollectionProp):
             if item.name == name:
                 return item
         return None
+    
+    def get_cookie_value(self, name: str) -> str | None:
+        cookie = self.get_cookie(name)
+        if cookie is None:
+            return None
+        for prop in cookie.properties:
+            if isinstance(prop, StringProp) and prop.name == COOKIE_VALUE:
+                return prop.value
+        return None
+
+    def get_cookie_domain(self, name: str) -> str | None:
+        cookie = self.get_cookie(name)
+        if cookie is None:
+            return None
+        for prop in cookie.properties:
+            if isinstance(prop, StringProp) and prop.name == COOKIE_DOMAIN:
+                return prop.value
+        return None
+
+    def has_cookie(self, name: str, value: str | None = None) -> bool:
+        if value is None:
+            return self.get_cookie(name) is not None
+        return self.get_cookie_value(name) == value
+    
+    def to_data(self) -> list[CookieData]:
+        result = []
+        for item in self.items:
+            name = item.name
+            value = ""
+            domain = ""
+            path = "/"
+            secure = False
+            expires = 0
+            path_specified = True
+            domain_specified = True
+            for prop in item.properties:
+                if isinstance(prop, StringProp):
+                    if prop.name == COOKIE_VALUE:
+                        value = prop.value
+                    elif prop.name == COOKIE_DOMAIN:
+                        domain = prop.value
+                    elif prop.name == COOKIE_PATH:
+                        path = prop.value
+                elif isinstance(prop, BoolProp):
+                    if prop.name == COOKIE_SECURE:
+                        secure = prop.value
+                    elif prop.name == COOKIE_PATH_SPECIFIED:
+                        path_specified = prop.value
+                    elif prop.name == COOKIE_DOMAIN_SPECIFIED:
+                        domain_specified = prop.value
+                elif isinstance(prop, LongProp):
+                    if prop.name == COOKIE_EXPIRES:
+                        expires = prop.value
+            result.append(CookieData(
+                name=name,
+                value=value,
+                domain=domain,
+                path=path,
+                secure=secure,
+                expires=expires,
+                path_specified=path_specified,
+                domain_specified=domain_specified
+            ))
+        return result
+
+    def from_data(self, data: list[CookieData]) -> None:
+        self.clear()
+        for item in data:
+            self.add_cookie(
+                item.name, item.value, item.domain, item.path,
+                item.secure, item.expires, item.path_specified, item.domain_specified
+            )
     
     def change_cookie(
         self,
@@ -440,6 +668,40 @@ class HeadersProp(CollectionProp):
                 if isinstance(prop, StringProp) and prop.name == HEADER_NAME and prop.value == name:
                     return item
         return None
+    
+    def get_header_value(self, name: str) -> str | None:
+        header = self.get_header(name)
+        if header is None:
+            return None
+        for prop in header.properties:
+            if isinstance(prop, StringProp) and prop.name == HEADER_VALUE:
+                return prop.value
+        return None
+
+    def has_header(self, name: str, value: str | None = None) -> bool:
+        if value is None:
+            return self.get_header(name) is not None
+        return self.get_header_value(name) == value
+    
+    def to_data(self) -> list[HeaderData]:
+        result = []
+        for item in self.items:
+            name = None
+            value = None
+            for prop in item.properties:
+                if isinstance(prop, StringProp):
+                    if prop.name == HEADER_NAME:
+                        name = prop.value
+                    elif prop.name == HEADER_VALUE:
+                        value = prop.value
+            if name is not None and value is not None:
+                result.append(HeaderData(name=name, value=value))
+        return result
+
+    def from_data(self, data: list[HeaderData]) -> None:
+        self.clear()
+        for item in data:
+            self.add_header(item.name, item.value)
     
     def change_header(
         self,
@@ -625,12 +887,74 @@ class AuthorizationsProp(CollectionProp):
             )
         ]
     
+    def get_authorization_username(self, url: str) -> str | None:
+        auth = self.get_authorization(url)
+        if auth is None:
+            return None
+        for prop in auth.properties:
+            if isinstance(prop, StringProp) and prop.name == AUTHORIZATION_USERNAME:
+                return prop.value
+        return None
+
+    def get_authorization_mechanism(self, url: str) -> str | None:
+        auth = self.get_authorization(url)
+        if auth is None:
+            return None
+        for prop in auth.properties:
+            if isinstance(prop, StringProp) and prop.name == AUTHORIZATION_MECHANISM:
+                return prop.value
+        return None
+
+    def has_authorization(self, url: str) -> bool:
+        return self.get_authorization(url) is not None
+    
     def get_authorization(self, url: str) -> ElementProp | None:
         for item in self.items:
             for prop in item.properties:
                 if isinstance(prop, StringProp) and prop.name == AUTHORIZATION_URL and prop.value == url:
                     return item
         return None
+    
+    def to_data(self) -> list[AuthorizationData]:
+        result = []
+        for item in self.items:
+            url = ""
+            username = ""
+            password = ""
+            domain = ""
+            realm = ""
+            mechanism = "BASIC"
+            for prop in item.properties:
+                if isinstance(prop, StringProp):
+                    if prop.name == AUTHORIZATION_URL:
+                        url = prop.value
+                    elif prop.name == AUTHORIZATION_USERNAME:
+                        username = prop.value
+                    elif prop.name == AUTHORIZATION_PASSWORD:
+                        password = prop.value
+                    elif prop.name == AUTHORIZATION_DOMAIN:
+                        domain = prop.value
+                    elif prop.name == AUTHORIZATION_REALM:
+                        realm = prop.value
+                    elif prop.name == AUTHORIZATION_MECHANISM:
+                        mechanism = prop.value
+            result.append(AuthorizationData(
+                url=url,
+                username=username,
+                password=password,
+                domain=domain,
+                realm=realm,
+                mechanism=mechanism
+            ))
+        return result
+
+    def from_data(self, data: list[AuthorizationData]) -> None:
+        self.clear()
+        for item in data:
+            self.add_authorization(
+                item.url, item.username, item.password,
+                item.domain, item.realm, item.mechanism
+            )
     
     def clear(self) -> None:
         self.items = []
@@ -691,6 +1015,40 @@ class DNSHostsProp(CollectionProp):
                 return item
         return None
     
+    def get_host_address(self, hostname: str) -> str | None:
+        host = self.get_host(hostname)
+        if host is None:
+            return None
+        for prop in host.properties:
+            if isinstance(prop, StringProp) and prop.name == STATICHOST_ADDRESS:
+                return prop.value
+        return None
+
+    def has_host(self, hostname: str, address: str | None = None) -> bool:
+        if address is None:
+            return self.get_host(hostname) is not None
+        return self.get_host_address(hostname) == address
+    
+    def to_data(self) -> list[DNSHostData]:
+        result = []
+        for item in self.items:
+            hostname = None
+            address = None
+            for prop in item.properties:
+                if isinstance(prop, StringProp):
+                    if prop.name == STATICHOST_NAME:
+                        hostname = prop.value
+                    elif prop.name == STATICHOST_ADDRESS:
+                        address = prop.value
+            if hostname is not None and address is not None:
+                result.append(DNSHostData(hostname=hostname, address=address))
+        return result
+
+    def from_data(self, data: list[DNSHostData]) -> None:
+        self.clear()
+        for item in data:
+            self.add_host(item.hostname, item.address)
+    
     def clear(self) -> None:
         self.items = []
 
@@ -730,6 +1088,40 @@ class ArgumentsProp(CollectionProp):
                 prop.value = value
                 return True
         return False
+    
+    def get_argument_value(self, name: str) -> str | None:
+        argument = self.get_argument(name)
+        if argument is None:
+            return None
+        for prop in argument.properties:
+            if isinstance(prop, StringProp) and prop.name == ARGUMENT_VALUE:
+                return prop.value
+        return None
+
+    def has_argument(self, name: str, value: str | None = None) -> bool:
+        if value is None:
+            return self.get_argument(name) is not None
+        return self.get_argument_value(name) == value
+    
+    def to_data(self) -> list[ArgumentData]:
+        result = []
+        for item in self.items:
+            name = None
+            value = None
+            for prop in item.properties:
+                if isinstance(prop, StringProp):
+                    if prop.name == ARGUMENT_NAME:
+                        name = prop.value
+                    elif prop.name == ARGUMENT_VALUE:
+                        value = prop.value
+            if name is not None and value is not None:
+                result.append(ArgumentData(name=name, value=value))
+        return result
+
+    def from_data(self, data: list[ArgumentData]) -> None:
+        self.clear()
+        for item in data:
+            self.add_argument(item.name, item.value)
     
     def clear(self) -> None:
         self.items = []

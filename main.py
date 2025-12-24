@@ -4,7 +4,7 @@ import re
 from typing import Callable, Literal
 
 from payloads.console import CompositeLog, ConsoleLog, SLog 
-from jmx_builder.models.tree import CategoryElement, HTTPSamplerProxy, TestAction, UniformRandomTimer
+from jmx_builder.models.tree import Arguments, CategoryElement, HTTPSamplerProxy, HeaderManager, TestAction, TreeElement, UniformRandomTimer
 from jmx_builder.utility.console import print_path, print_paths, print_tree
 from jmx_builder.utility.jmx_builder_parser_export import get_configured_parser
 from jmx_builder.utility.search import search_element, search_elements
@@ -193,11 +193,110 @@ def saz_injection(
     
     return 0
 
+def insert_varible(
+        file_path: str, 
+        verbose: bool, 
+        attribute: str,
+        output: str | None, 
+        scope: str | None
+        ) -> None:
+    
+    with open(file=file_path, mode = 'r', encoding="utf-8") as f:
+        xml = f.read()
+        
+    parser1: TreeParser = get_configured_parser()
+    test_plan = parser1.parse(xml)
+    user_vars: Arguments = search_element(test_plan, lambda e: e.category == CategoryElement.CONFIG_ELEMENT and e.testclass == 'Arguments')
+    if not user_vars:
+        SLog.log('Vars is not found')
+        exit(1)
+    
+    scope_el: TreeElement = None 
+    if scope:
+        scope_el = search_element(test_plan, lambda e: e.testname == scope)
+        if not scope_el:
+            SLog.log(f'Not founded {scope}')
+    else:
+        scope_el = test_plan
+    
+    http_req: list[HTTPSamplerProxy] = search_elements(scope_el, lambda e: isinstance(e, HTTPSamplerProxy) and e.get_argument(attribute) is not None)
+    headers_: list[HeaderManager] = search_elements(scope_el, lambda e: isinstance(e, HeaderManager) and e.get_header(attribute) is not None)
+    
+    new_content = test_plan.to_xml()
+    out = output if output else file_path
+    with open(out, 'w', encoding='utf-8') as f:
+        f.write(new_content)
+
+def find_disabled(
+    file_path: str, 
+    verbose: bool,  
+    scope: str | None
+) -> None:
+    with open(file=file_path, mode = 'r', encoding="utf-8") as f:
+        xml = f.read()
+        
+    parser1: TreeParser = get_configured_parser()
+    test_plan = parser1.parse(xml)
+    
+    scope_el: TreeElement = None 
+    if scope:
+        scope_el = search_element(test_plan, lambda e: e.testname == scope)
+        if not scope_el:
+            SLog.log(f'Not founded {scope}')
+    else:
+        scope_el = test_plan
+    
+    disabled_el : list[TreeElement] = search_elements(scope_el, lambda e: e.enabled == False, True)
+    SLog.log(f"Disabled list:")
+    for e in disabled_el:
+        SLog.log(print_path(test_plan, e))
+
+def enable_all_timers(
+    file_path: str, 
+    verbose: bool,  
+    output: str | None, 
+    scope: str | None
+) -> None:
+    
+    with open(file=file_path, mode = 'r', encoding="utf-8") as f:
+        xml = f.read()
+        
+    parser1: TreeParser = get_configured_parser()
+    test_plan = parser1.parse(xml)
+    
+    scope_el: TreeElement = None 
+    if scope:
+        scope_el = search_element(test_plan, lambda e: e.testname == scope)
+        if not scope_el:
+            SLog.log(f'Not founded {scope}')
+    else:
+        scope_el = test_plan
+    
+    timers: list[TreeElement] = search_elements(scope_el, lambda e: e.category == CategoryElement.TIMER)
+    for timer in timers:
+        bread_crumbs = print_path(test_plan, timer).split(" -> ")
+        for crumb in bread_crumbs:
+            el = search_element(test_plan, predicate= lambda e: e.testname == crumb)
+            if el:
+                el.enabled = True
+    
+    new_content = test_plan.to_xml()
+    out = output if output else file_path
+    with open(out, 'w', encoding='utf-8') as f:
+        f.write(new_content)
+
 
 
 consLog = ConsoleLog()
 logger: CompositeLog = CompositeLog(consLog)
 SLog.register_logger(logger)
+
+enable_all_timers(
+    file_path='/opt/apache-jmeter-5.6.3/bin/TEST22_TEST.jmx',
+    verbose=True,
+    output='/opt/apache-jmeter-5.6.3/bin/TEST22_TEST.jmx',
+    scope='Regular User2'
+)
 
 # har = parse_har('/opt/Fiddler/fiddler_classic_setup/Capturies/1_browser_1_step_har/S1_5.har')
 # request = har.log.entries[0].request

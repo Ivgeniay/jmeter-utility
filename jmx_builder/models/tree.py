@@ -1,4 +1,5 @@
 from abc import abstractmethod
+from jmx_builder.models.dto import HTTPArgumentData, HTTPFileData, HTTPSamplerData
 from payloads.console import SLog
 from jmx_builder.parsers.const import *
 from jmx_builder.models.base import IHierarchable, JMXElement
@@ -242,6 +243,18 @@ class TestPlan(TreeElement):
     
     def change_variable(self, name: str, new_name: str | None = None, new_value: str | None = None) -> bool:
         return self._variables.change_variable(name, new_name, new_value)
+    
+    def get_variable_value(self, name: str) -> str | None:
+        return self._variables.get_variable_value(name)
+
+    def has_variable(self, name: str, value: str | None = None) -> bool:
+        return self._variables.has_variable(name, value)
+
+    def get_variables_data(self) -> list[ArgumentData]:
+        return self._variables.to_data()
+
+    def set_variables_data(self, data: list[ArgumentData]) -> None:
+        self._variables.from_data(data)
     
     def print_info(self) -> None:
         SLog.log(f"=== TestPlan: {self.testname} ===")
@@ -1466,6 +1479,21 @@ class CookieManager(TreeElement):
     def get_cookie(self, name: str) -> ElementProp | None:
         return self._cookies.get_cookie(name)
     
+    def get_cookie_value(self, name: str) -> str | None:
+        return self._cookies.get_cookie_value(name)
+
+    def get_cookie_domain(self, name: str) -> str | None:
+        return self._cookies.get_cookie_domain(name)
+
+    def has_cookie(self, name: str, value: str | None = None) -> bool:
+        return self._cookies.has_cookie(name, value)
+
+    def get_cookies_data(self) -> list[CookieData]:
+        return self._cookies.to_data()
+
+    def set_cookies_data(self, data: list[CookieData]) -> None:
+        self._cookies.from_data(data)
+    
     def clear_cookies(self) -> None:
         self._cookies.clear()
     
@@ -1601,6 +1629,9 @@ class Arguments(TreeElement):
     def get_variable(self, name: str) -> ElementProp | None:
         return self._variables.get_variable(name)
     
+    def get_variables(self) -> UserDefinedVariablesWithDescProp:
+        return self._variables
+    
     def change_variable(
         self,
         name: str,
@@ -1612,6 +1643,18 @@ class Arguments(TreeElement):
     
     def clear_variables(self) -> None:
         self._variables.items = []
+    
+    def get_variable_value(self, name: str) -> str | None:
+        return self._variables.get_variable_value(name)
+
+    def has_variable(self, name: str, value: str | None = None) -> bool:
+        return self._variables.has_variable(name, value)
+
+    def get_variables_data(self) -> list[ArgumentWithDescData]:
+        return self._variables.to_data()
+
+    def set_variables_data(self, data: list[ArgumentWithDescData]) -> None:
+        self._variables.from_data(data)
     
     def print_info(self) -> None:
         SLog.log(f"=== Arguments: {self.testname} ===")
@@ -1678,6 +1721,18 @@ class HeaderManager(TreeElement):
         new_value: str | None = None
     ) -> bool:
         return self._headers.change_header(name, new_name, new_value)
+    
+    def get_header_value(self, name: str) -> str | None:
+        return self._headers.get_header_value(name)
+
+    def has_header(self, name: str, value: str | None = None) -> bool:
+        return self._headers.has_header(name, value)
+
+    def get_headers_data(self) -> list[HeaderData]:
+        return self._headers.to_data()
+
+    def set_headers_data(self, data: list[HeaderData]) -> None:
+        self._headers.from_data(data)
     
     def clear_headers(self) -> None:
         self._headers.clear()
@@ -2356,6 +2411,18 @@ class LdapRequestDefaults(TreeElement):
     def get_argument(self, name: str) -> ElementProp | None:
         return self._arguments_collection.get_argument(name)
     
+    def get_argument_value(self, name: str) -> str | None:
+        return self._arguments_collection.get_argument_value(name)
+
+    def has_argument(self, name: str, value: str | None = None) -> bool:
+        return self._arguments_collection.has_argument(name, value)
+
+    def get_arguments_data(self) -> list[ArgumentData]:
+        return self._arguments_collection.to_data()
+
+    def set_arguments_data(self, data: list[ArgumentData]) -> None:
+        self._arguments_collection.from_data(data)
+    
     def set_argument(self, name: str, value: str) -> bool:
         return self._arguments_collection.set_argument(name, value)
     
@@ -2741,6 +2808,21 @@ class AuthManager(TreeElement):
     def get_authorization(self, url: str) -> ElementProp | None:
         return self._auth_list.get_authorization(url)
     
+    def get_authorization_username(self, url: str) -> str | None:
+        return self._auth_list.get_authorization_username(url)
+
+    def get_authorization_mechanism(self, url: str) -> str | None:
+        return self._auth_list.get_authorization_mechanism(url)
+
+    def has_authorization(self, url: str) -> bool:
+        return self._auth_list.has_authorization(url)
+
+    def get_authorizations_data(self) -> list[AuthorizationData]:
+        return self._auth_list.to_data()
+
+    def set_authorizations_data(self, data: list[AuthorizationData]) -> None:
+        self._auth_list.from_data(data)
+    
     def clear_authorizations(self) -> None:
         self._auth_list.clear()
     
@@ -2994,6 +3076,18 @@ class JavaConfig(TreeElement):
     def get_argument(self, name: str) -> ElementProp | None:
         return self._arguments_collection.get_argument(name)
     
+    def get_argument_value(self, name: str) -> str | None:
+        return self._arguments_collection.get_argument_value(name)
+
+    def has_argument(self, name: str, value: str | None = None) -> bool:
+        return self._arguments_collection.has_argument(name, value)
+
+    def get_arguments_data(self) -> list[ArgumentData]:
+        return self._arguments_collection.to_data()
+
+    def set_arguments_data(self, data: list[ArgumentData]) -> None:
+        self._arguments_collection.from_data(data)
+    
     def set_argument(self, name: str, value: str) -> bool:
         return self._arguments_collection.set_argument(name, value)
     
@@ -3083,6 +3177,18 @@ class DNSCacheManager(TreeElement):
     
     def set_is_custom_resolver(self, custom: bool) -> None:
         self.is_custom_resolver.value = custom
+    
+    def get_host_address(self, hostname: str) -> str | None:
+        return self._hosts.get_host_address(hostname)
+
+    def has_host(self, hostname: str, address: str | None = None) -> bool:
+        return self._hosts.has_host(hostname, address)
+
+    def get_hosts_data(self) -> list[DNSHostData]:
+        return self._hosts.to_data()
+
+    def set_hosts_data(self, data: list[DNSHostData]) -> None:
+        self._hosts.from_data(data)
     
     def print_info(self) -> None:
         SLog.log(f"=== DNSCacheManager: {self.testname} ===")
@@ -3307,6 +3413,18 @@ class HttpRequestDefaults(TreeElement):
     
     def get_argument(self, name: str) -> ElementProp | None:
         return self._arguments.get_argument(name)
+    
+    def get_argument_value(self, name: str) -> str | None:
+        return self._arguments.get_argument_value(name)
+
+    def has_argument(self, name: str, value: str | None = None) -> bool:
+        return self._arguments.has_argument(name, value)
+    
+    def get_arguments_data(self) -> list[HTTPArgumentData]:
+        return self._arguments.to_data()
+
+    def set_arguments_data(self, data: list[HTTPArgumentData]) -> None:
+        self._arguments.from_data(data)
     
     def clear_arguments(self) -> None:
         self._arguments.clear()
@@ -3722,6 +3840,30 @@ class HTTPSamplerProxy(TreeElement):
     def get_argument(self, name: str) -> ElementProp | None:
         return self._arguments.get_argument(name)
     
+    def get_arguments(self) -> HTTPArgumentsProp:
+        return self._arguments
+    
+    def get_argument_value(self, name: str) -> str | None:
+        return self._arguments.get_argument_value(name)
+
+    def has_argument(self, name: str, value: str | None = None) -> bool:
+        return self._arguments.has_argument(name, value)
+
+    def has_file(self, path: str) -> bool:
+        return self._files.has_file(path)
+
+    def get_arguments_data(self) -> list[HTTPArgumentData]:
+        return self._arguments.to_data()
+
+    def set_arguments_data(self, data: list[HTTPArgumentData]) -> None:
+        self._arguments.from_data(data)
+
+    def get_files_data(self) -> list[HTTPFileData]:
+        return self._files.to_data()
+
+    def set_files_data(self, data: list[HTTPFileData]) -> None:
+        self._files.from_data(data)
+    
     def clear_arguments(self) -> None:
         self._arguments.clear()
 
@@ -3753,7 +3895,133 @@ class HTTPSamplerProxy(TreeElement):
     def _remove_property(self, prop: PropElement) -> None:
         if prop in self.properties:
             self.properties.remove(prop)
-    
+
+    def to_data(self) -> HTTPSamplerData:
+        """Извлекает все данные в простой dataclass"""
+        data = HTTPSamplerData(
+            testname=self.testname,
+            enabled=self.enabled,
+            comment=self.comment.value,
+            domain=self.domain.value,
+            port=self.port.value,
+            protocol=self.protocol.value,
+            path=self.path.value,
+            method=self.method.value,
+            content_encoding=self.content_encoding.value,
+            follow_redirects=self.follow_redirects.value,
+            auto_redirects=self.auto_redirects.value,
+            use_keepalive=self.use_keepalive.value,
+            do_multipart_post=self.do_multipart_post.value,
+            browser_compatible_multipart=self.browser_compatible_multipart.value,
+            connect_timeout=self.connect_timeout.value,
+            response_timeout=self.response_timeout.value,
+            image_parser=self.image_parser.value,
+            concurrent_dwn=self.concurrent_dwn.value,
+            concurrent_pool=self.concurrent_pool.value,
+            md5=self.md5.value,
+            embedded_url_re=self.embedded_url_re.value,
+            embedded_url_exclude_re=self.embedded_url_exclude_re.value,
+            ip_source=self.ip_source.value,
+            ip_source_type=self.ip_source_type.value,
+            implementation=self.implementation.value,
+            proxy_scheme=self.proxy_scheme.value,
+            proxy_host=self.proxy_host.value,
+            proxy_port=self.proxy_port.value,
+            proxy_user=self.proxy_user.value,
+            proxy_pass=self.proxy_pass.value,
+        )
+        
+        if self._post_body_raw.value:
+            data.body_data = self.get_body_data()
+        else:
+            for arg in self._arguments.items:
+                name_prop = next((p for p in arg.properties if p.name == ARGUMENT_NAME), None)
+                value_prop = next((p for p in arg.properties if p.name == ARGUMENT_VALUE), None)
+                always_encode_prop = next((p for p in arg.properties if p.name == HTTPARGUMENT_ALWAYS_ENCODE), None)
+                use_equals_prop = next((p for p in arg.properties if p.name == HTTPARGUMENT_USE_EQUALS), None)
+                
+                if name_prop and value_prop:
+                    data.arguments.append(HTTPArgumentData(
+                        name=name_prop.value,
+                        value=value_prop.value,
+                        always_encode=always_encode_prop.value if always_encode_prop else False,
+                        use_equals=use_equals_prop.value if use_equals_prop else True
+                    ))
+        
+        for file_arg in self._files.items:
+            path_prop = next((p for p in file_arg.properties if p.name == HTTPFILEARG_PATH), None)
+            param_prop = next((p for p in file_arg.properties if p.name == HTTPFILEARG_PARAMNAME), None)
+            mime_prop = next((p for p in file_arg.properties if p.name == HTTPFILEARG_MIMETYPE), None)
+            
+            if path_prop:
+                data.files.append(HTTPFileData(
+                    path=path_prop.value,
+                    param_name=param_prop.value if param_prop else "",
+                    mime_type=mime_prop.value if mime_prop else "application/octet-stream"
+                ))
+        
+        return data
+
+
+    def from_data(self, data: HTTPSamplerData) -> None:
+        """Применяет данные из dataclass"""
+        self.testname = data.testname
+        self.enabled = data.enabled
+        self.comment.value = data.comment
+        
+        self.domain.value = data.domain
+        self.port.value = data.port
+        self.protocol.value = data.protocol
+        self.path.value = data.path
+        self.method.value = data.method
+        self.content_encoding.value = data.content_encoding
+        
+        self.follow_redirects.value = data.follow_redirects
+        self.auto_redirects.value = data.auto_redirects
+        self.use_keepalive.value = data.use_keepalive
+        self.do_multipart_post.value = data.do_multipart_post
+        self.browser_compatible_multipart.value = data.browser_compatible_multipart
+        
+        self.connect_timeout.value = data.connect_timeout
+        self.response_timeout.value = data.response_timeout
+        
+        self.image_parser.value = data.image_parser
+        self.concurrent_dwn.value = data.concurrent_dwn
+        self.concurrent_pool.value = data.concurrent_pool
+        self.md5.value = data.md5
+        self.embedded_url_re.value = data.embedded_url_re
+        self.embedded_url_exclude_re.value = data.embedded_url_exclude_re
+        
+        self.ip_source.value = data.ip_source
+        self.ip_source_type.value = data.ip_source_type
+        self.implementation.value = data.implementation
+        
+        self.proxy_scheme.value = data.proxy_scheme
+        self.proxy_host.value = data.proxy_host
+        self.proxy_port.value = data.proxy_port
+        self.proxy_user.value = data.proxy_user
+        self.proxy_pass.value = data.proxy_pass
+        
+        self.clear_arguments()
+        self.clear_files()
+        
+        if data.body_data is not None:
+            self.set_body_data(data.body_data)
+        else:
+            for arg in data.arguments:
+                self.add_argument(arg.name, arg.value, arg.always_encode, arg.use_equals)
+        
+        for file in data.files:
+            self.add_file(file.path, file.param_name, file.mime_type)
+
+
+    @staticmethod
+    def create_from_data(data: HTTPSamplerData) -> "HTTPSamplerProxy":
+        """Создаёт новый HTTPSamplerProxy из dataclass"""
+        sampler = HTTPSamplerProxy(testname=data.testname, enabled=data.enabled)
+        sampler.from_data(data)
+        return sampler
+
     def print_info(self) -> None:
         SLog.log(f"=== HTTPSamplerProxy: {self.testname} ===")
         SLog.log(f"  enabled: {self.enabled}")
@@ -5506,6 +5774,18 @@ class BackendListener(TreeElement):
     
     def set_queue_size_raw(self, size: str) -> None:
         self.queue_size.value = size
+    
+    def get_argument_value(self, name: str) -> str | None:
+        return self._arguments_collection.get_argument_value(name)
+
+    def has_argument(self, name: str, value: str | None = None) -> bool:
+        return self._arguments_collection.has_argument(name, value)
+
+    def get_arguments_data(self) -> list[ArgumentData]:
+        return self._arguments_collection.to_data()
+
+    def set_arguments_data(self, data: list[ArgumentData]) -> None:
+        self._arguments_collection.from_data(data)
     
     def add_argument(self, name: str, value: str) -> None:
         self._arguments_collection.add_argument(name, value)
