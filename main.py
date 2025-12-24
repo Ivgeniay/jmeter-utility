@@ -208,7 +208,12 @@ def insert_varible(
     test_plan = parser1.parse(xml)
     user_vars: Arguments = search_element(test_plan, lambda e: e.category == CategoryElement.CONFIG_ELEMENT and e.testclass == 'Arguments')
     if not user_vars:
-        SLog.log('Vars is not found')
+        SLog.log('User Defined Variables is not found')
+        exit(1)
+        
+    atrb_value = user_vars.get_variable_value(attribute)
+    if not atrb_value:
+        SLog.log(f'Var "{attribute}" not defined in User Defined Variables')
         exit(1)
     
     scope_el: TreeElement = None 
@@ -216,11 +221,36 @@ def insert_varible(
         scope_el = search_element(test_plan, lambda e: e.testname == scope)
         if not scope_el:
             SLog.log(f'Not founded {scope}')
+            exit(1)
     else:
         scope_el = test_plan
     
     http_req: list[HTTPSamplerProxy] = search_elements(scope_el, lambda e: isinstance(e, HTTPSamplerProxy) and e.get_argument(attribute) is not None)
     headers_: list[HeaderManager] = search_elements(scope_el, lambda e: isinstance(e, HeaderManager) and e.get_header(attribute) is not None)
+    
+    for el in http_req:
+        was_change = False
+        arguments_data = el.get_arguments_data()
+        for arg in arguments_data:
+            if arg.name == attribute:
+                old_value = arg.value 
+                arg.value = atrb_value
+                was_change = True
+                SLog.log(f'{el.testname}: {attribute} {old_value} -> {arg.value}')
+        if was_change:
+            el.set_arguments_data(arguments_data)
+            
+    for h in headers_:
+        was_change = False
+        headers_data = h.get_headers_data()
+        for data in headers_data:
+            if data.name == attribute:
+                old_value = data.value
+                data.value = atrb_value
+                was_change = True
+                SLog.log(f'{h.testname}: {attribute} {old_value} -> {data.value}')
+        if was_change:
+            h.set_headers_data(headers_data)
     
     new_content = test_plan.to_xml()
     out = output if output else file_path
@@ -291,10 +321,18 @@ consLog = ConsoleLog()
 logger: CompositeLog = CompositeLog(consLog)
 SLog.register_logger(logger)
 
-enable_all_timers(
+# enable_all_timers(
+#     file_path='/opt/apache-jmeter-5.6.3/bin/TEST22_TEST.jmx',
+#     verbose=True,
+#     output='/opt/apache-jmeter-5.6.3/bin/TEST22_TEST.jmx',
+#     scope='Regular User2'
+# )
+
+insert_varible(
     file_path='/opt/apache-jmeter-5.6.3/bin/TEST22_TEST.jmx',
     verbose=True,
-    output='/opt/apache-jmeter-5.6.3/bin/TEST22_TEST.jmx',
+    attribute='requesttoken',
+    output='/opt/apache-jmeter-5.6.3/bin/TEST22_TEST2.jmx',
     scope='Regular User2'
 )
 
