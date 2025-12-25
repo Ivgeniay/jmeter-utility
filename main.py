@@ -1,9 +1,11 @@
 import argparse;
+import datetime
 import sys;
 import re
 from typing import Callable, Literal
 
 from llm.agent import build_script_with_llm
+from llm.transaction_splitter import get_transaction_breakdown
 from payloads.console import CompositeLog, ConsoleLog, SLog 
 from jmx_builder.models.tree import Arguments, CategoryElement, HTTPSamplerProxy, HeaderManager, TestAction, TreeElement, UniformRandomTimer
 from jmx_builder.utility.console import print_path, print_paths, print_tree
@@ -261,7 +263,8 @@ def insert_varible(
 
 def find_disabled(
     file_path: str, 
-    verbose: bool,  
+    verbose: bool,
+    output: str | None,
     scope: str | None
 ) -> None:
     with open(file=file_path, mode = 'r', encoding="utf-8") as f:
@@ -275,13 +278,22 @@ def find_disabled(
         scope_el = search_element(test_plan, lambda e: e.testname == scope)
         if not scope_el:
             SLog.log(f'Not founded {scope}')
+            exit(1)
     else:
         scope_el = test_plan
     
     disabled_el : list[TreeElement] = search_elements(scope_el, lambda e: e.enabled == False, True)
+    
     SLog.log(f"Disabled list:")
+    log: str = "" 
     for e in disabled_el:
-        SLog.log(print_path(test_plan, e))
+        path = print_path(test_plan, e)
+        log += path;
+        SLog.log(path)
+    
+    if output:
+        with open(output, mode='w', encoding='utf-8') as f:
+            f.write(output)
 
 def enable_all_timers(
     file_path: str, 
@@ -317,18 +329,48 @@ def enable_all_timers(
     with open(out, 'w', encoding='utf-8') as f:
         f.write(new_content)
 
+def analyze(
+    filepath: str,
+    verbose: bool,
+    output: str,
+):
+    har = parse_har(filepath)
+    analyzer : TrafficAnalyzer = TrafficAnalyzer(ignore_cookies=True, min_value_length=3)
+    report = analyzer.analyze(har)
+    report_str = report.to_str()
+    
+    out = output if output else F"./{datetime.now()}.log"
+    with open(out, mode='w', encoding='utf-8') as f:
+        f.write(report_str)
+    if verbose:
+        SLog.log(report_str)
+    SLog.log(f'Logfile saved as {out}')
+
+def get_scenario_steps(
+    filepath: str,
+    verbose: bool,
+    output: str,
+    promt_traffic_description: str
+) -> None:
+    har = parse_har(filepath)
+    hint = promt_traffic_description
+    breaks = get_transaction_breakdown(
+        har = har,
+        scenario_number=1,
+        user_hints=hint
+        )
+    if output:
+        with open(output, mode='w', encoding='utf-8') as f:
+            for _break in breaks:
+                f.writelines(_break)
+    for _break in breaks:
+        SLog.log(_break)
 
 
 consLog = ConsoleLog()
 logger: CompositeLog = CompositeLog(consLog)
 SLog.register_logger(logger)
 
-# enable_all_timers(
-#     file_path='/opt/apache-jmeter-5.6.3/bin/TEST22_TEST.jmx',
-#     verbose=True,
-#     output='/opt/apache-jmeter-5.6.3/bin/TEST22_TEST.jmx',
-#     scope='Regular User2'
-# )
 
 # insert_varible(
 #     file_path='/opt/apache-jmeter-5.6.3/bin/TEST22_TEST.jmx',
@@ -339,145 +381,37 @@ SLog.register_logger(logger)
 # )
 
 
+har = parse_har('/opt/Fiddler/fiddler_classic_setup/Capturies/1_browser_1_step_har/All.har')
+analyzer : TrafficAnalyzer = TrafficAnalyzer(ignore_cookies=True, min_value_length=3)
+report = analyzer.analyze(har)
+test_plan = build_script_with_llm(
+    har=har,
+    report=report,
+    scenario_number=1,
+    scenario_name="GalleryBrowse",
+    steps_description="""
+    1. OpenHomePage - открытие главной страницы
+    2. Login - авторизация пользователя
+    3. OpenGallery - переход в галерею
+    4. SelectAlbum - выбор случайного альбома
+    5. ViewPhoto - просмотр фотографии
+    """,
+    model="gpt-4o-mini",
+    verbose=True,
+)
+if test_plan:
+    xml = test_plan.to_xml()
+    with open("/opt/apache-jmeter-5.6.3/bin/Generated_script.jmx", "w") as f:
+        header = """<?xml version="1.0" encoding="UTF-8"?>
+<jmeterTestPlan version="1.2" properties="5.0" jmeter="5.6.3">
+  <hashTree>"""
+        footer = """  </hashTree>
+</jmeterTestPlan>"""
+
+        f.write(header + xml + footer)
+    print("Скрипт сохранён!")
 
 
-
-# har = parse_har('/opt/Fiddler/fiddler_classic_setup/Capturies/1_browser_1_step_har/S1_3.har')
-# analyzer : TrafficAnalyzer = TrafficAnalyzer(ignore_cookies=True, min_value_length=3)
-# report = analyzer.analyze(har)
-# report_str = report.to_str()
-# path = './test.log'
-# with open(path, mode='w', encoding="utf-8") as f:
-#     f.write(report)
-# SLog.log(f'Report was saved in {path}')
-
-
-
-
-
-
-# har = parse_har('/opt/Fiddler/fiddler_classic_setup/Capturies/1_browser_1_step_har/All.har')
-# test_plan = build_script_with_llm(
-#     har=har,
-#     report=report,
-#     scenario_number=1,
-#     scenario_name="GalleryBrowse",
-#     steps_description="""
-#     1. OpenHomePage - открытие главной страницы
-#     2. Login - авторизация пользователя
-#     3. OpenGallery - переход в галерею
-#     4. SelectAlbum - выбор случайного альбома
-#     5. ViewPhoto - просмотр фотографии
-#     """,
-#     model="gpt-4o-mini",
-#     verbose=True,
-# )
-# if test_plan:
-#     xml = test_plan.to_xml()
-#     with open("/opt/apache-jmeter-5.6.3/bin/Generated_script.jmx", "w") as f:
-#         f.write(xml)
-#     print("Скрипт сохранён!")
-
-
-
-# har = parse_har('/opt/Fiddler/fiddler_classic_setup/Capturies/1_browser_1_step_har/All.har')
-# hint = """
-# В этом трафике расположено 5 шагов. Переход на главную страницу, выполнения LogIn, переход в Галлерею, переход в рандомный альбом, 
-# просмотре первой фотографии (с вероятностью пролистать 2-3 фотографии)
-# """
-# breaks = get_transaction_breakdown(
-#     har = har,
-#     scenario_number=1,
-#     user_hints=hint
-#     )
-# for _break in breaks:
-#     SLog.log(_break)
-
-
-# SLog.log('=' * 80)
-
-
-
-
-
-
-
-
-# request = har.log.entries[0].request
-
-# xml= '''<?xml version="1.0" encoding="UTF-8"?>
-# <jmeterTestPlan version="1.2" properties="5.0" jmeter="5.6.3">
-#   <hashTree>
-#     <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="Test Plan">
-#       <boolProp name="TestPlan.tearDown_on_shutdown">true</boolProp>
-#       <elementProp name="TestPlan.user_defined_variables" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables">
-#         <collectionProp name="Arguments.arguments"/>
-#       </elementProp>
-#     </TestPlan>
-#     <hashTree>
-#       <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Regural User">
-#         <intProp name="ThreadGroup.num_threads">1</intProp>
-#         <intProp name="ThreadGroup.ramp_time">1</intProp>
-#         <longProp name="ThreadGroup.duration">0</longProp>
-#         <longProp name="ThreadGroup.delay">0</longProp>
-#         <boolProp name="ThreadGroup.same_user_on_next_iteration">false</boolProp>
-#         <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
-#         <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller">
-#           <stringProp name="LoopController.loops">1</stringProp>
-#           <boolProp name="LoopController.continue_forever">false</boolProp>
-#         </elementProp>
-#       </ThreadGroup>
-#       <hashTree>
-#         <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="Recordt">
-#           <boolProp name="TransactionController.includeTimers">false</boolProp>
-#         </TransactionController>
-#         <hashTree/>
-#       </hashTree>
-#     </hashTree>
-#   </hashTree>
-# </jmeterTestPlan>'''
-
-# from traffic_builder.jtl_parser.jtl_parser import parse_jtl, get_all_samples
-
-# test_results = parse_jtl('/opt/apache-jmeter-5.6.3/bin/traffic.xml')
-# all_samples = get_all_samples(test_results)
-
-# for sample in test_results.http_sample:
-#     print(f"{sample.label}: {sample.response_code} ({sample.elapsed}ms)")
-
-# har = convert_jtl_to_har(test_results, include_sub_samples=True)
-# save_har(har, '/opt/apache-jmeter-5.6.3/bin/test_traffic.har')
-
-
-# saz = parse_saz('/opt/Fiddler/fiddler_classic_setup/Capturies/1_browser/1.saz')
-# har = convert_saz_to_har(saz, "JOP")
-# save_har(har, '/opt/Fiddler/fiddler_classic_setup/Capturies/1_browser/1.har')
-
-
-
-# parser1: TreeParser = get_configured_parser()
-# test_plan = parser1.parse(xml)
-
-# for child in test_plan.children[0].children:
-#     child.print_info()
-
-# target = test_plan, test_plan.children[0].children[5].children[0].children[0].children[5]
-# path = print_path(test_plan, target[1])
-# SLog.log(path)
-
-# paths = print_paths(test_plan, lambda e: isinstance(e, HTTPSamplerProxy))
-# for i in paths:
-#     SLog.log(i)
-    
-# samplers: list[HTTPSamplerProxy] = search_elements(test_plan, lambda e: isinstance(e, HTTPSamplerProxy))
-# for sample in samplers:
-#     sample.print_info()
-
-
-# res = test_plan.to_xml()
-# SLog.log("=============================================")
-# SLog.log(res)
-# SLog.log("=============================================")
 
 
 
@@ -507,14 +441,35 @@ if __name__ == "__main__":
     args_parser.add_argument('-p', '--prefix', help='Removes prefixes that JMeter creates while recording traffic in Http Requsets.', action='store_true')
     args_parser.add_argument('-m', '--method', help='Adds the method name to the Http Request name (/index.html -> GET /index.html)', action='store_true')
     args_parser.add_argument('-s', '--scope', help='Name of the element in the tree')
-    args_parser.add_argument('-c', '--compare', help='Path to HAR file for comparison')
-    args_parser.add_argument('-d', '--difficult', help='Comparison method. Available options: [simple]', default='simple')
-    args_parser.add_argument('-r', '--run-compare', help='Run JMeter and compare with HAR. Requires --jmeter-path')
+    args_parser.add_argument('-a', '--analyze', help='Analyze har file. Use -o flag to set output file')
+    args_parser.add_argument('-hi', '--har_injection', help='Link to har file to injection in TestPlan tree. Use -s to set scope root.')
     args_parser.add_argument('-g', '--jmeter-path', help='Path to JMeter executable (jmeter, jmeter.sh, jmeter.bat)')
+    args_parser.add_argument('-fd' '--find_disabled', help='Finds disabled objects')
+    args_parser.add_argument('-et' '--enable_timers', help='Enable all timers and their parent')
 
 
     args = args_parser.parse_args()
 
+    if args.et__enable_timers:
+        if not args.input:
+            SLog.log('Error: --input is required for comparison')
+            exit(1)
+        enable_all_timers(args.input, args.verbose, args.output, args.scope)
+        exit(0)
+
+    if args.fd__find_disabled:
+        if not args.input:
+            SLog.log('Error: --input is required for comparison')
+            exit(1)
+        find_disabled(args.input, args.verbose, args.output, args.scope)
+        exit(0)
+
+    if (args.har_injection):
+        if not args.input:
+            SLog.log('Error: --input is required for comparison')
+            exit(1)
+        validating_overiting(args.output, lambda: har_injection(args.input, args.verbose, args.output, args.scope, args.har_injection))
+        exit(0)
 
     if (args.prefix):
         if not args.input:
@@ -530,22 +485,11 @@ if __name__ == "__main__":
         validating_overiting(args.output, lambda: add_methods(args.input, args.verbose, args.output, args.scope))
         exit(0)
 
-    if (args.compare):
+    if (args.analyze):
         if not args.input:
             SLog.log('Error: --input is required for comparison')
             exit(1)
-        #result = compare_traffic(args.input, args.compare, args.scope, args.difficult, args.verbose)
+        analyze(args.input, args.verbose, args.output)
         exit(0)
-
-    if args.run_compare:
-        if not args.input:
-            SLog.log('Error: --input is required for run-compare')
-            exit(1)
-        if not args.jmeter_path:
-            SLog.log('Error: --jmeter-path is required for run-compare')
-            exit(1)
-        #result = run_and_compare(args.jmeter_path, args.input, args.run_compare, args.difficult, args.verbose)
-        exit(0)
-    
 
     args_parser.print_help()

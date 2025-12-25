@@ -1,47 +1,70 @@
 import json
 
 from langchain_core.language_models import BaseChatModel
-from langgraph.prebuilt import create_react_agent
-
+#from langgraph.prebuilt import create_react_agent
+from langchain.agents import create_agent
+ 
 from llm.llm_tools import get_all_tools, get_result, reset_context, set_har
 from llm.traffic_preparator import prepare_full_context, context_to_dict
-from llm.transaction_splitter import get_llm
+from llm.transaction_splitter import get_llm, get_transaction_breakdown, TransactionGroup
 
 from traffic_analizator.models import AnalysisReport
-from traffic_builder.har_parsers.pydantic_models import HarFile
+from traffic_builder.har_parsers.pydantic_models import HarFile 
 from jmx_builder.models.tree import TestPlan
 
 
 SYSTEM_PROMPT = """Ты эксперт по созданию JMeter скриптов для нагрузочного тестирования.
 
-У тебя есть набор инструментов для построения JMX скрипта и данные о записанном HTTP трафике.
+У тебя есть инструменты для построения JMX скрипта и полные данные о HTTP трафике.
 
-Правила создания скрипта:
-1. Сначала создай TestPlan
-2. Затем создай ThreadGroup внутри TestPlan
-3. Добавь CookieManager в ThreadGroup для управления сессией
-4. Создай TransactionController для каждого логического шага
-5. Внутри каждой транзакции создай HTTP Sampler'ы из указанных entry
-6. Для каждого sampler'а создай HeaderManager
-7. Добавь экстракторы для корреляций (JSON или Regex)
-8. Замени параметризуемые значения на переменные
+## Структура данных
 
-Формат имён транзакций: S{сценарий}_{шаг}_{Действие}
-Например: S01_01_OpenHomePage, S01_02_Login
+1. **transactions** — список транзакций (логических шагов пользователя):
+   - name: имя транзакции (S01_01_OpenHomePage)
+   - entry_indices: список индексов entry, которые входят в эту транзакцию
+   - anchor_index: главный запрос транзакции
 
-При создании элементов всегда указывай правильного родителя (parent).
-Используй entry_index из предоставленных данных о трафике.
+2. **correlations** — параметры, которые нужно извлечь и использовать:
+   - variable: имя переменной
+   - extract_from: откуда извлечь (entry_index, transaction, extractor_type, extractor_expr)
+   - use_in: где использовать (список с entry_index, transaction, location, param_name)
 
-Для корреляций:
-- source_index — это entry где нужно добавить экстрактор
-- target_index — это entry где нужно заменить значение на переменную
-- extractor показывает какой тип экстрактора использовать (JSONPath или Regex)
+3. **entries** — HTTP запросы (только нестатические):
+   - index: индекс для использования в инструментах
+   - method, path: метод и путь запроса
+   - transaction: к какой транзакции относится
+   - is_anchor: является ли якорным запросом транзакции
+
+## Алгоритм создания скрипта
+
+1. Создай TestPlan с указанным именем
+2. Создай ThreadGroup внутри TestPlan
+3. Добавь CookieManager в ThreadGroup
+4. Для КАЖДОЙ транзакции из списка transactions:
+   a. Создай TransactionController с именем транзакции
+   b. Для КАЖДОГО entry_index из entry_indices этой транзакции:
+      - Создай HTTP Sampler через create_http_sampler_from_entry
+      - Создай HeaderManager через create_header_manager_from_entry
+5. Для КАЖДОЙ корреляции из списка correlations:
+   a. Добавь экстрактор в sampler с entry_index = extract_from.entry_index
+      - Если extractor_type = "JSONPath" → используй add_json_extractor
+      - Если extractor_type = "Regex" → используй add_regex_extractor
+   b. Для КАЖДОГО элемента в use_in:
+      - Вызови set_variable_in_sampler с соответствующими параметрами
+
+## Важно
+
+- Создавай ВСЕ entry из entry_indices каждой транзакции, не пропускай
+- Экстрактор добавляется ОДИН раз на переменную (в extract_from.entry_index)
+- Каждый use_in — это отдельный вызов set_variable_in_sampler
+- Используй точные entry_index из данных, не придумывай свои
 """
 
 
 def run_jmx_agent(
     har: HarFile,
     report: AnalysisReport,
+    transactions: list[TransactionGroup],
     user_prompt: str,
     llm: BaseChatModel | None = None,
     model: str = "gpt-4o-mini",
@@ -50,7 +73,7 @@ def run_jmx_agent(
     reset_context()
     set_har(har)
     
-    context = prepare_full_context(har, report)
+    context = prepare_full_context(har, report, transactions)
     context_json = json.dumps(context_to_dict(context), indent=2, ensure_ascii=False)
     
     if llm is None:
@@ -58,18 +81,20 @@ def run_jmx_agent(
     
     tools = get_all_tools()
     
-    agent = create_react_agent(llm, tools)
+    # agent = create_react_agent(llm, tools)
+    agent = create_agent(llm, tools)
     
     full_message = f"""{SYSTEM_PROMPT}
 
-Данные о трафике:
+## Данные о трафике
 
 {context_json}
 
-Задача:
+## Задача
+
 {user_prompt}
 
-Используй инструменты для создания JMX скрипта."""
+Следуй алгоритму из инструкции. Создай ВСЕ элементы."""
 
     input_messages = {"messages": [("human", full_message)]}
     
@@ -113,35 +138,36 @@ def build_script_with_llm(
     model: str = "gpt-4o-mini",
     verbose: bool = True,
 ) -> TestPlan | None:
-    if steps_description:
-        user_prompt = f"""
-Создай JMeter скрипт для сценария #{scenario_number} "{scenario_name}".
+    if llm is None:
+        llm = get_llm(model)
+    
+    if verbose:
+        print("Определение транзакций...")
+    
+    transactions = get_transaction_breakdown(
+        har=har,
+        scenario_number=scenario_number,
+        user_hints=steps_description,
+        llm=llm,
+        model=model,
+    )
+    
+    if verbose:
+        print(f"Найдено транзакций: {len(transactions)}")
+        for tx in transactions:
+            print(f"  {tx.name}: entries {tx.start_index}-{tx.end_index}")
+    
+    user_prompt = f"""Создай JMeter скрипт "{scenario_name}".
 
-Описание шагов:
-{steps_description}
+TestPlan: "{scenario_name}"
+ThreadGroup: "Users"
 
-Требования:
-1. Создай TestPlan с именем "{scenario_name}"
-2. Создай ThreadGroup
-3. Создай транзакции для каждого шага из описания
-4. Добавь HTTP Sampler'ы для каждой транзакции (используй entry_index из трафика)
-5. Добавь все необходимые корреляции из списка correlations
-"""
-    else:
-        user_prompt = f"""
-Создай JMeter скрипт для сценария #{scenario_number} "{scenario_name}".
-
-Проанализируй трафик и:
-1. Создай TestPlan с именем "{scenario_name}"
-2. Создай ThreadGroup
-3. Определи логические шаги и создай транзакции
-4. Добавь HTTP Sampler'ы (используй entry_index из трафика)
-5. Добавь все необходимые корреляции из списка correlations
-"""
+Создай все транзакции, sampler'ы и корреляции согласно данным."""
     
     return run_jmx_agent(
         har=har,
         report=report,
+        transactions=transactions,
         user_prompt=user_prompt,
         llm=llm,
         model=model,
