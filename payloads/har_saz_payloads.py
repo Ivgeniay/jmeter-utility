@@ -1,10 +1,10 @@
-from enum import Enum
 from jmx_builder.models.tree import HTTPSamplerProxy, HeaderManager, TransactionController, TreeElement
 from traffic_builder.converters_to_har.saz_to_har_converter import convert_saz_to_har
 from traffic_builder.har_parsers.pydantic_models import Entry, HarFile
-from urllib.parse import urlparse
-
 from traffic_builder.saz_parser.models import SazArchive
+from urllib.parse import urlparse
+from enum import Enum
+
 
 
 def create_header_manager_from_har(har_entry: Entry) -> HeaderManager:
@@ -47,6 +47,7 @@ def create_http_sampler_from_har(har_entry: Entry) -> HTTPSamplerProxy:
     
     return sampler
 
+
 def add_har_to_scope(root: TreeElement, har_file: HarFile) -> None:
     for entry in har_file.log.entries:
         http_sampler = create_http_sampler_from_har(entry)
@@ -54,13 +55,13 @@ def add_har_to_scope(root: TreeElement, har_file: HarFile) -> None:
         
         http_sampler.add_child(header_manager)
         root.add_child(http_sampler)
-        
+
 
 class SazGroupingMode(Enum):
     NO_GROUPING = "no_grouping"
     BY_UNIQUE_COLORS = "by_unique_colors"
     BY_COLOR_CHANGE = "by_color_change"
-    
+
 
 def add_saz_to_scope(
     root: TreeElement,

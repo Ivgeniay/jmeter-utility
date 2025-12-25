@@ -10,6 +10,7 @@ from jmx_builder.utility.jmx_builder_parser_export import get_configured_parser
 from jmx_builder.utility.search import search_element, search_elements
 from jmx_builder.parsers.tree_parser import TreeParser 
 from payloads.har_saz_payloads import SazGroupingMode, add_har_to_scope, add_saz_to_scope
+from traffic_analizator.analyzer import TrafficAnalyzer
 from traffic_builder.converters_to_har.jtl_to_har_conterter import convert_jtl_to_har, save_har
 from traffic_builder.converters_to_har.saz_to_har_converter import convert_saz_to_har
 from traffic_builder.har_parsers.har_parser import parse_har
@@ -328,15 +329,22 @@ SLog.register_logger(logger)
 #     scope='Regular User2'
 # )
 
-insert_varible(
-    file_path='/opt/apache-jmeter-5.6.3/bin/TEST22_TEST.jmx',
-    verbose=True,
-    attribute='requesttoken',
-    output='/opt/apache-jmeter-5.6.3/bin/TEST22_TEST2.jmx',
-    scope='Regular User2'
-)
+# insert_varible(
+#     file_path='/opt/apache-jmeter-5.6.3/bin/TEST22_TEST.jmx',
+#     verbose=True,
+#     attribute='requesttoken',
+#     output='/opt/apache-jmeter-5.6.3/bin/TEST22_TEST2.jmx',
+#     scope='Regular User2'
+# )
 
-# har = parse_har('/opt/Fiddler/fiddler_classic_setup/Capturies/1_browser_1_step_har/S1_5.har')
+har = parse_har('/opt/Fiddler/fiddler_classic_setup/Capturies/1_browser_1_step_har/S1_3.har')
+analyzer : TrafficAnalyzer = TrafficAnalyzer(ignore_cookies=True)
+result = analyzer.analyze(har)
+report = result.to_str()
+path = './test.log'
+with open(path, mode='w', encoding="utf-8") as f:
+    f.write(report)
+SLog.log(f'Report was saved in {path}')
 # request = har.log.entries[0].request
 
 # xml= '''<?xml version="1.0" encoding="UTF-8"?>

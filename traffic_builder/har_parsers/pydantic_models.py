@@ -1,10 +1,15 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 
 class Record(BaseModel):
-    name: str
+    name: str | None = None
     value: str
     comment: str = ""
+    
+    @field_validator("name", "value", mode="before")
+    @classmethod
+    def none_to_empty(cls, v):
+        return v if v is not None else ""
 
 
 class Param(BaseModel):
