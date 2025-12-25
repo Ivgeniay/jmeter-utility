@@ -3,6 +3,7 @@ import sys;
 import re
 from typing import Callable, Literal
 
+from llm.agent import build_script_with_llm
 from payloads.console import CompositeLog, ConsoleLog, SLog 
 from jmx_builder.models.tree import Arguments, CategoryElement, HTTPSamplerProxy, HeaderManager, TestAction, TreeElement, UniformRandomTimer
 from jmx_builder.utility.console import print_path, print_paths, print_tree
@@ -337,14 +338,71 @@ SLog.register_logger(logger)
 #     scope='Regular User2'
 # )
 
-har = parse_har('/opt/Fiddler/fiddler_classic_setup/Capturies/1_browser_1_step_har/S1_3.har')
-analyzer : TrafficAnalyzer = TrafficAnalyzer(ignore_cookies=True)
-result = analyzer.analyze(har)
-report = result.to_str()
-path = './test.log'
-with open(path, mode='w', encoding="utf-8") as f:
-    f.write(report)
-SLog.log(f'Report was saved in {path}')
+
+
+
+
+# har = parse_har('/opt/Fiddler/fiddler_classic_setup/Capturies/1_browser_1_step_har/S1_3.har')
+# analyzer : TrafficAnalyzer = TrafficAnalyzer(ignore_cookies=True, min_value_length=3)
+# report = analyzer.analyze(har)
+# report_str = report.to_str()
+# path = './test.log'
+# with open(path, mode='w', encoding="utf-8") as f:
+#     f.write(report)
+# SLog.log(f'Report was saved in {path}')
+
+
+
+
+
+
+# har = parse_har('/opt/Fiddler/fiddler_classic_setup/Capturies/1_browser_1_step_har/All.har')
+# test_plan = build_script_with_llm(
+#     har=har,
+#     report=report,
+#     scenario_number=1,
+#     scenario_name="GalleryBrowse",
+#     steps_description="""
+#     1. OpenHomePage - открытие главной страницы
+#     2. Login - авторизация пользователя
+#     3. OpenGallery - переход в галерею
+#     4. SelectAlbum - выбор случайного альбома
+#     5. ViewPhoto - просмотр фотографии
+#     """,
+#     model="gpt-4o-mini",
+#     verbose=True,
+# )
+# if test_plan:
+#     xml = test_plan.to_xml()
+#     with open("/opt/apache-jmeter-5.6.3/bin/Generated_script.jmx", "w") as f:
+#         f.write(xml)
+#     print("Скрипт сохранён!")
+
+
+
+# har = parse_har('/opt/Fiddler/fiddler_classic_setup/Capturies/1_browser_1_step_har/All.har')
+# hint = """
+# В этом трафике расположено 5 шагов. Переход на главную страницу, выполнения LogIn, переход в Галлерею, переход в рандомный альбом, 
+# просмотре первой фотографии (с вероятностью пролистать 2-3 фотографии)
+# """
+# breaks = get_transaction_breakdown(
+#     har = har,
+#     scenario_number=1,
+#     user_hints=hint
+#     )
+# for _break in breaks:
+#     SLog.log(_break)
+
+
+# SLog.log('=' * 80)
+
+
+
+
+
+
+
+
 # request = har.log.entries[0].request
 
 # xml= '''<?xml version="1.0" encoding="UTF-8"?>
