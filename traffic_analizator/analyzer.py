@@ -43,7 +43,7 @@ def analyze_har(
     har: HarFile,
     min_value_length: int = 4,
     search_window: int | None = None,
-    ignore_cookies: bool = False,
+    ignore_cookies: bool = True,
 ) -> AnalysisReport:
     analyzer = TrafficAnalyzer(
         min_value_length=min_value_length,

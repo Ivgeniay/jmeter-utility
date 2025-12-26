@@ -68,8 +68,15 @@ CORRELATION_WORKER_SYSTEM_PROMPT = """Ты эксперт по корреляц�
 
 **Simple (простой):** 
 - 1 значение извлекается, 1 раз используется
-- Решение: Extractor с match_nr="1"
-- Пример: токен авторизации
+- Решение: Extractor с match_nr="1", один replacement
+- Пример: токен авторизации в одном запросе
+
+**Simple_reused (простой, многократное использование):**
+- 1 значение извлекается, используется в НЕСКОЛЬКИХ РАЗНЫХ запросах
+- Решение: Extractor с match_nr="1", НЕСКОЛЬКО replacements, БЕЗ контроллера
+- НЕ нужен Loop/ForEach! Каждый запрос уникальный, просто использует ту же переменную
+- entries_to_remove = [] (ничего не удаляем!)
+- Пример: CSRF токен используется в 7 разных POST запросах
 
 **Multiple (множественный):**
 - N значений извлекается, ВСЕ используются в ОДНОМ запросе
@@ -85,6 +92,20 @@ CORRELATION_WORKER_SYSTEM_PROMPT = """Ты эксперт по корреляц�
 - N значений извлекается, КАЖДОЕ в ОТДЕЛЬНОМ ОДИНАКОВОМ запросе
 - Решение: Extractor + ForEach Controller + ОДИН sampler
 - Пример: 3 id → 3 запроса по 1 штуке
+
+### ВАЖНО: Как отличить simple_reused от iterated?
+
+**simple_reused:**
+- values_total = 1 (ОДНО значение)
+- usage_count = N (много запросов)
+- Все запросы РАЗНЫЕ (разные URL, разные действия)
+- Пример: requesttoken используется в POST /upload, POST /delete, POST /move
+
+**iterated:**
+- values_total = N (много значений)
+- usage_count = N (много запросов)
+- Все запросы ОДИНАКОВЫЕ (один URL, одно действие, разные данные)
+- Пример: id=123, id=456, id=789 в GET /item/{id}
 
 ### Шаг 3: Сгенерируй уникальное имя переменной
 Формат: `{смысловое_имя}_{короткий_хеш}`
@@ -171,8 +192,31 @@ vars.put("varName_joined", values.join(";"))
 }
 ```
 
-### Пример 2: ForEach — каждый ID отдельно
-Входные данные: 3 запроса (entry 21, 22, 23) с разными id
+### Пример 2: CSRF токен в нескольких разных запросах (simple_reused)
+Входные данные: 1 токен (values_total=1), используется в 7 РАЗНЫХ запросах
+
+```json
+{
+  "extractor": {"type": "regex", "variable_name": "requesttoken_0xA1", "expression": "data-requesttoken=\"([^\"]*)\"", "match_nr": "1", "default_value": ""},
+  "post_processing": null,
+  "controller": null,
+  "parameter_replacements": [
+    {"entry_index": 102, "parameter_name": "requesttoken", "usage_type": "header", "variable_reference": "${requesttoken_0xA1}"},
+    {"entry_index": 103, "parameter_name": "requesttoken", "usage_type": "header", "variable_reference": "${requesttoken_0xA1}"},
+    {"entry_index": 104, "parameter_name": "requesttoken", "usage_type": "header", "variable_reference": "${requesttoken_0xA1}"},
+    {"entry_index": 105, "parameter_name": "requesttoken", "usage_type": "header", "variable_reference": "${requesttoken_0xA1}"},
+    {"entry_index": 106, "parameter_name": "requesttoken", "usage_type": "header", "variable_reference": "${requesttoken_0xA1}"},
+    {"entry_index": 107, "parameter_name": "requesttoken", "usage_type": "header", "variable_reference": "${requesttoken_0xA1}"},
+    {"entry_index": 108, "parameter_name": "requesttoken", "usage_type": "header", "variable_reference": "${requesttoken_0xA1}"}
+  ],
+  "entries_to_remove": [],
+  "reasoning": "Один CSRF токен используется в 7 разных запросах. Контроллер НЕ нужен — запросы разные!",
+  "complexity": "simple_reused"
+}
+```
+
+### Пример 3: ForEach — каждый ID отдельно
+Входные данные: 3 запроса (entry 21, 22, 23) с разными id, values_total=3
 
 ```json
 {

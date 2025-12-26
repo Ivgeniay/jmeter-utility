@@ -211,6 +211,28 @@ class CorrelationValidator(BaseValidator[CorrelationOutput]):
                 if remove_count > 0:
                     errors.append(f"entries_to_remove содержит {remove_count} entry, ожидается {target_count - 1}")
         
+        else:
+            values_total = self.original_input.values_total
+            target_count = len(self.original_input.target_usages)
+            
+            if values_total == 1:
+                if target_count > 1:
+                    expected_replacements = target_count
+                    actual_replacements = len(output.parameter_replacements)
+                    if actual_replacements != expected_replacements:
+                        suggestions.append(f"При simple_reused (1 значение, {target_count} запросов) ожидается {expected_replacements} replacements, получено {actual_replacements}")
+                    if output.entries_to_remove:
+                        errors.append(f"При simple_reused entries_to_remove должен быть пустым, но содержит {output.entries_to_remove}")
+                        suggestions.append("Убери entries_to_remove — все запросы разные и нужны!")
+            elif values_total > 1 and target_count > 1:
+                first_target = self.original_input.target_usages[0]
+                if first_target.values_in_request == 1:
+                    errors.append(f"Есть {values_total} значений и {target_count} запросов по 1 значению — нужен ForEach Controller")
+                    suggestions.append("Добавь controller с type='foreach'")
+                elif first_target.values_in_request > 1 and first_target.values_in_request < values_total:
+                    errors.append(f"Есть {values_total} значений, используются по {first_target.values_in_request} — нужен Loop Controller с chunk_split")
+                    suggestions.append("Добавь controller с type='loop' и post_processing с type='chunk_split'")
+        
         if not output.parameter_replacements:
             errors.append("Нет parameter_replacements — данные извлекаются но не используются")
         

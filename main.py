@@ -14,6 +14,7 @@ from payloads.har_saz_payloads import SazGroupingMode, add_har_to_scope, add_saz
 from tests import test_structure_agent
 from tests import test_correlation
 from tests.test_correlation import t2
+from tests.test_correlation_input import t3
 from traffic_analizator.analyzer import TrafficAnalyzer
 from traffic_builder.converters_to_har.jtl_to_har_conterter import convert_jtl_to_har, save_har
 from traffic_builder.converters_to_har.saz_to_har_converter import convert_saz_to_har
@@ -382,8 +383,10 @@ SLog.register_logger(logger)
 # )
 
 
-#test_structure_agent.t1()
-test_correlation.t2()
+# test_structure_agent.t1()
+# test_correlation.t2()
+t3('/opt/Fiddler/fiddler_classic_setup/Capturies/1_browser_1_step_har/All.har')
+
 
 
 def consent_overwrite_file() -> Literal['y', 'n']:
