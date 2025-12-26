@@ -4,8 +4,6 @@ import sys;
 import re
 from typing import Callable, Literal
 
-from llm.agent import build_script_with_llm
-from llm.transaction_splitter import get_transaction_breakdown
 from payloads.console import CompositeLog, ConsoleLog, SLog 
 from jmx_builder.models.tree import Arguments, CategoryElement, HTTPSamplerProxy, HeaderManager, TestAction, TreeElement, UniformRandomTimer
 from jmx_builder.utility.console import print_path, print_paths, print_tree
@@ -13,6 +11,9 @@ from jmx_builder.utility.jmx_builder_parser_export import get_configured_parser
 from jmx_builder.utility.search import search_element, search_elements
 from jmx_builder.parsers.tree_parser import TreeParser 
 from payloads.har_saz_payloads import SazGroupingMode, add_har_to_scope, add_saz_to_scope
+from tests import test_structure_agent
+from tests import test_correlation
+from tests.test_correlation import t2
 from traffic_analizator.analyzer import TrafficAnalyzer
 from traffic_builder.converters_to_har.jtl_to_har_conterter import convert_jtl_to_har, save_har
 from traffic_builder.converters_to_har.saz_to_har_converter import convert_saz_to_har
@@ -381,38 +382,8 @@ SLog.register_logger(logger)
 # )
 
 
-har = parse_har('/opt/Fiddler/fiddler_classic_setup/Capturies/1_browser_1_step_har/All.har')
-analyzer : TrafficAnalyzer = TrafficAnalyzer(ignore_cookies=True, min_value_length=3)
-report = analyzer.analyze(har)
-test_plan = build_script_with_llm(
-    har=har,
-    report=report,
-    scenario_number=1,
-    scenario_name="GalleryBrowse",
-    steps_description="""
-    1. OpenHomePage - открытие главной страницы
-    2. Login - авторизация пользователя
-    3. OpenGallery - переход в галерею
-    4. SelectAlbum - выбор случайного альбома
-    5. ViewPhoto - просмотр фотографии
-    """,
-    model="gpt-4o-mini",
-    verbose=True,
-)
-if test_plan:
-    xml = test_plan.to_xml()
-    with open("/opt/apache-jmeter-5.6.3/bin/Generated_script.jmx", "w") as f:
-        header = """<?xml version="1.0" encoding="UTF-8"?>
-<jmeterTestPlan version="1.2" properties="5.0" jmeter="5.6.3">
-  <hashTree>"""
-        footer = """  </hashTree>
-</jmeterTestPlan>"""
-
-        f.write(header + xml + footer)
-    print("Скрипт сохранён!")
-
-
-
+#test_structure_agent.t1()
+test_correlation.t2()
 
 
 def consent_overwrite_file() -> Literal['y', 'n']:

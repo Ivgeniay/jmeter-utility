@@ -10,6 +10,17 @@ class PropElement(JMXElement):
     def __init__(self, name: str):
         self.name = name
 
+    @staticmethod
+    def _escape_xml(value: str) -> str:
+        if not value:
+            return value
+        return (value
+            .replace("&", "&amp;")
+            .replace("<", "&lt;")
+            .replace(">", "&gt;")
+            .replace('"', "&quot;")
+        )
+
 
 class StringProp(PropElement):
     def __init__(self, name: str, value: str = ""):
@@ -19,9 +30,10 @@ class StringProp(PropElement):
     @property
     def tag_name(self) -> str:
         return STRING_PROP
-    
+
     def to_xml(self) -> str:
-        return f'<{self.tag_name} name="{self.name}">{self.value}</{self.tag_name}>'
+        escaped_value = self._escape_xml(self.value)
+        return f'<{self.tag_name} name="{self.name}">{escaped_value}</{self.tag_name}>'
 
 
 class BoolProp(PropElement):

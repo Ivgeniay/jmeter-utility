@@ -1,15 +1,18 @@
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 
 class Record(BaseModel):
     name: str | None = None
-    value: str
+    value: str | None = None
     comment: str = ""
     
-    @field_validator("name", "value", mode="before")
-    @classmethod
-    def none_to_empty(cls, v):
-        return v if v is not None else ""
+    @model_validator(mode="after")
+    def fix_empty_name(self) -> "Record":
+        """Исправляет случай когда браузер записывает ?etag как name='', value='etag'"""
+        if (self.name is None or self.name == "") and self.value:
+            self.name = self.value
+            self.value = ""
+        return self
 
 
 class Param(BaseModel):
